@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <title>TAPO’s archive · 스크랩 노트</title>
 <meta name="theme-color" content="#FAF6EA">
 <meta name="color-scheme" content="light">
@@ -59,7 +60,25 @@
     font-family:var(--serif);font-weight:700;letter-spacing:-.025em;
     font-size:clamp(31px,6vw,48px);line-height:1.16;margin:18px 0 8px;
   }
-  .dek{margin:0;color:var(--ink-2);font-size:14.5px;max-width:56ch}
+  /* ───────────── morning brief ───────────── */
+  .brief{
+    margin:16px 0 2px;max-width:60ch;background:var(--card);
+    border:1px solid var(--rule);border-left:3px solid var(--lemon);border-radius:4px;
+    padding:12px 16px 11px;box-shadow:var(--shadow);
+  }
+  .brief-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 7px}
+  .brief-label{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;color:var(--green)}
+  .brief-label::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--lemon);margin-right:6px;vertical-align:1.5px;box-shadow:0 0 0 2px var(--lemon-w)}
+  .brief-when{margin-left:auto;font-size:10.5px;letter-spacing:.04em;color:var(--ink-3);font-variant-numeric:tabular-nums}
+  .brief-lead{margin:0;font-family:var(--serif);font-size:14px;line-height:1.55;color:var(--ink);letter-spacing:-.01em}
+  .brief-lead b{font-weight:700;background:linear-gradient(transparent 60%, var(--lemon) 60%, var(--lemon) 92%, transparent 92%);padding:0 .05em}
+  .brief-list{list-style:none;margin:9px 0 0;padding:8px 0 0;border-top:1px dotted var(--rule-2);display:grid;gap:3px}
+  .brief-list li{display:flex;gap:9px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+  .brief-time{flex:0 0 42px;font-variant-numeric:tabular-nums;font-weight:700;font-size:11.5px;color:var(--green);padding-top:1px}
+  .brief-list q{quotes:none;color:var(--ink-3);font-style:normal}
+  .brief-credit{margin:9px 0 0;font-size:9.5px;letter-spacing:.02em;color:var(--ink-3)}
+  .brief-credit a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+  .brief-credit a:hover{color:var(--ink-2)}
   .stats{display:flex;flex-wrap:wrap;gap:0;margin-top:20px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
   .stat{flex:1 1 120px;padding:10px 14px 10px 0;border-right:1px solid var(--rule-2)}
   .stat:last-child{border-right:0}
@@ -290,6 +309,9 @@
   @media (max-width:720px){
     .masthead{padding:18px 16px 14px}
     h1{margin-top:14px}
+    .brief{margin-top:13px;padding:11px 13px 10px}
+    .brief-lead{font-size:13.5px}
+    .brief-time{flex:0 0 38px}
     .upcoming{padding:0 16px 4px}
     .up-head h2{font-size:13.5px}
     .up-note{display:none}
@@ -329,7 +351,22 @@
       <span class="issue" id="issueLine">VOL. 01</span>
     </div>
     <h1>TAPO’s <mark>archive</mark></h1>
-    <p class="dek">학회·포럼, 공연·전시, 그리고 책. 대화 속에서 모은 관심을 한 장에 펼쳐 두었습니다. 상태를 바꾸고 한 줄 메모를 남기면 이 브라우저에 저장됩니다.</p>
+    <!-- MORNING_BRIEF_START -->
+    <!-- 아침 브리핑은 이 두 마커 사이만 통째로 교체합니다. (updated: 2026-11-15 20:00 KST · 내일 11/16 예보) -->
+    <section class="brief" aria-label="아침 브리핑">
+      <p class="brief-top">
+        <span class="brief-label">Morning Brief</span>
+        <time class="brief-when" datetime="2026-11-15T20:00+09:00">2026.11.15 (일) 저녁</time>
+      </p>
+      <p class="brief-lead">내일(월) 서울은 <b>흐림, 8~17도</b>. 아침 8도까지 내려가니 가벼운 겉옷 하나 챙기면 좋겠습니다. 미세먼지는 보통입니다.</p>
+      <ul class="brief-list">
+        <li><span class="brief-time">09:10</span><span>보험료 자동납부 카드 변경 알림 <q>흥국생명 · DB손해보험 고객센터</q></span></li>
+        <li><span class="brief-time">10:00</span><span>포럼 사전신청 알림 <q>한부모가족 포럼 신청 마감 11.17</q></span></li>
+        <li><span class="brief-time">19:00</span><span>한국공법학회 제3회 영미공법 연구포럼 세미나 <q>관심 · 장소 개별공지</q></span></li>
+      </ul>
+      <p class="brief-credit">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></p>
+    </section>
+    <!-- MORNING_BRIEF_END -->
     <div class="stats" id="stats"></div>
   </header>
 
