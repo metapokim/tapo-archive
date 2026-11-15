@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>은유의 아카이브 · 스크랩 노트</title>
+<meta name="theme-color" content="#FAF6EA">
+<meta name="color-scheme" content="light">
+<style>
+  :root{
+    --paper:#FAF6EA;
+    --paper-2:#F3EDDD;
+    --card:#FFFDF6;
+    --ink:#2D2C28;
+    --ink-2:#57544D;
+    --ink-3:#7B7565;
+    --rule:#DBD2BD;
+    --rule-2:#EAE3D2;
+    --lemon:#F1DC61;
+    --lemon-w:#FBF3C2;
+    --lemon-ink:#5A4C10;
+    --green:#2C6A4A;
+    --green-2:#5B8A70;
+    --green-w:#E7F0E5;
+    --shadow:0 1px 0 rgba(45,44,40,.03), 0 10px 26px -20px rgba(45,44,40,.55);
+    --serif:"Nanum Myeongjo","Noto Serif KR","Apple SD Gothic Neo","Malgun Gothic",Batang,바탕,serif;
+    --sans:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    font-size:15px;line-height:1.55;letter-spacing:-.005em;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(1200px 420px at 50% -160px, rgba(241,220,97,.20), rgba(241,220,97,0) 70%),
+      radial-gradient(900px 500px at 100% 0%, rgba(44,106,74,.05), rgba(44,106,74,0) 65%);
+  }
+  .wrap{position:relative;z-index:1}
+  a{color:var(--green);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:2px}
+  mark{background:linear-gradient(transparent 58%, var(--lemon) 58%, var(--lemon) 94%, transparent 94%);color:inherit;padding:0 .06em}
+  .skip{position:absolute;left:-9999px}
+  .skip:focus{left:12px;top:12px;z-index:200;background:var(--card);padding:8px 12px;border:1px solid var(--ink);border-radius:4px}
+
+  /* ───────────── masthead ───────────── */
+  .masthead{max-width:1180px;margin:0 auto;padding:26px 22px 20px}
+  .mast-top{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;
+    border-top:3px solid var(--ink);padding-top:9px;
+  }
+  .kicker{font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--green);font-weight:700}
+  .issue{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+  h1{
+    font-family:var(--serif);font-weight:700;letter-spacing:-.025em;
+    font-size:clamp(31px,6vw,48px);line-height:1.16;margin:18px 0 8px;
+  }
+  .dek{margin:0;color:var(--ink-2);font-size:14.5px;max-width:56ch}
+  .stats{display:flex;flex-wrap:wrap;gap:0;margin-top:20px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .stat{flex:1 1 120px;padding:10px 14px 10px 0;border-right:1px solid var(--rule-2)}
+  .stat:last-child{border-right:0}
+  .stat b{display:block;font-family:var(--serif);font-size:21px;line-height:1.2;letter-spacing:-.01em}
+  .stat span{font-size:10.5px;letter-spacing:.14em;color:var(--ink-3)}
+  .stat--key b{color:var(--green)}
+
+  /* ───────────── upcoming ───────────── */
+  .upcoming{max-width:1180px;margin:0 auto;padding:0 22px 6px}
+  .up-box{background:var(--card);border:1px solid var(--rule);border-radius:5px;padding:14px 16px 8px;box-shadow:var(--shadow)}
+  .up-head{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--rule-2);padding-bottom:8px;margin-bottom:2px}
+  .up-head h2{font-family:var(--serif);font-size:14.5px;margin:0;letter-spacing:.01em}
+  .up-note{margin-left:auto;font-size:10.5px;letter-spacing:.1em;color:var(--ink-3)}
+  .up-list{list-style:none;margin:0;padding:0}
+  .up-item{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px dotted var(--rule-2);font-size:13.5px}
+  .up-item:last-child{border-bottom:0}
+  .up-date{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:12.5px;letter-spacing:.02em}
+  .up-date b{font-family:var(--serif);font-size:14px;color:var(--ink);font-weight:700;margin-right:3px}
+  .up-body{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .up-body .up-place{color:var(--ink-3);font-size:11.5px;margin-left:6px}
+  .up-dday{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--lemon-ink);background:var(--lemon-w);border:1px solid #E3CF63;border-radius:3px;padding:2px 6px}
+  .up-dday.is-today{background:var(--green);border-color:var(--green);color:#F7FBF3}
+  .up-dead{flex:0 0 auto;font-size:10.5px;color:var(--green);letter-spacing:.02em}
+  .up-empty{color:var(--ink-3);font-size:13px;padding:10px 2px}
+
+  /* ───────────── toolbar ───────────── */
+  .toolbar{position:sticky;top:0;z-index:40;background:rgba(250,246,234,.95);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-top:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .toolbar-in{max-width:1180px;margin:0 auto;padding:10px 22px 9px;display:flex;flex-direction:column;gap:8px}
+  .tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;
+    border:1px solid var(--rule);background:var(--card);color:var(--ink-2);
+    font:inherit;font-size:13px;padding:7px 13px;border-radius:999px;cursor:pointer;
+    transition:background .16s,color .16s,border-color .16s;white-space:nowrap;
+  }
+  .tab:hover{border-color:#CDBF8C}
+  .tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#FBF7EC;font-weight:700}
+  .tab .n{font-size:10.5px;opacity:.62;font-variant-numeric:tabular-nums}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .search{position:relative;flex:1 1 240px;min-width:0}
+  .search input{
+    width:100%;font:inherit;font-size:14px;color:var(--ink);background:var(--card);
+    padding:9px 12px 9px 33px;border:1px solid var(--rule);border-radius:7px;
+  }
+  .search input::placeholder{color:#B4AD9B}
+  .search input:focus{outline:none;border-color:#C6B455;box-shadow:0 0 0 3px rgba(241,220,97,.45)}
+  .search .glass{position:absolute;left:12px;top:50%;width:11px;height:11px;margin-top:-8px;border:1.6px solid var(--ink-3);border-radius:50%;pointer-events:none}
+  .search .glass::after{content:"";position:absolute;left:8px;top:8px;width:5px;height:1.6px;background:var(--ink-3);transform:rotate(45deg)}
+  select.sel{
+    font:inherit;font-size:13px;color:var(--ink-2);background:var(--card);border:1px solid var(--rule);
+    border-radius:7px;padding:9px 10px;cursor:pointer;
+  }
+  select.sel:focus{outline:none;border-color:#C6B455;box-shadow:0 0 0 3px rgba(241,220,97,.35)}
+  .btn{
+    font:inherit;font-size:13px;border-radius:7px;padding:9px 13px;cursor:pointer;
+    border:1px solid var(--ink);background:var(--ink);color:#FBF7EC;font-weight:700;white-space:nowrap;
+    transition:transform .12s, background .16s;
+  }
+  .btn:hover{background:#403E38}
+  .btn:active{transform:translateY(1px)}
+  .btn--lemon{background:var(--lemon);border-color:#D9C44F;color:#3F3708}
+  .btn--lemon:hover{background:#F5E37C}
+  .btn--ghost{background:var(--card);border-color:var(--rule);color:var(--ink-2);font-weight:500}
+  .btn--ghost:hover{border-color:#CDBF8C;background:#FFFDF3}
+  .filebtn{position:relative;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .filebtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+  .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px 0 2px}
+  .chips::-webkit-scrollbar{display:none}
+  .chips--sub{border-top:1px dotted var(--rule-2);padding-top:7px}
+  .chips .lbl{flex:0 0 auto;font-size:10.5px;letter-spacing:.14em;color:var(--ink-3);align-self:center;padding-right:2px}
+  .chip{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
+    border:1px solid var(--rule);background:transparent;color:var(--ink-2);
+    font:inherit;font-size:12.5px;padding:4px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  }
+  .chip:hover{border-color:#CDBF8C;background:#FFFDF3}
+  .chip .n{font-size:10px;opacity:.6;font-variant-numeric:tabular-nums}
+  .chip[aria-pressed="true"]{background:var(--lemon-w);border-color:#DCC85C;color:var(--lemon-ink);font-weight:700}
+  .chip--shelf[aria-pressed="true"]{background:var(--green-w);border-color:#B9CFB6;color:var(--green)}
+
+  /* ───────────── sections & cards ───────────── */
+  main{max-width:1180px;margin:0 auto;padding:24px 22px 70px}
+  .notice{
+    display:flex;gap:10px;align-items:flex-start;background:var(--lemon-w);border:1px solid #E3CF63;
+    color:var(--lemon-ink);border-radius:6px;padding:10px 13px;font-size:12.5px;margin-bottom:20px;
+  }
+  .notice b{font-weight:700}
+  .sec{margin:0 0 40px}
+  .sec-head{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--ink);padding-bottom:7px;margin-bottom:16px}
+  .sec-num{font-family:var(--serif);font-size:11.5px;letter-spacing:.22em;color:var(--green)}
+  .sec-title{font-family:var(--serif);font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em}
+  .sec-count{margin-left:auto;font-size:11px;letter-spacing:.09em;color:var(--ink-3);font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(286px,1fr));gap:13px}
+  .card{
+    display:flex;flex-direction:column;gap:7px;background:var(--card);
+    border:1px solid var(--rule);border-radius:5px;padding:13px 14px 10px;
+    box-shadow:var(--shadow);transition:border-color .16s, box-shadow .16s;
+  }
+  .card:hover{border-color:#D2C079;box-shadow:0 1px 0 rgba(45,44,40,.03), 0 14px 30px -22px rgba(45,44,40,.6)}
+  .card.is-new{animation:cardIn 2.2s ease-out}
+  @keyframes cardIn{
+    0%{border-color:#C9B84F;box-shadow:0 0 0 3px rgba(241,220,97,.85)}
+    70%{border-color:#C9B84F;box-shadow:0 0 0 3px rgba(241,220,97,.5)}
+    100%{box-shadow:var(--shadow)}
+  }
+  .card-head{display:flex;align-items:flex-start;gap:11px}
+  .card-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .thumb{flex:0 0 86px;width:86px}
+  .thumb img{
+    display:block;width:100%;height:auto;aspect-ratio:3 / 4;object-fit:cover;
+    border-radius:8px;border:1px solid var(--rule);background:#F4F1E6;
+    box-shadow:0 1px 2px rgba(45,44,40,.06);
+  }
+  .card--ledger .thumb{flex-basis:70px;width:70px}
+  .card-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:20px}
+  .tag{font-size:10px;font-weight:700;letter-spacing:.06em;border-radius:3px;padding:2px 6px;white-space:nowrap}
+  .tag--forum{background:var(--green-w);color:var(--green)}
+  .tag--show{background:#F6E9DA;color:#8A5A2B}
+  .tag--book{background:#EDE7F1;color:#5B4670}
+  .shelf{font-size:10px;letter-spacing:.05em;color:var(--ink-3);border:1px solid var(--rule-2);border-radius:3px;padding:1px 5px}
+  .pick{font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--lemon-ink);background:var(--lemon);border-radius:3px;padding:2px 6px}
+  .when{font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+  .dday{font-size:10px;font-weight:700;color:var(--lemon-ink);background:var(--lemon-w);border:1px solid #E3CF63;border-radius:3px;padding:1px 5px;font-variant-numeric:tabular-nums}
+  .dday.is-today{background:var(--green);border-color:var(--green);color:#F7FBF3}
+  .dead{font-size:10px;color:var(--green);border-bottom:1px solid #BFD3BB;letter-spacing:.01em}
+  .card-title{font-family:var(--serif);font-size:16px;line-height:1.42;font-weight:700;margin:1px 0 0;letter-spacing:-.012em;word-break:keep-all;overflow-wrap:anywhere}
+  .card--ledger .card-title{font-size:14px;font-weight:500;font-family:var(--sans);line-height:1.45}
+  .line{margin:0;font-size:12.5px;color:var(--ink-2);word-break:keep-all;overflow-wrap:anywhere}
+  .line--dim{color:var(--ink-3);font-size:11.5px}
+  .line--price{color:var(--ink);font-size:12.5px;font-variant-numeric:tabular-nums}
+  .subtag{align-self:flex-start;font-size:10.5px;color:var(--green);background:#F3F7F1;border:1px solid #DEE8DA;border-radius:3px;padding:1px 6px;letter-spacing:.02em;cursor:pointer;font-family:inherit}
+  .subtag:hover{background:var(--green-w);border-color:#C7D9C2;text-decoration:none}
+  .memo{
+    width:100%;font:inherit;font-size:12.5px;color:var(--ink);background:transparent;border:0;
+    border-bottom:1px dashed var(--rule);border-radius:0;padding:3px 0 4px;margin-top:2px;
+  }
+  .memo::placeholder{color:#BAB3A1}
+  .memo:focus{outline:none;border-bottom-color:#D9C44F;background:linear-gradient(transparent 62%, rgba(241,220,97,.55) 62%)}
+  .card-foot{display:flex;align-items:center;gap:5px;margin-top:6px;padding-top:7px;border-top:1px solid var(--rule-2);flex-wrap:wrap}
+  .state{
+    display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11.5px;font-weight:700;
+    border-radius:999px;padding:3px 9px 3px 10px;cursor:pointer;border:1px solid var(--rule);
+    background:transparent;color:var(--ink-2);transition:filter .15s;
+  }
+  .state:hover{filter:brightness(.97)}
+  .state .caret{font-size:8px;opacity:.7;margin-left:1px}
+  .st--watch{border-color:var(--rule);color:var(--ink-2)}
+  .st--ready{background:var(--lemon-w);border-color:#DCC85C;color:var(--lemon-ink)}
+  .st--go{background:var(--green);border-color:var(--green);color:#F5FAF2}
+  .st--done{background:var(--green-w);border-color:#BFD3BB;color:var(--green)}
+  .st--shelf{background:#F1ECE0;border-color:var(--rule);color:var(--ink-2)}
+  .sp{flex:1 1 auto}
+  .mini{
+    font:inherit;font-size:11px;color:var(--ink-3);background:none;border:0;cursor:pointer;
+    padding:3px 5px;border-radius:4px;letter-spacing:.02em;
+  }
+  .mini:hover{color:var(--ink);background:var(--lemon-w)}
+  .mini--del:hover{color:#8A3B2A;background:#F8E9E4}
+  .more{grid-column:1/-1;justify-self:center;align-self:center;margin:6px 0 2px}
+  .more button{font:inherit;font-size:12.5px;color:var(--ink-2);background:var(--card);border:1px dashed var(--rule);border-radius:999px;padding:8px 18px;cursor:pointer}
+  .more button:hover{border-color:#CDBF8C;color:var(--ink)}
+  .empty{padding:60px 10px;text-align:center;color:var(--ink-3);font-size:14px}
+  .empty b{display:block;font-family:var(--serif);font-size:18px;color:var(--ink-2);margin-bottom:6px;font-weight:700}
+
+  /* ───────────── menu, modal, toast ───────────── */
+  .menu{
+    position:fixed;z-index:90;min-width:154px;background:var(--card);border:1px solid var(--rule);
+    border-radius:7px;padding:5px;box-shadow:0 18px 40px -18px rgba(45,44,40,.5);
+  }
+  .menu button{
+    display:flex;align-items:center;gap:7px;width:100%;text-align:left;background:none;border:0;
+    font:inherit;font-size:13px;color:var(--ink-2);padding:7px 9px;border-radius:4px;cursor:pointer;
+  }
+  .menu button:hover,.menu button:focus{background:var(--lemon-w);outline:none;color:var(--ink)}
+  .menu button[aria-checked="true"]{font-weight:700;color:var(--green)}
+  .menu button[aria-checked="true"]::after{content:"—";margin-left:auto;color:var(--green);opacity:.8}
+  .modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(45,44,40,.42)}
+  .modal[hidden]{display:none}
+  .sheet{
+    width:100%;max-width:540px;max-height:88vh;overflow:auto;background:var(--paper);
+    border:1px solid var(--rule);border-radius:9px;padding:20px 20px 14px;
+    box-shadow:0 40px 70px -30px rgba(0,0,0,.55);
+  }
+  .sheet h2{font-family:var(--serif);font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
+  .sheet .hint{margin:0 0 14px;font-size:12px;color:var(--ink-3)}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:10.5px;letter-spacing:.12em;color:var(--ink-3)}
+  .field input,.field select,.field textarea{
+    font:inherit;font-size:14px;color:var(--ink);background:var(--card);
+    border:1px solid var(--rule);border-radius:6px;padding:8px 10px;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#C6B455;box-shadow:0 0 0 3px rgba(241,220,97,.4)}
+  .sheet-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;border-top:1px solid var(--rule-2);padding-top:12px}
+  .imgrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .imgrow input[type="file"]{
+    flex:1 1 170px;min-width:0;font:inherit;font-size:12.5px;color:var(--ink-2);
+    background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:6px 8px;
+  }
+  .imgrow input[type="file"]::file-selector-button{
+    font:inherit;font-size:12px;margin-right:8px;padding:3px 8px;border:1px solid var(--rule);
+    border-radius:4px;background:var(--paper);color:var(--ink-2);cursor:pointer;
+  }
+  .imgprev{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .imgprev[hidden]{display:none}
+  .imgprev img{
+    display:block;width:72px;aspect-ratio:3 / 4;object-fit:cover;border-radius:6px;
+    border:1px solid var(--rule);background:#F4F1E6;
+  }
+  .imgprev .inote{font-size:11.5px;color:var(--ink-3);line-height:1.45}
+  .toast{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));
+    z-index:120;display:flex;align-items:center;gap:14px;max-width:calc(100vw - 28px);
+    background:var(--ink);color:#FBF7EC;padding:10px 15px;border-radius:999px;font-size:12.5px;
+    box-shadow:0 18px 36px -16px rgba(0,0,0,.6);
+  }
+  .toast[hidden]{display:none}
+  .toast button{background:none;border:0;color:var(--lemon);font:inherit;font-weight:700;cursor:pointer;padding:0}
+
+  /* ───────────── footer ───────────── */
+  footer{max-width:1180px;margin:0 auto;padding:0 22px 40px;color:var(--ink-3);font-size:11.5px}
+  footer .rule{border-top:1px solid var(--rule);padding-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:baseline}
+  footer .sig{font-family:var(--serif);font-size:12.5px;color:var(--ink-2);letter-spacing:.02em}
+  footer .saved{margin-left:auto}
+
+  @media (max-width:720px){
+    .masthead{padding:18px 16px 14px}
+    h1{margin-top:14px}
+    .upcoming{padding:0 16px 4px}
+    .up-head h2{font-size:13.5px}
+    .up-note{display:none}
+    .toolbar-in{padding:9px 16px 8px;gap:7px}
+    main{padding:18px 16px 60px}
+    .grid{grid-template-columns:1fr;gap:11px}
+    .toolbar{position:static}
+    .stats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+    .stats::-webkit-scrollbar{display:none}
+    .stat{flex:0 0 auto;padding-right:16px}
+    .controls{gap:6px}
+    .search{flex:1 1 100%}
+    .btn{padding:8px 11px;font-size:12.5px}
+    select.sel{font-size:12.5px;padding:8px}
+    .frow{grid-template-columns:1fr}
+    .sheet{max-height:92vh;padding:18px 16px 12px}
+    .card-title{font-size:15.5px}
+    .thumb{flex-basis:92px;width:92px}
+    .card--ledger .thumb{flex-basis:72px;width:72px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  @media print{
+    body::before,.toolbar,.upcoming,.toast,.modal{display:none!important}
+    .card{break-inside:avoid;box-shadow:none}
+    .grid{grid-template-columns:1fr 1fr}
+    .thumb{flex-basis:62px;width:62px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="skip" href="#main">본문으로</a>
+
+  <header class="masthead">
+    <div class="mast-top">
+      <span class="kicker">Personal Scrap Archive</span>
+      <span class="issue" id="issueLine">VOL. 01</span>
+    </div>
+    <h1>은유의 <mark>아카이브</mark></h1>
+    <p class="dek">학회·포럼, 공연·전시, 그리고 책. 대화 속에서 모은 관심을 한 장에 펼쳐 두었습니다. 상태를 바꾸고 한 줄 메모를 남기면 이 브라우저에 저장됩니다.</p>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <section class="upcoming" id="upcoming" aria-labelledby="upTitle">
+    <div class="up-box">
+      <div class="up-head">
+        <h2 id="upTitle">다가오는 일정</h2>
+        <span class="up-note">가장 가까운 다섯 건</span>
+      </div>
+      <ol class="up-list" id="upList"></ol>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="toolbar-in">
+      <nav class="tabs" id="tabs" aria-label="카테고리"></nav>
+      <div class="controls">
+        <div class="search">
+          <span class="glass" aria-hidden="true"></span>
+          <input id="q" type="search" placeholder="제목 · 저자 · 장소로 찾기" aria-label="검색" autocomplete="off">
+        </div>
+        <select class="sel" id="sort" aria-label="정렬">
+          <option value="default">기본 순서</option>
+          <option value="date-desc">날짜 늦은 순</option>
+          <option value="title">가나다순</option>
+        </select>
+        <button class="btn btn--lemon" id="addBtn" type="button">+ 새 스크랩</button>
+        <button class="btn btn--ghost" id="exportBtn" type="button">백업</button>
+        <label class="btn btn--ghost filebtn">불러오기<input id="importFile" type="file" accept=".json,application/json" hidden></label>
+      </div>
+      <div class="chips" id="statusChips" role="group" aria-label="상태 필터"></div>
+      <div class="chips chips--sub" id="shelfChips" role="group" aria-label="서가 필터"></div>
+    </div>
+  </div>
+
+  <main id="main">
+    <div id="storageNotice" class="notice" hidden>
+      <b>자동 저장 제한</b>
+      <span>이 화면에서는 브라우저 저장소를 쓸 수 없어 바꾼 내용이 유지되지 않을 수 있습니다. 주소 표시줄이 있는 브라우저(사파리·크롬)에서 열거나, 작업 후 <b>백업</b>으로 내려받아 두세요.</span>
+    </div>
+    <div id="sections"></div>
+    <div class="empty" id="empty" hidden>
+      <b>조건에 맞는 스크랩이 없습니다</b>
+      검색어나 필터를 지우면 다시 보입니다.
+    </div>
+  </main>
+
+  <footer>
+    <div class="rule">
+      <span class="sig">은유의 스크랩 아카이브</span>
+      <span>개인용 · 이 기기에 자동 저장 · 백업은 JSON 파일로</span>
+      <span class="saved" id="savedAt"></span>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<div class="modal" id="modal" hidden>
+  <form class="sheet" id="form" novalidate>
+    <h2 id="formTitle">새 스크랩</h2>
+    <p class="hint">제목과 종류만 있으면 저장됩니다. 나머지는 나중에 고쳐도 됩니다.</p>
+
+    <div class="frow">
+      <div class="field">
+        <label for="fCat">종류</label>
+        <select id="fCat" name="cat">
+          <option value="forum">학회·포럼</option>
+          <option value="show">공연·전시</option>
+          <option value="book">책</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fStatus">상태</label>
+        <select id="fStatus" name="status"></select>
+      </div>
+      <div class="field full">
+        <label for="fTitle">제목</label>
+        <input id="fTitle" name="title" type="text" placeholder="예: 2026 연합뉴스 다문화포럼" required>
+      </div>
+
+      <div class="field" data-for="forum show">
+        <label for="fDate">날짜</label>
+        <input id="fDate" name="date" type="date">
+      </div>
+      <div class="field" data-for="forum show">
+        <label for="fTime">시간</label>
+        <input id="fTime" name="time" type="text" placeholder="14:00~17:00">
+      </div>
+      <div class="field" data-for="forum show">
+        <label for="fPlace">장소</label>
+        <input id="fPlace" name="place" type="text" placeholder="서울 종로구 …">
+      </div>
+      <div class="field" data-for="forum">
+        <label for="fDeadline">신청 마감</label>
+        <input id="fDeadline" name="deadline" type="date">
+      </div>
+      <div class="field" data-for="show">
+        <label for="fGenre">분야</label>
+        <input id="fGenre" name="genre" type="text" placeholder="연극 · 발레 · 전시">
+      </div>
+      <div class="field" data-for="show book">
+        <label for="fPrice">금액(원)</label>
+        <input id="fPrice" name="price" type="number" inputmode="numeric" min="0" step="100" placeholder="40600">
+      </div>
+      <div class="field" data-for="book">
+        <label for="fAuthor">저자</label>
+        <input id="fAuthor" name="author" type="text" placeholder="김행숙 지음">
+      </div>
+      <div class="field" data-for="book">
+        <label for="fPublisher">출판사</label>
+        <input id="fPublisher" name="publisher" type="text" placeholder="문학과지성사">
+      </div>
+      <div class="field full" data-for="forum show">
+        <label for="fUrl">링크</label>
+        <input id="fUrl" name="url" type="url" placeholder="https://">
+      </div>
+      <div class="field full">
+        <label for="fImage">이미지 URL (포스터 · 책표지)</label>
+        <input id="fImage" name="image" type="text" inputmode="url" autocomplete="off" placeholder="https://… 또는 아래에서 사진 올리기">
+      </div>
+      <div class="field full">
+        <label for="fImageFile">사진 올리기</label>
+        <div class="imgrow">
+          <input id="fImageFile" name="imagefile" type="file" accept="image/*">
+          <button class="btn btn--ghost" type="button" id="fImageClear">이미지 지우기</button>
+        </div>
+        <div class="imgprev" id="fImagePrev" hidden>
+          <img id="fImagePrevImg" alt="">
+          <span class="inote" id="fImageNote"></span>
+        </div>
+      </div>
+      <div class="field full">
+        <label for="fMemo">한 줄 메모</label>
+        <input id="fMemo" name="memo" type="text" placeholder="신청 마감, 같이 갈 사람, 읽는 이유…">
+      </div>
+    </div>
+
+    <div class="sheet-foot">
+      <button class="btn btn--ghost" type="button" id="cancelBtn">취소</button>
+      <button class="btn" type="submit">저장</button>
+    </div>
+  </form>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ────────────────────────── 기준 데이터 ────────────────────────── */
+  var SEED = [{"id":"f01","cat":"forum","title":"2026 연합뉴스 다문화포럼","date":"2026-11-19","time":"14:00~17:00","place":"서울 종로구 연합뉴스 본사 17층 연우홀","url":"https://www.yna.co.kr/2026-site/multicultural","status":"신청 전","memo":"","deadline":"","pick":"1","image":"data:image/jpeg;base64,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"},{"id":"f02","cat":"forum","title":"이화여대 한국여성연구원 월례포럼 〈젠더와 민주주의〉 제6차","date":"2026-11-20","time":"16:00","place":"온라인 ZOOM","url":"https://elc.ewha.ac.kr/english/notice/notice-grad.do?articleNo=802525&mode=view","status":"신청 전","memo":"","deadline":"2026-11-18","pick":"1"},{"id":"f03","cat":"forum","title":"2026년 한부모가족 권익증진 포럼","date":"2026-11-24","time":"14:00~16:30","place":"서울 동작구 서울가족플라자 B1 다목적홀","url":"https://form.naver.com/response/GNYz7v44HVQ","status":"신청 전","memo":"","deadline":"2026-11-17","pick":"1","image":"data:image/jpeg;base64,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"},{"id":"f04","cat":"forum","title":"〈하느님은 정말 '정상가족'만 좋아하실까요?〉 1~3회차","date":"2026-12-01","time":"19:30~21:30 (12/1·8·15)","place":"서울","url":"https://www.seoulpa.kr/home/kor/M278003565/npo/news/view.do?idx=cb00d1a0008a85e71a41b8741facbffe6153e31841f27e291ea574bc8c01cc52","status":"신청 전","memo":"화요일 3회 연속","deadline":"2026-11-30","pick":"1"},{"id":"f05","cat":"forum","title":"한국공법학회 제3회 영미공법 연구포럼 세미나","date":"2026-11-16","time":"19:00~21:00","place":"신청자 개별공지","url":"https://www.lawtimes.co.kr/news/articleView.html?idxno=228852","status":"관심","memo":"","deadline":"","pick":""},{"id":"f06","cat":"forum","title":"한국입법학회·한국공법학회 「민주주의와 헌정개혁」 연구포럼 등 공동학술대회","date":"2026-11-27","time":"14:00~18:00","place":"서울대 로스쿨 17동 6층 서암관","url":"https://www.lawtimes.co.kr/news/articleView.html?idxno=229186","status":"관심","memo":"대한민국헌법 제1조 제1항 민주공화국","deadline":"","pick":""},{"id":"f07","cat":"forum","title":"한국공법학회 사회적재난과 보건안전법 포럼 제25회","date":"2026-11-30","time":"14:00~18:00","place":"국립중앙의료원 중앙감염병원 대회의실","url":"https://www.lawtimes.co.kr/news/articleView.html?idxno=229123","status":"관심","memo":"","deadline":"","pick":""},{"id":"f08","cat":"forum","title":"한국법정책학회·한양대 동계 공동학술대회 — 장애인의 미디어 접근권 보장을 위한 법정책","date":"2026-12-04","time":"14:00~18:00","place":"한양대 로스쿨","url":"https://www.lawtimes.co.kr/news/articleView.html?idxno=228696","status":"관심","memo":"","deadline":"","pick":""},{"id":"f09","cat":"forum","title":"가족구성권연구소 20주년 포럼","date":"2026-12-05","time":"14:00","place":"서울","url":"","status":"관심","memo":"공개 공지 대기","deadline":"","pick":""},{"id":"f10","cat":"forum","title":"대한변협 인권재단 학술대회 — 대한민국 법치주의의 위기와 극복과제","date":"2026-12-10","time":"14:00","place":"서울지방변호사회관 지하1층 세미나실","url":"https://www.lawtimes.co.kr/news/articleView.html?idxno=229159","status":"관심","memo":"","deadline":"","pick":""},{"id":"s01","cat":"show","title":"연극 〈전락〉","date":"2026-11-22","time":"14:00","place":"대학로 TOM(티오엠) 2관","genre":"연극","seller":"NOL","ref":"T3109873101","seat":"B구역 6열 2 / 1매","price":40600,"status":"예매 완료","memo":"","url":"","image":"data:image/jpeg;base64,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"},{"id":"s02","cat":"show","title":"연극 〈오이디푸스〉","date":"2026-07-12","time":"14:00","place":"세종문화회관 M씨어터","genre":"연극","seller":"NOL","ref":"6187222379","seat":"2층 7열 2·3 / 2매","price":100000,"status":"관람 완료","memo":"","url":"","image":"https://pedien.com/FileData/news/202605/20260520_16149453533FADA2.jpg"},{"id":"s03","cat":"show","title":"연극 〈오이디푸스〉","date":"2026-07-05","time":"18:00","place":"세종문화회관 M씨어터","genre":"연극","seller":"NOL","ref":"6185220109","seat":"2층 1열 5 / 1매","price":50000,"status":"관람 완료","memo":"","url":"","image":"https://pedien.com/FileData/news/202605/20260520_16149453533FADA2.jpg"},{"id":"s04","cat":"show","title":"[서울] 1등들 전국투어 콘서트","date":"2026-06-07","time":"18:00","place":"올림픽공원 올림픽홀","genre":"콘서트","seller":"예스24","ref":"Y9369112168","seat":"R석 2층 C2구역 6열 17번 / 1매","price":126700,"status":"관람 완료","memo":"","url":"","image":"http://daebakent.com/files/attach/images/2026/07/16/ac138fb688603c00b5cc52e50d454b03.jpg"},{"id":"s05","cat":"show","title":"연극 〈링크어택_팬레터〉","date":"2026-05-29","time":"19:30","place":"홍익대 대학로 아트센터 대극장","genre":"연극","seller":"티켓링크","ref":"1513885668","seat":"R석 / 1매","price":42000,"status":"관람 완료","memo":"","url":"","image":"http://www.kopis.or.kr/upload/pfmPoster/PF_PF284496_260205_111136.jpg"},{"id":"s06","cat":"show","title":"연극 〈링크어택_팬레터〉","date":"2026-05-24","time":"18:30","place":"홍익대 대학로 아트센터 대극장","genre":"연극","seller":"티켓링크","ref":"1513873224","seat":"VIP석 / 1매","price":57000,"status":"관람 완료","memo":"","url":"","image":"http://www.kopis.or.kr/upload/pfmPoster/PF_PF284496_260205_111136.jpg"},{"id":"s07","cat":"show","title":"GS아트센터 × 국립발레단 〈더블 빌_맥그리거&테틀리〉","date":"2026-05-08","time":"19:30","place":"GS아트센터","genre":"발레","seller":"NOL","ref":"T2963729250","seat":"3층 C블록 2열 1 / 1매","price":29000,"status":"관람 완료","memo":"","url":"","image":"http://www.thepreview.co.kr/news/photo/202605/12461_32049_2043.png"},{"id":"s08","cat":"show","title":"뮤지컬 〈긴긴밤〉","date":"2026-02-01","time":"14:00","place":"링크아트센터드림 드림1관","genre":"뮤지컬","seller":"NOL","ref":"T2880109110·11","seat":"객석1층 F열 15·16 / 2매","price":74000,"status":"관람 완료","memo":"","url":"","image":"https://cdn.artkoreatv.com/news/photo/202512/100211_315120_1129.jpg","imgpos":"left"},{"id":"s09","cat":"show","title":"국립극장 광복 80주년 기념음악회 〈화합〉","date":"2025-08-20","time":"19:30","place":"국립극장 해오름극장","genre":"클래식·국악","seller":"NOL","ref":"T2776584290","seat":"1층 A구역 7열 5 / 1매","price":9000,"status":"관람 완료","memo":"","url":"","image":"https://www.ntok.go.kr/upload/hms/prfrm/img_01ff87cf-9c09-4ce8-b1a7-9e029cc3ac0f1754033803045.jpg"},{"id":"s10","cat":"show","title":"뮤지컬 〈스모크〉 재관람","date":"2023-12-22","time":"20:00","place":"링크아트센터 벅스홀","genre":"뮤지컬","seller":"티켓링크","ref":"1456119556","seat":"1층 E열 25·26 / 2매","price":113650,"status":"관람 완료","memo":"","url":"","image":"https://cdn.mhns.co.kr/news/photo/202309/562438_688548_3233.jpg"},{"id":"s11","cat":"show","title":"뮤지컬 [넥스트 투 노멀]","date":"2022-07-19","time":"20:00","place":"광림아트센터 BBCH홀","genre":"뮤지컬","seller":"예스24","ref":"Y3529623741","seat":"R석 2층 S열 12·13 / 2매","price":110000,"status":"관람 완료","memo":"","url":"","image":"http://www.klarts.kr/static/files/thumbnails/YpLAHnDLwr.jpg"},{"id":"bh1","cat":"book","shelf":"hold","title":"무서운 이야기","author":"김행숙 지음","publisher":"문학과지성사","price":11700,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"김행숙 시집 · 두 권 함께 23,400원","image":"https://image.aladin.co.kr/product/40094/33/cover200/8932045704_1.jpg"},{"id":"bh2","cat":"book","shelf":"hold","title":"밤의 노트에 남은 슬픈 사람들","author":"김소형 지음","publisher":"문학과지성사","price":11700,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"11/7에 주문 미루신 책","image":"https://image.aladin.co.kr/product/40476/7/cover200/8932045828_1.jpg"},{"id":"bc1","cat":"book","shelf":"cart","title":"압구정 현대를 사지 못해서","author":"윤보인 지음","publisher":"민음사","price":16200,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40350/74/cover200/8937449676_1.jpg"},{"id":"bc2","cat":"book","shelf":"cart","title":"밤은 노래한다","author":"김연수 지음","publisher":"문학동네","price":13500,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/7492/7/cover200/8954640176_1.jpg"},{"id":"bc3","cat":"book","shelf":"cart","title":"겨울에 대한 감각","author":"민병훈 지음","publisher":"자음과모음","price":10800,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/29180/50/cover200/8954448224_1.jpg"},{"id":"bc4","cat":"book","shelf":"cart","title":"재구성","author":"민병훈 지음","publisher":"민음사","price":11700,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/24199/23/cover200/8937491354_1.jpg"},{"id":"bc5","cat":"book","shelf":"cart","title":"달력 뒤에 쓴 유서","author":"민병훈 지음","publisher":"민음사","price":12600,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/31059/89/cover200/893747381x_2.jpg"},{"id":"bc6","cat":"book","shelf":"cart","title":"어떤 가정","author":"민병훈 지음","publisher":"문학동네","price":15120,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37154/68/cover200/k292031571_1.jpg"},{"id":"bc7","cat":"book","shelf":"cart","title":"나는 노래한다","author":"이주혜 지음","publisher":"다람","price":16200,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39664/64/cover200/k142130298_1.jpg"},{"id":"bc8","cat":"book","shelf":"cart","title":"한국사 이상현상 연구원","author":"최인서 지음","publisher":"다이브","price":19800,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40090/97/cover200/k962130440_3.jpg"},{"id":"bc9","cat":"book","shelf":"cart","title":"혼모노","author":"성해나 지음","publisher":"창비","price":16200,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36101/66/cover200/s762137381_1.jpg"},{"id":"bc10","cat":"book","shelf":"cart","title":"프라이스 킹!!!","author":"김홍 지음","publisher":"문학동네","price":13500,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/33420/6/cover200/8954698786_1.jpg"},{"id":"bc11","cat":"book","shelf":"cart","title":"눈과 돌멩이","author":"위수정 외 지음","publisher":"다산책방","price":16200,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38496/16/cover200/k622135312_1.jpg"},{"id":"bc12","cat":"book","shelf":"cart","title":"모우어","author":"천선란 지음","publisher":"문학동네","price":15300,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/35099/68/cover200/k442934507_1.jpg"},{"id":"bc13","cat":"book","shelf":"cart","title":"저주받은 사람 중에 가장 축복받은","author":"박지영 지음","publisher":"한겨레출판","price":15120,"form":"국내도서","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37544/30/cover200/k012032229_1.jpg"},{"id":"bc14","cat":"book","shelf":"cart","title":"[중고] 아버지의 땅","author":"임철우 지음","publisher":"문학과지성사","price":4500,"form":"온라인중고","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/16628/0/cover200/8932034591_1.jpg"},{"id":"bc15","cat":"book","shelf":"cart","title":"[중고] 이청준 전집 세트 (반양장) - 전34권","author":"이청준 지음","publisher":"문학과지성사","price":369000,"form":"온라인중고","group":"소설","sub":"한국 소설","status":"읽고 싶은 책","memo":""},{"id":"bc16","cat":"book","shelf":"cart","title":"몸으로 덮인 세계를 본 적 있는가","author":"공희경 지음","publisher":"허블","price":15300,"form":"국내도서","group":"소설","sub":"한국 SF","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37954/4/cover200/k432033655_1.jpg"},{"id":"bc17","cat":"book","shelf":"cart","title":"밤을 달려 온","author":"연여름 지음","publisher":"황금가지","price":16200,"form":"국내도서","group":"소설","sub":"한국 SF","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38541/38/cover200/k932135439_1.jpg"},{"id":"bc18","cat":"book","shelf":"cart","title":"그날, 그곳에서","author":"이경희 지음","publisher":"안전가옥","price":11700,"form":"국내도서","group":"소설","sub":"한국 SF","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/26271/17/cover200/k122738689_1.jpg"},{"id":"bc19","cat":"book","shelf":"cart","title":"천 개의 파랑","author":"천선란 지음","publisher":"허블","price":15300,"form":"국내도서","group":"소설","sub":"한국 SF","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/24895/69/cover200/k882632470_2.jpg"},{"id":"bc20","cat":"book","shelf":"cart","title":"얼마나 닮았는가","author":"김보영 지음","publisher":"아작","price":13320,"form":"국내도서","group":"소설","sub":"한국 SF","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/25365/86/cover200/k192633713_1.jpg"},{"id":"bc21","cat":"book","shelf":"cart","title":"인간 실격","author":"다자이 오사무 지음, 오유리 옮김","publisher":"문예출판사","price":7200,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36254/87/cover200/8931024835_1.jpg"},{"id":"bc22","cat":"book","shelf":"cart","title":"인간 실격","author":"다자이 오사무 지음, 유숙자 옮김","publisher":"문학과지성사","price":8100,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36254/87/cover200/8931024835_1.jpg"},{"id":"bc23","cat":"book","shelf":"cart","title":"인간 실격·사양 (모노 에디션, 알라딘 특별판)","author":"다자이 오사무 지음, 김난주 옮김","publisher":"열린책들","price":7920,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38713/31/cover200/k072137268_1.jpg"},{"id":"bc24","cat":"book","shelf":"cart","title":"달려라 메로스","author":"다자이 오사무 지음, 유숙자 옮김","publisher":"민음사","price":12600,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/29613/2/cover200/8937464039_1.jpg"},{"id":"bc25","cat":"book","shelf":"cart","title":"금각사 (무선)","author":"미시마 유키오 지음, 허호 옮김","publisher":"웅진지식하우스","price":11700,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/10741/36/cover200/890121590x_2.jpg"},{"id":"bc26","cat":"book","shelf":"cart","title":"고야산 스님.초롱불 노래 (무선)","author":"이즈미 교카 지음, 임태균 옮김","publisher":"문학동네","price":11700,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/827/60/cover200/8954613195_1.jpg"},{"id":"bc27","cat":"book","shelf":"cart","title":"카프네","author":"아베 아키코 지음, 이소담 옮김","publisher":"은행나무","price":16200,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38804/45/cover200/k402137884_1.jpg"},{"id":"bc28","cat":"book","shelf":"cart","title":"눈 속의 에튀드","author":"다와다 요코 지음, 최윤영 옮김","publisher":"현대문학","price":15750,"form":"국내도서","group":"소설","sub":"일본 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/24550/10/cover200/8972759732_1.jpg"},{"id":"bc29","cat":"book","shelf":"cart","title":"토니오 크뢰거","author":"토마스 만 지음, 박은결 옮김","publisher":"위즈덤하우스","price":13050,"form":"국내도서","group":"소설","sub":"독일 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40541/36/cover200/k082131824_2.jpg"},{"id":"bc30","cat":"book","shelf":"cart","title":"키 작은 프리데만 씨","author":"토마스 만 지음, 안삼환 옮김","publisher":"민음사","price":7020,"form":"국내도서","group":"소설","sub":"독일 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/9789/99/cover200/893742908x_1.jpg"},{"id":"bc31","cat":"book","shelf":"cart","title":"토성의 고리","author":"W. G. 제발트 지음, 이재영 옮김","publisher":"창비","price":18000,"form":"국내도서","group":"소설","sub":"독일 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/18740/29/cover200/8936476963_1.jpg"},{"id":"bc32","cat":"book","shelf":"cart","title":"젊은 베르터의 고뇌·노벨레","author":"요한 볼프강 폰 괴테 지음, 홍성광 옮김","publisher":"연암서가","price":11700,"form":"국내도서","group":"소설","sub":"독일 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/29014/60/cover200/k082836527_1.jpg"},{"id":"bc33","cat":"book","shelf":"cart","title":"이방인","author":"알베르 카뮈 지음, 김화영 옮김","publisher":"책세상","price":10800,"form":"국내도서","group":"소설","sub":"프랑스 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39029/35/cover200/k282137744_2.jpg"},{"id":"bc34","cat":"book","shelf":"cart","title":"뫼르소, 살인 사건","author":"카멜 다우드 지음, 조현실 옮김","publisher":"문예출판사","price":15120,"form":"국내도서","group":"소설","sub":"프랑스 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/10116/69/cover200/893101029x_2.jpg"},{"id":"bc35","cat":"book","shelf":"cart","title":"후리","author":"카멜 다우드 지음, 류재화 옮김","publisher":"민음사","price":18000,"form":"국내도서","group":"소설","sub":"프랑스 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37906/47/cover200/8937448637_1.jpg"},{"id":"bc36","cat":"book","shelf":"cart","title":"재즈","author":"토니 모리슨 지음, 최인자 옮김","publisher":"문학동네","price":15120,"form":"국내도서","group":"소설","sub":"영미 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/5139/79/cover200/8954634109_1.jpg"},{"id":"bc37","cat":"book","shelf":"cart","title":"가장 파란 눈","author":"토니 모리슨 지음, 정소영 옮김","publisher":"문학동네","price":13500,"form":"국내도서","group":"소설","sub":"영미 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/34369/47/cover200/k852932100_1.jpg"},{"id":"bc38","cat":"book","shelf":"cart","title":"빌러비드 (무선)","author":"토니 모리슨 지음, 최인자 옮김","publisher":"문학동네","price":15300,"form":"국내도서","group":"소설","sub":"영미 소설","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/3890/33/cover200/s8954624391_1.jpg"},{"id":"bc39","cat":"book","shelf":"cart","title":"빨강의 자서전","author":"앤 카슨 지음, 민승남 옮김","publisher":"한겨레출판","price":13500,"form":"국내도서","group":"소설","sub":"외국 SF 및 다국적 세계문학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/35311/8/cover200/k702035271_2.jpg"},{"id":"bc40","cat":"book","shelf":"cart","title":"안개","author":"미겔 데 우나무노 지음, 조민현 옮김","publisher":"민음사","price":12600,"form":"국내도서","group":"소설","sub":"외국 SF 및 다국적 세계문학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/57/1/cover200/8937461218_2.jpg"},{"id":"bc41","cat":"book","shelf":"cart","title":"아이는 왜 폴렌타 속에서 끓는가","author":"아글라야 페터라니 지음, 배수아 옮김","publisher":"워크룸프레스","price":13500,"form":"국내도서","group":"소설","sub":"외국 SF 및 다국적 세계문학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/26934/35/cover200/k392730718_1.jpg"},{"id":"bc42","cat":"book","shelf":"cart","title":"1938 타이완 여행기","author":"양솽쯔 지음, 김이삭 옮김","publisher":"마티스블루","price":16920,"form":"국내도서","group":"소설","sub":"외국 SF 및 다국적 세계문학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37771/30/cover200/k252033568_2.jpg"},{"id":"bc43","cat":"book","shelf":"cart","title":"나는 입이 없다 그리고 나는 비명을 질러야 한다","author":"할란 엘리슨 지음, 신해경.이수현 옮김","publisher":"아작","price":13320,"form":"국내도서","group":"소설","sub":"외국 SF 및 다국적 세계문학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/11341/41/cover200/k212531291_2.jpg"},{"id":"bc44","cat":"book","shelf":"cart","title":"밤의 노트에 남은 슬픈 사람들","author":"김소형 지음","publisher":"문학과지성사","price":11700,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40476/7/cover200/8932045828_1.jpg"},{"id":"bc45","cat":"book","shelf":"cart","title":"무서운 이야기","author":"김행숙 지음","publisher":"문학과지성사","price":11700,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40094/33/cover200/8932045704_1.jpg"},{"id":"bc46","cat":"book","shelf":"cart","title":"손실 압축 알고리즘","author":"김석영 지음","publisher":"민음사","price":11700,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40546/33/cover200/8937409623_1.jpg"},{"id":"bc47","cat":"book","shelf":"cart","title":"어깨에 머리를 기대던 시절","author":"고명재 지음","publisher":"난다","price":11700,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39543/72/cover200/k902139840_1.jpg"},{"id":"bc48","cat":"book","shelf":"cart","title":"정오의 총알","author":"이수명 지음","publisher":"문학과지성사","price":10800,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38934/71/cover200/8932045151_1.jpg"},{"id":"bc49","cat":"book","shelf":"cart","title":"비신비","author":"백은선 지음","publisher":"문학과지성사","price":10800,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37687/49/cover200/8932044732_1.jpg"},{"id":"bc50","cat":"book","shelf":"cart","title":"윤곤강 시선","author":"윤곤강 지음, 김현정 엮음","publisher":"지식을만드는지식","price":18810,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":""},{"id":"bc51","cat":"book","shelf":"cart","title":"별빛 탄생","author":"허만하 지음","publisher":"문학동네","price":10800,"form":"국내도서","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36868/46/cover200/k692030507_1.jpg"},{"id":"bc52","cat":"book","shelf":"cart","title":"[중고] 빌딩과 시","author":"박소란 지음","publisher":"아침달","price":9100,"form":"온라인중고","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/34246/16/cover200/k792931551_1.jpg"},{"id":"bc53","cat":"book","shelf":"cart","title":"[중고] 한 사람의 닫힌 문","author":"박소란 지음","publisher":"창비","price":7200,"form":"온라인중고","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/17977/50/cover200/8936424297_1.jpg"},{"id":"bc54","cat":"book","shelf":"cart","title":"[중고] 내 마음을 쏟지요 쏟지요","author":"김명순 지음, 박소란 엮음","publisher":"핀드","price":13600,"form":"온라인중고","group":"시","sub":"한국 현대시","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36332/30/cover200/k242038655_2.jpg"},{"id":"bc55","cat":"book","shelf":"cart","title":"듣지 않는 자들의 공화국","author":"일리야 카민스키 지음, 박종주 옮김","publisher":"가망서사","price":17100,"form":"국내도서","group":"시","sub":"외국 시 및 시선집","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36984/87/cover200/k432030025_1.jpg"},{"id":"bc56","cat":"book","shelf":"cart","title":"[중고] 세계 여성 시인선 : 슬픔에게 언어를 주자","author":"나혜석.에밀리 디킨슨 외 지음, 공진호 엮고옮김","publisher":"아티초크","price":6900,"form":"온라인중고","group":"시","sub":"외국 시 및 시선집","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/9782/26/cover200/k982535646_1.jpg"},{"id":"bc57","cat":"book","shelf":"cart","title":"셰익스피어 전집 1 : 희극 1","author":"윌리엄 셰익스피어 지음, 최종철 옮김","publisher":"민음사","price":30600,"form":"국내도서","group":"희곡 및 공연","sub":"희곡 및 공연예술","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/3994/18/cover200/8937431211_1.jpg"},{"id":"bc58","cat":"book","shelf":"cart","title":"2023 봄 작가, 겨울 무대 희곡집","author":"이예본 외 지음","publisher":"지만지드라마","price":28800,"form":"국내도서","group":"희곡 및 공연","sub":"희곡 및 공연예술","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/32860/78/cover200/k312936013_1.jpg"},{"id":"bc59","cat":"book","shelf":"cart","title":"[중고] BBC 셰익스피어 컬렉션 (슬림케이스, 38disc)","author":"BBC 제작","publisher":"BBC","price":49000,"form":"온라인중고","group":"희곡 및 공연","sub":"희곡 및 공연예술","status":"읽고 싶은 책","memo":""},{"id":"bc60","cat":"book","shelf":"cart","title":"동물, 그러니까 나인 동물","author":"자크 데리다 지음, 문성원.최성희 옮김","publisher":"아카넷","price":19800,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37270/88/cover200/8957339930_1.jpg"},{"id":"bc61","cat":"book","shelf":"cart","title":"결혼·여름","author":"알베르 카뮈 지음, 김화영 옮김","publisher":"책세상","price":9720,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/33897/29/cover200/k012930823_3.jpg"},{"id":"bc62","cat":"book","shelf":"cart","title":"안과 겉","author":"알베르 카뮈 지음, 김화영 옮김","publisher":"책세상","price":9900,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38875/29/cover200/k602137105_2.jpg"},{"id":"bc63","cat":"book","shelf":"cart","title":"반항하는 인간","author":"알베르 카뮈 지음, 김화영 옮김","publisher":"책세상","price":20700,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39986/31/cover200/k582130839_1.jpg"},{"id":"bc64","cat":"book","shelf":"cart","title":"시지프 신화","author":"알베르 카뮈 지음, 김화영 옮김","publisher":"책세상","price":13500,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39986/46/cover200/k332130830_1.jpg"},{"id":"bc65","cat":"book","shelf":"cart","title":"자유로부터의 도피","author":"에리히 프롬 지음, 김석희 옮김","publisher":"휴머니스트","price":14400,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/25011/15/cover200/k892632723_2.jpg"},{"id":"bc66","cat":"book","shelf":"cart","title":"이 망할 세상에서 사랑이라니!","author":"딘 스페이드 지음, 송섬별 옮김","publisher":"돌고래","price":19800,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39418/16/cover200/k492139290_1.jpg"},{"id":"bc67","cat":"book","shelf":"cart","title":"위험 예찬","author":"안 뒤푸르망텔 지음, 이세진 옮김","publisher":"사람in","price":21600,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39641/30/cover200/k552130177_1.jpg"},{"id":"bc68","cat":"book","shelf":"cart","title":"타자철학","author":"서동욱 지음","publisher":"반비","price":34200,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/28582/75/cover200/k512838898_2.jpg"},{"id":"bc69","cat":"book","shelf":"cart","title":"새로운 철학 입문","author":"권영우 외 지음","publisher":"필로소픽","price":25650,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38853/51/cover200/k232137909_1.jpg"},{"id":"bc70","cat":"book","shelf":"cart","title":"윌 듀런트의 철학이야기","author":"윌 듀런트 지음, 정영목 옮김","publisher":"바다출판사","price":27000,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38750/95/cover200/k092136040_2.jpg"},{"id":"bc71","cat":"book","shelf":"cart","title":"메두사의 웃음","author":"엘렌 식수 지음, 이혜인 옮김","publisher":"마티","price":17100,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38149/20/cover200/k412135438_3.jpg"},{"id":"bc72","cat":"book","shelf":"cart","title":"철학자를 이해한다는 것은 무엇인가?","author":"페르디낭 알키에 지음, 김민호 옮김","publisher":"글항아리","price":8100,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37625/47/cover200/k432032048_1.jpg"},{"id":"bc73","cat":"book","shelf":"cart","title":"법의 힘","author":"자크 데리다 지음, 진태원 옮김","publisher":"문학과지성사","price":12600,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/50/74/cover200/893201521x_2.jpg"},{"id":"bc74","cat":"book","shelf":"cart","title":"헤테로토피아","author":"미셸 푸코 지음, 이상길 옮김","publisher":"문학과지성사","price":11700,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/33062/45/cover200/8932042411_1.jpg"},{"id":"bc75","cat":"book","shelf":"cart","title":"들뢰즈 입문","author":"김재인 지음","publisher":"필로소픽","price":19950,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38206/58/cover200/k732034815_1.jpg"},{"id":"bc76","cat":"book","shelf":"cart","title":"존재론적, 우편적","author":"아즈마 히로키 지음, 조영일 옮김","publisher":"비(도서출판b)","price":22500,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/6555/24/cover200/8991706940_1.jpg"},{"id":"bc77","cat":"book","shelf":"cart","title":"광기의 역사","author":"미셸 푸꼬 지음","publisher":"인간사랑","price":11400,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/1/39/cover200/8974185113_1.jpg"},{"id":"bc78","cat":"book","shelf":"cart","title":"금붕어의 철학 : 알튀세르, 푸코, 버틀러와 함께 어항에서 빠져나오기","author":"배세진 지음","publisher":"편않","price":27000,"form":"국내도서","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36242/65/cover200/k742038810_1.jpg"},{"id":"bc79","cat":"book","shelf":"cart","title":"시간과 타자","author":"엠마누엘 레비나스 지음, 강영안.강지하 옮김","publisher":"문예출판사","price":11200,"form":"전자책","group":"비문학","sub":"철학 / 미학 / 사상","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/33478/51/cover200/8931023472_1.jpg"},{"id":"bc80","cat":"book","shelf":"cart","title":"대혼란의 시대","author":"아미타브 고시 지음, 김홍옥 옮김","publisher":"에코리브르","price":13500,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/26940/13/cover200/8962632209_1.jpg"},{"id":"bc81","cat":"book","shelf":"cart","title":"경찰관속으로","author":"원도 지음","publisher":"이후진프레스","price":12600,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/21101/76/cover200/k692636786_1.jpg"},{"id":"bc82","cat":"book","shelf":"cart","title":"사회학으로의 초대","author":"피터 L. 버거 지음, 김광기 옮김","publisher":"문예출판사","price":15300,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/31981/50/cover200/8931023197_1.jpg"},{"id":"bc83","cat":"book","shelf":"cart","title":"하녀","author":"소영현 지음","publisher":"문학동네","price":16200,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/33534/78/cover200/8954698387_1.jpg"},{"id":"bc84","cat":"book","shelf":"cart","title":"아픔이 길이 되려면","author":"김승섭 지음","publisher":"동아시아","price":16200,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/11765/13/cover200/s132532088_1.jpg"},{"id":"bc85","cat":"book","shelf":"cart","title":"타인의 고통에 응답하는 공부","author":"김승섭 지음","publisher":"동아시아","price":19800,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/32875/45/cover200/8962625814_1.jpg"},{"id":"bc86","cat":"book","shelf":"cart","title":"인류학자처럼 생각하는 법","author":"매슈 엥글키 지음, 김재완.박영서 옮김","publisher":"오월의봄","price":23400,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38804/84/cover200/k082137885_1.jpg"},{"id":"bc87","cat":"book","shelf":"cart","title":"디아스포라 기행","author":"서경식 지음, 김혜신.최재혁 옮김","publisher":"돌베개","price":15120,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/32475/67/cover200/k082935407_1.jpg"},{"id":"bc88","cat":"book","shelf":"cart","title":"세계 끝의 버섯","author":"애나 로웬하웁트 칭 지음, 노고운 옮김","publisher":"현실문화","price":31500,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/32293/72/cover200/896564285x_1.jpg"},{"id":"bc89","cat":"book","shelf":"cart","title":"뉘른베르크, 나치와 정신과 의사","author":"잭 엘하이 지음, 채재용 옮김","publisher":"히포크라테스","price":16200,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38788/48/cover200/k322137163_1.jpg"},{"id":"bc90","cat":"book","shelf":"cart","title":"예루살렘의 아이히만 (알라딘 리커버 특별판)","author":"한나 아렌트 지음, 김선욱 옮김","publisher":"한길사","price":27000,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38803/40/cover200/8935679186_1.jpg"},{"id":"bc91","cat":"book","shelf":"cart","title":"젠더 스터디","author":"캐서린 R. 스팀슨 외 엮음, 김보명 외 옮김","publisher":"후마니타스","price":37800,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/33743/46/cover200/8964374479_1.jpg"},{"id":"bc92","cat":"book","shelf":"cart","title":"사람, 장소, 환대","author":"김현경 지음","publisher":"문학과지성사","price":14400,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/5606/62/cover200/8932027269_3.jpg"},{"id":"bc93","cat":"book","shelf":"cart","title":"말이 칼이 될 때","author":"홍성수 지음","publisher":"어크로스","price":16020,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/12783/0/cover200/s762131706_1.jpg"},{"id":"bc94","cat":"book","shelf":"cart","title":"차별하지 않는다는 착각","author":"홍성수 지음","publisher":"어크로스","price":16920,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37496/69/cover200/k982032616_1.jpg"},{"id":"bc95","cat":"book","shelf":"cart","title":"길 하나 건너면 벼랑 끝","author":"봄날 지음","publisher":"반비","price":16200,"form":"국내도서","group":"비문학","sub":"사회과학 / 인류학 / 젠더 / 사회이슈","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/21934/76/cover200/k132636406_1.jpg"},{"id":"bc96","cat":"book","shelf":"cart","title":"최인훈의 아시아","author":"장문석 지음","publisher":"틈새의시간","price":27000,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36117/3/cover200/k162038160_1.jpg"},{"id":"bc97","cat":"book","shelf":"cart","title":"내러티브","author":"에이미 존스 지음, 안지아 옮김","publisher":"드루","price":16920,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40279/6/cover200/k002131483_1.jpg"},{"id":"bc98","cat":"book","shelf":"cart","title":"소설 그렇게 쓰는 거 아닌데","author":"샌드라 뉴먼.하워드 미텔마크 지음, 정아영 옮김","publisher":"날(도서출판)","price":21600,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40025/86/cover200/k752130433_2.jpg"},{"id":"bc99","cat":"book","shelf":"cart","title":"질문하는 SF","author":"최기숙 지음","publisher":"현실문화","price":19800,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/40104/7/cover200/8965643236_1.jpg"},{"id":"bc100","cat":"book","shelf":"cart","title":"플롯","author":"에이미 존스 지음, 안지아 옮김","publisher":"드루","price":15300,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/34361/17/cover200/k102932902_1.jpg"},{"id":"bc101","cat":"book","shelf":"cart","title":"완전히 새로운 인문학 글쓰기","author":"아베 고다이 지음, 지비원 옮김","publisher":"다다서재","price":16200,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/39842/27/cover200/k162130117_1.jpg"},{"id":"bc102","cat":"book","shelf":"cart","title":"비평포럼","author":"소영현 외 지음","publisher":"문학과지성사","price":23400,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37428/25/cover200/8932044643_1.jpg"},{"id":"bc103","cat":"book","shelf":"cart","title":"마녀의 독서, 광녀의 춤","author":"김경연 외 지음","publisher":"오월의봄","price":17100,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38852/78/cover200/k862137803_1.jpg"},{"id":"bc104","cat":"book","shelf":"cart","title":"오직 쓰기 위하여","author":"천쉐 지음, 조은 옮김","publisher":"글항아리","price":13500,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/34573/47/cover200/k082933360_1.jpg"},{"id":"bc105","cat":"book","shelf":"cart","title":"[세트] 동시대 문학사 1~4 세트 - 전4권","author":"황종연 외 지음","publisher":"문학과지성사","price":60480,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":""},{"id":"bc106","cat":"book","shelf":"cart","title":"해석에 반하여","author":"수전 손택 지음, 홍한별 옮김","publisher":"윌북","price":19800,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37633/95/cover200/k962032248_2.jpg"},{"id":"bc107","cat":"book","shelf":"cart","title":"문장강화 (리커버 특별판. 양장)","author":"이태준 지음, 임형택 해제","publisher":"창비","price":12600,"form":"국내도서","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/9523/50/cover200/8936473093_2.jpg"},{"id":"bc108","cat":"book","shelf":"cart","title":"플롯","author":"에이미 존스 지음, 안지아 옮김","publisher":"드루","price":11900,"form":"전자책","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/34361/17/cover200/k102932902_1.jpg"},{"id":"bc109","cat":"book","shelf":"cart","title":"[중고] 윤곤강 전집 : 비평","author":"윤곤강 지음, 박주택 엮음","publisher":"소명출판","price":14600,"form":"온라인중고","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/32785/84/cover200/k352936492_1.jpg"},{"id":"bc110","cat":"book","shelf":"cart","title":"[중고] 윤곤강 전집 : 비평","author":"윤곤강 지음, 박주택 엮음","publisher":"소명출판","price":12000,"form":"온라인중고","group":"비문학","sub":"글쓰기 / 작법 / 문학비평","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/32785/84/cover200/k352936492_1.jpg"},{"id":"bc111","cat":"book","shelf":"cart","title":"헌법의 탄생","author":"차병직 지음","publisher":"바다출판사","price":25200,"form":"국내도서","group":"비문학","sub":"법학 / 헌법 / 법철학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/35434/88/cover200/k682035839_1.jpg"},{"id":"bc112","cat":"book","shelf":"cart","title":"노동법 (임종률)","author":"임종률.김홍영 지음","publisher":"박영사","price":49000,"form":"국내도서","group":"비문학","sub":"법학 / 헌법 / 법철학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/38750/92/cover200/k392136049_1.jpg"},{"id":"bc113","cat":"book","shelf":"cart","title":"헌법의 시간들","author":"이준일 지음","publisher":"고려대학교출판문화원","price":24700,"form":"국내도서","group":"비문학","sub":"법학 / 헌법 / 법철학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36170/94/cover200/k122038194_1.jpg"},{"id":"bc114","cat":"book","shelf":"cart","title":"한국법제사","author":"박병호 지음","publisher":"민속원","price":29000,"form":"국내도서","group":"비문학","sub":"법학 / 헌법 / 법철학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/1598/69/cover200/892850239x_1.jpg"},{"id":"bc115","cat":"book","shelf":"cart","title":"지구법 강좌","author":"박태현 외 지음, 박태현 엮음","publisher":"문학과지성사","price":18900,"form":"국내도서","group":"비문학","sub":"법학 / 헌법 / 법철학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37679/43/cover200/8932044759_1.jpg"},{"id":"bc116","cat":"book","shelf":"cart","title":"현대 법철학과 법이론 입문","author":"윤재왕 옮김","publisher":"박영사","price":42000,"form":"국내도서","group":"비문학","sub":"법학 / 헌법 / 법철학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/34849/41/cover200/k492933743_2.jpg"},{"id":"bc117","cat":"book","shelf":"cart","title":"어차피 우린 죽고 이딴 거 다 의미 없겠지만","author":"사치 코울 지음, 작은미미.박원희 옮김","publisher":"문학과지성사","price":12600,"form":"국내도서","group":"비문학","sub":"에세이 / 인문교양 / 과학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/28270/92/cover200/8932039070_1.jpg"},{"id":"bc118","cat":"book","shelf":"cart","title":"시와 진실","author":"요한 볼프강 폰 괴테 지음, 최은희 옮김","publisher":"동서문화동판(동서문화사)","price":22500,"form":"국내도서","group":"비문학","sub":"에세이 / 인문교양 / 과학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/10095/97/cover200/8949716186_2.jpg"},{"id":"bc119","cat":"book","shelf":"cart","title":"놀이터의 유령","author":"이기성 지음","publisher":"문학과지성사","price":13500,"form":"국내도서","group":"비문학","sub":"에세이 / 인문교양 / 과학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36869/22/cover200/8932044260_1.jpg"},{"id":"bc120","cat":"book","shelf":"cart","title":"자연이 법을 어길 때","author":"메리 로치 지음, 이한음 엮음","publisher":"열린책들","price":19800,"form":"국내도서","group":"비문학","sub":"에세이 / 인문교양 / 과학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/37770/85/cover200/8932925461_1.jpg"},{"id":"bc121","cat":"book","shelf":"cart","title":"[중고] 놀이터의 유령","author":"이기성 지음","publisher":"문학과지성사","price":9700,"form":"온라인중고","group":"비문학","sub":"에세이 / 인문교양 / 과학","status":"읽고 싶은 책","memo":"","image":"https://image.aladin.co.kr/product/36869/22/cover200/8932044260_1.jpg"},{"id":"bp1","cat":"book","shelf":"bought","title":"이름을 부르면 내가 죽어요","extra":"외","author":"","publisher":"","price":22500,"form":"택배","qty":"2권(2종)","order":"001-A413330188","date":"2026-10-31","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40560/80/cover200/8932045844_1.jpg"},{"id":"bp2","cat":"book","shelf":"bought","title":"[중고] 헤어질 결심 각본","extra":"","author":"","publisher":"","price":6900,"form":"회원직배송","qty":"1권(1종)","order":"001-A794990678","date":"2026-10-17","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29820/33/cover200/s572830936_3.jpg"},{"id":"bp3","cat":"book","shelf":"bought","title":"[중고] 밤에 레몬을 하나 먹으면","extra":"외","author":"","publisher":"","price":52300,"form":"이수역점 방문구매","qty":"7권(7종)","order":"001-A792680958","date":"2026-09-28","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37969/63/cover200/k712034861_1.jpg"},{"id":"bp4","cat":"book","shelf":"bought","title":"[eBook] 장르의 해부학","extra":"외","author":"","publisher":"","price":51000,"form":"전자책","qty":"2권(2종)","order":"001-A660750658","date":"2026-09-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37459/76/cover200/k262032817_1.jpg"},{"id":"bp5","cat":"book","shelf":"bought","title":"[eBook] 개인적 기억","extra":"","author":"","publisher":"","price":9600,"form":"전자책","qty":"1권(1종)","order":"001-A908860658","date":"2026-09-23","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31561/50/cover200/k892832854_1.jpg"},{"id":"bp6","cat":"book","shelf":"bought","title":"조각 공원","extra":"","author":"","publisher":"","price":13300,"form":"택배","qty":"1권(1종)","order":"001-A380370848","date":"2026-09-10","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40172/60/cover200/k622131770_1.jpg"},{"id":"bp7","cat":"book","shelf":"bought","title":"절창 (20만 부 기념 화이트 에디션)","extra":"","author":"","publisher":"","price":18000,"form":"택배","qty":"1권(1종)","order":"001-A670670738","date":"2026-08-28","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40110/44/cover200/k712130552_3.jpg"},{"id":"bp8","cat":"book","shelf":"bought","title":"[중고] 오발탄","extra":"외","author":"","publisher":"","price":12400,"form":"건대점 방문구매","qty":"2권(2종)","order":"001-A419879428","date":"2026-08-14","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/94/39/cover200/893201793x_1.jpg"},{"id":"bp9","cat":"book","shelf":"bought","title":"베갯머리 서책 (마쿠라노소시)","extra":"","author":"","publisher":"","price":34960,"form":"택배","qty":"1권(1종)","order":"001-A855949128","date":"2026-08-08","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/7174/48/cover200/k262434294_2.jpg"},{"id":"bp10","cat":"book","shelf":"bought","title":"[중고] 너무 보고플 땐 눈이 온다","extra":"외","author":"","publisher":"","price":24900,"form":"구로디지털단지역점 배송","qty":"3권(3종)","order":"001-A914999128","date":"2026-08-06","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31790/64/cover200/k912833110_2.jpg"},{"id":"bp11","cat":"book","shelf":"bought","title":"[eBook] 신화와 의미","extra":"","author":"","publisher":"","price":25600,"form":"전자책","qty":"1권(1종)","order":"001-A254889418","date":"2026-07-23","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/38932/48/cover200/k902137910_2.jpg"},{"id":"bp12","cat":"book","shelf":"bought","title":"불안의 책 (먼슬리 클래식)","extra":"","author":"","publisher":"","price":16200,"form":"택배","qty":"1권(1종)","order":"001-A083749098","date":"2026-06-24","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/1684/12/cover200/8972915238_1.jpg"},{"id":"bp13","cat":"book","shelf":"bought","title":"어깨에 머리를 기대던 시절","extra":"외","author":"","publisher":"","price":22500,"form":"택배","qty":"2권(2종)","order":"001-A010589588","date":"2026-06-20","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/39543/72/cover200/k902139840_1.jpg"},{"id":"bp14","cat":"book","shelf":"bought","title":"[중고] 요동치는 가족","extra":"","author":"","publisher":"","price":12050,"form":"회원직배송","qty":"1권(1종)","order":"001-A716099088","date":"2026-06-13","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31609/56/cover200/k172833771_1.jpg"},{"id":"bp15","cat":"book","shelf":"bought","title":"[중고] 저기 소리없이 한 점 꽃잎이 지고","extra":"","author":"","publisher":"","price":7000,"form":"회원직배송","qty":"1권(1종)","order":"001-A201859078","date":"2026-06-05","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/16628/0/cover200/8932034613_1.jpg"},{"id":"bp16","cat":"book","shelf":"bought","title":"만일 그대가 나보다 먼저 간다면","extra":"외","author":"","publisher":"","price":19800,"form":"택배","qty":"2권(2종)","order":"001-A761029978","date":"2026-06-05","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/39449/38/cover200/k912139593_1.jpg"},{"id":"bp17","cat":"book","shelf":"bought","title":"[중고] 위대한 개츠비 (무선)","extra":"외","author":"","publisher":"","price":14300,"form":"대학로 방문구매","qty":"3권(3종)","order":"001-A256899378","date":"2026-05-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/41/79/cover200/s582934787_1.jpg"},{"id":"bp18","cat":"book","shelf":"bought","title":"타우마제인 Thaumazein Vol.9","extra":"","author":"","publisher":"","price":16200,"form":"택배","qty":"1권(1종)","order":"001-A806959178","date":"2026-05-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/39094/94/cover200/896732331x_1.jpg"},{"id":"bp19","cat":"book","shelf":"bought","title":"[중고] 어떤 사랑의 무대","extra":"외","author":"","publisher":"","price":28400,"form":"합정점 배송","qty":"3권(3종)","order":"001-A665979978","date":"2026-05-27","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37877/16/cover200/8937446294_1.jpg"},{"id":"bp20","cat":"book","shelf":"bought","title":"[eBook] 무진기행","extra":"","author":"","publisher":"","price":11600,"form":"전자책","qty":"1권(1종)","order":"001-A207969068","date":"2026-05-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/96/57/cover200/8937461498_2.jpg"},{"id":"bp21","cat":"book","shelf":"bought","title":"[중고] 나는 어떻게 글을 쓰는가","extra":"외","author":"","publisher":"","price":31500,"form":"이수역점 방문구매","qty":"6권(6종)","order":"001-A159569058","date":"2026-05-03","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/24131/97/cover200/k272639635_2.jpg"},{"id":"bp22","cat":"book","shelf":"bought","title":"[eBook] 프로젝트 헤일메리","extra":"","author":"","publisher":"","price":13860,"form":"전자책","qty":"1권(1종)","order":"001-A744269938","date":"2026-03-30","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/27045/43/cover200/k692135851_3.jpg"},{"id":"bp23","cat":"book","shelf":"bought","title":"밀란 쿤데라 전집 - 전15권","extra":"","author":"","publisher":"","price":162000,"form":"택배","qty":"1권(1종)","order":"001-A951138428","date":"2026-03-26","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp24","cat":"book","shelf":"bought","title":"[중고] 한 줄기 빛이 비스듬히","extra":"외","author":"","publisher":"","price":10200,"form":"잠실롯데월드타워점 방문구매","qty":"3권(3종)","order":"001-A712358018","date":"2026-03-15","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp25","cat":"book","shelf":"bought","title":"생 마음","extra":"외","author":"","publisher":"","price":20700,"form":"택배","qty":"2권(2종)","order":"001-A687388818","date":"2026-03-10","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/38793/17/cover200/k642137264_1.jpg"},{"id":"bp26","cat":"book","shelf":"bought","title":"환대에 대하여","extra":"외","author":"","publisher":"","price":35750,"form":"택배","qty":"2권(2종)","order":"001-A904598998","date":"2026-02-13","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31891/64/cover200/k452833634_2.jpg"},{"id":"bp27","cat":"book","shelf":"bought","title":"[중고] 감자의 멜랑콜리","extra":"","author":"","publisher":"","price":7400,"form":"종로점 방문구매","qty":"1권(1종)","order":"001-A839158988","date":"2026-02-06","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36099/35/cover200/8936425153_1.jpg"},{"id":"bp28","cat":"book","shelf":"bought","title":"[eBook] ＃경찰이라니_가해자인줄","extra":"","author":"","publisher":"","price":0,"form":"전자책","qty":"1권(1종)","order":"001-A948668288","date":"2026-02-05","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp29","cat":"book","shelf":"bought","title":"책 대 담배","extra":"외","author":"","publisher":"","price":20520,"form":"택배","qty":"2권(2종)","order":"001-A246618188","date":"2026-02-03","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/23510/62/cover200/8937429659_1.jpg"},{"id":"bp30","cat":"book","shelf":"bought","title":"[중고] 광장 이후","extra":"외","author":"","publisher":"","price":26600,"form":"대학로 방문구매","qty":"3권(3종)","order":"001-A034408288","date":"2026-02-01","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36489/93/cover200/k422039111_1.jpg"},{"id":"bp31","cat":"book","shelf":"bought","title":"영원이 미래를 돌아본다","extra":"외","author":"","publisher":"","price":28800,"form":"택배","qty":"3권(3종)","order":"001-A658548468","date":"2026-01-11","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/38333/67/cover200/k882034548_1.jpg"},{"id":"bp32","cat":"book","shelf":"bought","title":"현대사상 입문","extra":"","author":"","publisher":"","price":21600,"form":"택배","qty":"1권(1종)","order":"001-A325158868","date":"2026-01-06","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31751/62/cover200/8950927403_1.jpg"},{"id":"bp33","cat":"book","shelf":"bought","title":"윤동주, 달을 쏘다","extra":"외","author":"","publisher":"","price":43200,"form":"택배","qty":"3권(2종)","order":"001-A070168948","date":"2025-12-19","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36237/77/cover200/k142038712_1.jpg"},{"id":"bp34","cat":"book","shelf":"bought","title":"[eBook] 나는 왜 SF를 쓰는가","extra":"","author":"","publisher":"","price":11900,"form":"전자책","qty":"1권(1종)","order":"001-A220888238","date":"2025-12-06","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/27435/91/cover200/8937413264_1.jpg"},{"id":"bp35","cat":"book","shelf":"bought","title":"[중고] 오정희 컬렉션 세트 - 전5권","extra":"","author":"","publisher":"","price":40300,"form":"울산점 배송","qty":"1권(1종)","order":"001-A557308938","date":"2025-12-01","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp36","cat":"book","shelf":"bought","title":"나나 올리브에게","extra":"외","author":"","publisher":"","price":29500,"form":"택배","qty":"2권(2종)","order":"001-A997177528","date":"2025-11-19","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37789/25/cover200/k392033660_1.jpg"},{"id":"bp37","cat":"book","shelf":"bought","title":"빨래","extra":"외","author":"","publisher":"","price":26100,"form":"택배","qty":"2권(2종)","order":"001-A424327828","date":"2025-11-14","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37702/0/cover200/k502033064_1.jpg"},{"id":"bp38","cat":"book","shelf":"bought","title":"[eBook] 그녀는 나의 발가락을 보았을까","extra":"","author":"","publisher":"","price":6000,"form":"전자책","qty":"1권(1종)","order":"001-A081317418","date":"2025-11-10","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp39","cat":"book","shelf":"bought","title":"슬로우 슬로우","extra":"외","author":"","publisher":"","price":23400,"form":"택배","qty":"2권(2종)","order":"001-A238267318","date":"2025-11-06","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37112/68/cover200/k382030354_1.jpg"},{"id":"bp40","cat":"book","shelf":"bought","title":"[eBook] 천왕성에 집 한 채","extra":"","author":"","publisher":"","price":16500,"form":"전자책","qty":"1권(1종)","order":"001-A779427808","date":"2025-10-23","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37458/44/cover200/k332032813_1.jpg"},{"id":"bp41","cat":"book","shelf":"bought","title":"[eBook] SF는 어떻게 여자들의 놀이터가 되었나","extra":"외","author":"","publisher":"","price":48100,"form":"전자책","qty":"4권(4종)","order":"001-A003357508","date":"2025-10-16","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/24377/98/cover200/k792630311_1.jpg"},{"id":"bp42","cat":"book","shelf":"bought","title":"[eBook] 달은 무자비한 밤의 여왕 - 환상문학전집 10","extra":"","author":"","publisher":"","price":11400,"form":"전자책","qty":"1권(1종)","order":"001-A283617308","date":"2025-10-15","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp43","cat":"book","shelf":"bought","title":"[eBook] 천마","extra":"","author":"","publisher":"","price":3000,"form":"전자책","qty":"1권(1종)","order":"001-A727157498","date":"2025-10-08","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40429/33/cover200/k092131204_1.jpg"},{"id":"bp44","cat":"book","shelf":"bought","title":"[eBook] 시녀 이야기 - 환상문학전집 04","extra":"","author":"","publisher":"","price":10500,"form":"전자책","qty":"1권(1종)","order":"001-A047157198","date":"2025-10-07","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp45","cat":"book","shelf":"bought","title":"[eBook] 뉴로맨서 - 환상문학전집 21","extra":"","author":"","publisher":"","price":9450,"form":"전자책","qty":"1권(1종)","order":"001-A538987288","date":"2025-09-24","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp46","cat":"book","shelf":"bought","title":"[eBook] 장마","extra":"","author":"","publisher":"","price":1000,"form":"전자책","qty":"1권(1종)","order":"001-A072687978","date":"2025-09-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/59/28/cover200/8937420074_2.jpg"},{"id":"bp47","cat":"book","shelf":"bought","title":"[eBook] 달려라, 아비(개정판)","extra":"","author":"","publisher":"","price":9800,"form":"전자책","qty":"1권(1종)","order":"001-A641687778","date":"2025-09-13","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp48","cat":"book","shelf":"bought","title":"[eBook] 호의에 대하여","extra":"","author":"","publisher":"","price":11700,"form":"전자책","qty":"1권(1종)","order":"001-A676647468","date":"2025-08-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37061/58/cover200/s722033655_1.jpg"},{"id":"bp49","cat":"book","shelf":"bought","title":"김혜순 죽음 트릴로지","extra":"","author":"","publisher":"","price":32900,"form":"택배","qty":"1권(1종)","order":"001-A512136618","date":"2025-07-03","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36705/4/cover200/8932044082_1.jpg"},{"id":"bp50","cat":"book","shelf":"bought","title":"싯다르타 (양장)","extra":"외","author":"","publisher":"","price":71820,"form":"택배","qty":"5권(5종)","order":"001-A892756508","date":"2025-06-20","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36585/91/cover200/8937428857_1.jpg"},{"id":"bp51","cat":"book","shelf":"bought","title":"[중고] 인간 혐오자","extra":"외","author":"","publisher":"","price":14200,"form":"이수역점 방문구매","qty":"3권(3종)","order":"001-A482446308","date":"2025-06-19","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/19688/63/cover200/k372635835_1.jpg"},{"id":"bp52","cat":"book","shelf":"bought","title":"[중고] [세트] 한국 시집 초간본 100주년 기념판 하늘+바람 세트 전2권","extra":"","author":"","publisher":"","price":70000,"form":"회원직배송","qty":"2권 세트","order":"001-A736936508","date":"2025-06-12","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29207/84/cover200/8932922101_1.jpg"},{"id":"bp53","cat":"book","shelf":"bought","title":"[중고] 인생","extra":"외","author":"","publisher":"","price":26300,"form":"건대점 배송","qty":"3권(3종)","order":"001-A975786208","date":"2025-06-10","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40560/9/cover200/k702131123_2.jpg"},{"id":"bp54","cat":"book","shelf":"bought","title":"법 앞에서","extra":"외","author":"","publisher":"","price":20330,"form":"택배","qty":"3권(3종)","order":"001-A574006408","date":"2025-06-10","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/11289/49/cover200/8937429241_1.jpg"},{"id":"bp55","cat":"book","shelf":"bought","title":"[eBook] 골짜기에 잠든 자","extra":"","author":"","publisher":"","price":9100,"form":"전자책","qty":"1권(1종)","order":"001-A951966898","date":"2025-06-04","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/20006/69/cover200/8954657168_1.jpg"},{"id":"bp56","cat":"book","shelf":"bought","title":"도화 아래 잠들다","extra":"외","author":"","publisher":"","price":19170,"form":"택배","qty":"2권(2종)","order":"001-A156036998","date":"2025-05-28","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/43/93/cover200/8936422294_1.jpg"},{"id":"bp57","cat":"book","shelf":"bought","title":"클래식 왜 안 좋아하세요?","extra":"외","author":"","publisher":"","price":25830,"form":"택배","qty":"2권(2종)","order":"001-A794746598","date":"2025-05-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36304/48/cover200/k542038448_1.jpg"},{"id":"bp58","cat":"book","shelf":"bought","title":"[중고] 긴긴밤","extra":"외","author":"","publisher":"","price":17400,"form":"건대점 방문구매","qty":"3권(3종)","order":"001-A914096368","date":"2025-04-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26302/71/cover200/8954677150_1.jpg"},{"id":"bp59","cat":"book","shelf":"bought","title":"[중고] 벨 자","extra":"외","author":"","publisher":"","price":19900,"form":"이수역점 방문구매","qty":"4권(4종)","order":"001-A530366358","date":"2025-04-10","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp60","cat":"book","shelf":"bought","title":"여장남자 시코쿠","extra":"외","author":"","publisher":"","price":41400,"form":"택배","qty":"4권(4종)","order":"001-A229956458","date":"2025-04-09","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/2155/33/cover200/8932023646_2.jpg"},{"id":"bp61","cat":"book","shelf":"bought","title":"[eBook] 표본실의 청개구리","extra":"","author":"","publisher":"","price":500,"form":"전자책","qty":"1권(1종)","order":"001-A492346438","date":"2025-03-20","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26/34/cover200/8973811738_1.jpg"},{"id":"bp62","cat":"book","shelf":"bought","title":"노동의 새벽","extra":"외","author":"","publisher":"","price":19800,"form":"택배","qty":"2권(2종)","order":"001-A492066338","date":"2025-03-19","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/5050/55/cover200/s772930927_1.jpg"},{"id":"bp63","cat":"book","shelf":"bought","title":"시적 정의","extra":"외","author":"","publisher":"","price":38700,"form":"택배","qty":"3권(3종)","order":"001-A846476938","date":"2025-03-13","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/35113/63/cover200/8958209003_1.jpg"},{"id":"bp64","cat":"book","shelf":"bought","title":"[eBook] 헌법에 없는 언어","extra":"외","author":"","publisher":"","price":45100,"form":"전자책","qty":"4권(4종)","order":"001-A041335318","date":"2025-02-28","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26248/44/cover200/k962738481_1.jpg"},{"id":"bp65","cat":"book","shelf":"bought","title":"오래된 어둠과 하우스의 빛","extra":"외","author":"","publisher":"","price":22500,"form":"택배","qty":"2권(2종)","order":"001-A059215318","date":"2025-02-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/35897/74/cover200/k952037088_1.jpg"},{"id":"bp66","cat":"book","shelf":"bought","title":"[중고] 콜리플라워","extra":"외","author":"","publisher":"","price":22700,"form":"건대점 방문구매","qty":"4권(4종)","order":"001-A407865098","date":"2025-02-02","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/34055/34/cover200/893642503x_1.jpg"},{"id":"bp67","cat":"book","shelf":"bought","title":"심장보다 단단한 토마토 한 알","extra":"외","author":"","publisher":"","price":20700,"form":"택배","qty":"2권(2종)","order":"001-A543655488","date":"2025-01-16","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/35590/4/cover200/k282036896_1.jpg"},{"id":"bp68","cat":"book","shelf":"bought","title":"[중고] 세계문학전집","extra":"외","author":"","publisher":"","price":25200,"form":"수유점 배송","qty":"5권(5종)","order":"001-A451415668","date":"2025-01-03","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp69","cat":"book","shelf":"bought","title":"사랑하는 일이 인간의 일이라면","extra":"외","author":"","publisher":"","price":22500,"form":"택배","qty":"2권(2종)","order":"001-A574465058","date":"2024-12-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/33486/34/cover200/k802938253_1.jpg"},{"id":"bp70","cat":"book","shelf":"bought","title":"사랑하는 일이 인간의 일이라면","extra":"외","author":"","publisher":"","price":60800,"form":"택배","qty":"5권(5종)","order":"001-A399785438","date":"2024-11-27","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/33486/34/cover200/k802938253_1.jpg"},{"id":"bp71","cat":"book","shelf":"bought","title":"초현실주의 선언","extra":"외","author":"","publisher":"","price":54900,"form":"택배","qty":"2권(2종)","order":"001-A809605438","date":"2024-11-27","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/1502/74/cover200/8990641705_1.jpg"},{"id":"bp72","cat":"book","shelf":"bought","title":"[세트] 레 망다랭 1~2 - 전2권","extra":"","author":"","publisher":"","price":43200,"form":"택배","qty":"2권 세트","order":"001-A978264028","date":"2024-11-13","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp73","cat":"book","shelf":"bought","title":"흰","extra":"","author":"","publisher":"","price":13050,"form":"추가발송(알라딘부담)","qty":"1권(1종)","order":"001-A405784818","date":"2024-10-28","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/36099/46/cover200/k252038964_2.jpg"},{"id":"bp74","cat":"book","shelf":"bought","title":"채식주의자 (리마스터판)","extra":"외","author":"","publisher":"","price":51750,"form":"추가발송(알라딘부담)","qty":"4권(4종)","order":"001-A501604108","date":"2024-10-23","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29137/2/cover200/8936434594_2.jpg"},{"id":"bp75","cat":"book","shelf":"bought","title":"작별하지 않는다","extra":"외","author":"","publisher":"","price":66870,"form":"추가발송(알라딘부담)","qty":"5권(5종)","order":"001-A820564108","date":"2024-10-22","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/27877/5/cover200/8954682154_3.jpg"},{"id":"bp76","cat":"book","shelf":"bought","title":"서랍에 저녁을 넣어 두었다","extra":"외","author":"","publisher":"","price":123670,"form":"택배","qty":"4권(4종)","order":"001-A590234108","date":"2024-10-22","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/3335/59/cover200/8932024634_3.jpg"},{"id":"bp77","cat":"book","shelf":"bought","title":"[중고] 파리의 시인 보들레르","extra":"","author":"","publisher":"","price":9000,"form":"회원직배송","qty":"1권(1종)","order":"001-A254254608","date":"2024-10-16","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp78","cat":"book","shelf":"bought","title":"[eBook] 일생에 한번은 헌법을 읽어라","extra":"","author":"","publisher":"","price":15200,"form":"전자책","qty":"1권(1종)","order":"001-A667024388","date":"2024-09-27","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/34361/12/cover200/k922932902_1.jpg"},{"id":"bp79","cat":"book","shelf":"bought","title":"경의선 숲길을 걷고 있어","extra":"외","author":"","publisher":"","price":37800,"form":"택배","qty":"2권(2종)","order":"001-A755804678","date":"2024-09-11","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/34625/88/cover200/k042933485_1.jpg"},{"id":"bp80","cat":"book","shelf":"bought","title":"[eBook] 오렌지와 빵칼","extra":"","author":"","publisher":"","price":8400,"form":"전자책","qty":"1권(1종)","order":"001-A362804368","date":"2024-09-08","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/39736/20/cover200/k292130805_1.jpg"},{"id":"bp81","cat":"book","shelf":"bought","title":"현대시 창작시론","extra":"외","author":"","publisher":"","price":22300,"form":"택배","qty":"2권(2종)","order":"001-A356804268","date":"2024-09-02","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/7887/11/cover200/k082434830_1.jpg"},{"id":"bp82","cat":"book","shelf":"bought","title":"[중고] 기러기","extra":"외","author":"","publisher":"","price":35400,"form":"건대점 방문구매","qty":"6권(6종)","order":"001-A995074768","date":"2024-09-01","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/34598/19/cover200/8931023723_1.jpg"},{"id":"bp83","cat":"book","shelf":"bought","title":"[중고] 숲의 소실점을 향해","extra":"외","author":"","publisher":"","price":20600,"form":"이수역점 방문구매","qty":"3권(3종)","order":"001-A801894358","date":"2024-08-28","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/24153/19/cover200/8937408910_2.jpg"},{"id":"bp84","cat":"book","shelf":"bought","title":"시란 무엇인가","extra":"외","author":"","publisher":"","price":24300,"form":"택배","qty":"2권(2종)","order":"001-A223874958","date":"2024-08-19","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/8/73/cover200/s422531828_1.jpg"},{"id":"bp85","cat":"book","shelf":"bought","title":"[중고] 여름 상설 공연","extra":"외","author":"","publisher":"","price":21900,"form":"잠실롯데월드타워점 방문구매","qty":"4권(4종)","order":"001-A200913128","date":"2024-07-22","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/27978/75/cover200/8937409089_1.jpg"},{"id":"bp86","cat":"book","shelf":"bought","title":"천일문 핵심 Essential 500 Sentences","extra":"외","author":"","publisher":"","price":29610,"form":"택배","qty":"2권(2종)","order":"001-A863183218","date":"2024-07-02","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/28101/58/cover200/8968062315_1.jpg"},{"id":"bp87","cat":"book","shelf":"bought","title":"마음 연장","extra":"외","author":"","publisher":"","price":30600,"form":"택배","qty":"3권(3종)","order":"001-A457723088","date":"2024-05-30","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/34036/9/cover200/k142931266_1.jpg"},{"id":"bp88","cat":"book","shelf":"bought","title":"[eBook] 민법입문","extra":"","author":"","publisher":"","price":29000,"form":"전자책","qty":"1권(1종)","order":"001-A088983578","date":"2024-05-20","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/37683/74/cover200/k492032346_1.jpg"},{"id":"bp89","cat":"book","shelf":"bought","title":"[중고] 무해한 복숭아","extra":"외","author":"","publisher":"","price":28900,"form":"대학로 방문구매","qty":"5권(5종)","order":"001-A195952128","date":"2024-03-17","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31410/65/cover200/s912834104_2.jpg"},{"id":"bp90","cat":"book","shelf":"bought","title":"[eBook] 한국문학강의 (개정판)","extra":"","author":"","publisher":"","price":11200,"form":"전자책","qty":"1권(1종)","order":"001-A825612618","date":"2024-03-08","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/5106/21/cover200/8966188885_2.jpg"},{"id":"bp91","cat":"book","shelf":"bought","title":"우리가 길이라 부르는 망설임","extra":"외","author":"","publisher":"","price":33300,"form":"택배","qty":"3권(3종)","order":"001-A138082908","date":"2024-03-02","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/33375/37/cover200/8937475006_1.jpg"},{"id":"bp92","cat":"book","shelf":"bought","title":"존리의 왜 주식인가","extra":"외","author":"","publisher":"","price":32400,"form":"택배","qty":"2권(2종)","order":"001-A898522088","date":"2024-02-10","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/28779/30/cover200/8947547905_1.jpg"},{"id":"bp93","cat":"book","shelf":"bought","title":"[eBook] 불안의 서","extra":"","author":"","publisher":"","price":19600,"form":"전자책","qty":"1권(1종)","order":"001-A113222268","date":"2024-01-13","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/3921/29/cover200/899699796x_1.jpg"},{"id":"bp94","cat":"book","shelf":"bought","title":"법관은 어떻게 사고하는가 (반양장)","extra":"","author":"","publisher":"","price":34000,"form":"택배","qty":"1권(1종)","order":"001-A473202948","date":"2023-12-23","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/15159/54/cover200/8946062436_1.jpg"},{"id":"bp95","cat":"book","shelf":"bought","title":"일뤼미나시옹","extra":"외","author":"","publisher":"","price":89820,"form":"택배","qty":"3권(3종)","order":"001-A015002138","date":"2023-12-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/32807/19/cover200/8931023413_2.jpg"},{"id":"bp96","cat":"book","shelf":"bought","title":"사랑은 무한대이외다","extra":"외","author":"","publisher":"","price":21510,"form":"택배","qty":"2권(2종)","order":"001-A023941198","date":"2023-10-25","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31034/81/cover200/k612831510_1.jpg"},{"id":"bp97","cat":"book","shelf":"bought","title":"봉투","extra":"","author":"","publisher":"","price":100,"form":"이수역점 방문구매","qty":"1권(1종)","order":"001-A343731898","date":"2023-10-25","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp98","cat":"book","shelf":"bought","title":"[중고] 지금 다시, 헌법","extra":"","author":"","publisher":"","price":9800,"form":"이수역점 방문구매","qty":"1권(1종)","order":"001-A193721898","date":"2023-10-25","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29168/36/cover200/k882837471_1.jpg"},{"id":"bp99","cat":"book","shelf":"bought","title":"겨울밤 토끼 걱정","extra":"외","author":"","publisher":"","price":279900,"form":"택배","qty":"35권(35종)","order":"001-A185421278","date":"2023-10-03","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/32504/24/cover200/k302935729_1.jpg"},{"id":"bp100","cat":"book","shelf":"bought","title":"민법 판례노트","extra":"외","author":"","publisher":"","price":48710,"form":"택배","qty":"3권(3종)","order":"001-A935991258","date":"2023-09-07","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/30026/38/cover200/k342838455_2.jpg"},{"id":"bp101","cat":"book","shelf":"bought","title":"헌법학 (성낙인)","extra":"","author":"","publisher":"","price":56000,"form":"택배","qty":"1권(1종)","order":"001-A502141948","date":"2023-09-04","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/38716/83/cover200/8918916663_1.jpg"},{"id":"bp102","cat":"book","shelf":"bought","title":"멀리 가는 느낌이 좋아","extra":"외","author":"","publisher":"","price":18950,"form":"택배","qty":"2권(2종)","order":"001-A238080317","date":"2023-07-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/32028/2/cover200/8936424904_1.jpg"},{"id":"bp103","cat":"book","shelf":"bought","title":"[eBook] 선량한 차별주의자","extra":"","author":"","publisher":"","price":10500,"form":"전자책","qty":"1권(1종)","order":"001-A346520717","date":"2023-07-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/19874/76/cover200/k832035324_3.jpg"},{"id":"bp104","cat":"book","shelf":"bought","title":"[중고] 죽음의 자서전","extra":"외","author":"","publisher":"","price":10400,"form":"이수역점 방문구매","qty":"2권(2종)","order":"001-A214360917","date":"2023-07-24","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/8489/33/cover200/k562535465_3.jpg"},{"id":"bp105","cat":"book","shelf":"bought","title":"상자를 열지 않는 사람","extra":"외","author":"","publisher":"","price":34400,"form":"택배","qty":"3권(3종)","order":"001-A773010387","date":"2023-06-19","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/31862/50/cover200/8954693148_2.jpg"},{"id":"bp106","cat":"book","shelf":"bought","title":"커밍 업 쇼트","extra":"","author":"","publisher":"","price":16200,"form":"택배","qty":"1권(1종)","order":"001-A672110157","date":"2023-05-22","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/25310/14/cover200/k512633307_1.jpg"},{"id":"bp107","cat":"book","shelf":"bought","title":"어느 날의 나","extra":"외","author":"","publisher":"","price":50400,"form":"택배","qty":"5권(5종)","order":"001-A851130137","date":"2023-04-27","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/30068/58/cover200/k052839663_1.jpg"},{"id":"bp108","cat":"book","shelf":"bought","title":"[중고] 쓰는 기분","extra":"","author":"","publisher":"","price":8300,"form":"이수역점 방문구매","qty":"1권(1종)","order":"001-A247599677","date":"2023-02-22","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/27587/62/cover200/8932321531_1.jpg"},{"id":"bp109","cat":"book","shelf":"bought","title":"[중고] 모순","extra":"외","author":"","publisher":"","price":17400,"form":"이수역점 방문구매","qty":"2권(2종)","order":"001-A953209477","date":"2023-02-18","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/2584/37/cover200/s392131969_1.jpg"},{"id":"bp110","cat":"book","shelf":"bought","title":"아무것도 안 하는 애인","extra":"외","author":"","publisher":"","price":18900,"form":"택배","qty":"2권(2종)","order":"001-A133859167","date":"2023-02-07","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/30646/29/cover200/8932041059_1.jpg"},{"id":"bp111","cat":"book","shelf":"bought","title":"선물이 있어","extra":"","author":"","publisher":"","price":13320,"form":"선물하기","qty":"1권(1종)","order":"001-A973269237","date":"2023-01-08","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/30632/13/cover200/8932923027_1.jpg"},{"id":"bp112","cat":"book","shelf":"bought","title":"[eBook] 지구가 평평하다고 믿는 사람과 즐겁고 생산적인 대화를 나누는 법","extra":"","author":"","publisher":"","price":15400,"form":"전자책","qty":"1권","order":"001-A629588017","date":"2022-12-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/30498/77/cover200/k382830587_2.jpg"},{"id":"bp113","cat":"book","shelf":"bought","title":"[eBook] 유령의 마음으로","extra":"외","author":"","publisher":"","price":19600,"form":"전자책","qty":"2권(2종)","order":"001-A821457197","date":"2022-08-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29154/60/cover200/8937442698_1.jpg"},{"id":"bp114","cat":"book","shelf":"bought","title":"[eBook] 고독사 워크숍","extra":"","author":"","publisher":"","price":10500,"form":"전자책","qty":"1권(1종)","order":"001-A229147877","date":"2022-07-20","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29584/2/cover200/8937473364_1.jpg"},{"id":"bp115","cat":"book","shelf":"bought","title":"몸과 마음을 산뜻하게","extra":"외","author":"","publisher":"","price":37800,"form":"택배","qty":"4권(4종)","order":"001-A391647747","date":"2022-06-18","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/29644/29/cover200/8937409186_1.jpg"},{"id":"bp116","cat":"book","shelf":"bought","title":"[eBook] 사랑","extra":"","author":"","publisher":"","price":6930,"form":"전자책","qty":"1권(1종)","order":"001-A881387737","date":"2022-06-05","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40558/96/cover200/k512131121_1.jpg"},{"id":"bp117","cat":"book","shelf":"bought","title":"너를 혼잣말로 두지 않을게","extra":"외","author":"","publisher":"","price":24300,"form":"택배","qty":"3권(3종)","order":"001-A333906237","date":"2022-02-09","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/28764/46/cover200/k232836987_1.jpg"},{"id":"bp118","cat":"book","shelf":"bought","title":"2022 큰별쌤 최태성의 별★별한국사 기출 500제 (심화)","extra":"","author":"","publisher":"","price":17550,"form":"택배","qty":"1권","order":"001-A038595507","date":"2022-01-14","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp119","cat":"book","shelf":"bought","title":"목신의 오후","extra":"","author":"","publisher":"","price":9000,"form":"교환주문(알라딘부담)","qty":"1권(1종)","order":"001-A971965347","date":"2021-11-15","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/8347/43/cover200/893747509x_2.jpg"},{"id":"bp120","cat":"book","shelf":"bought","title":"목신의 오후","extra":"외","author":"","publisher":"","price":26700,"form":"택배","qty":"3권(3종)","order":"001-A039355347","date":"2021-11-13","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/8347/43/cover200/893747509x_2.jpg"},{"id":"bp121","cat":"book","shelf":"bought","title":"2022 에듀윌 9급 공무원 기본서 영어 - 전3권","extra":"","author":"","publisher":"","price":39600,"form":"택배","qty":"3권 세트","order":"001-A382764607","date":"2021-09-30","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp122","cat":"book","shelf":"bought","title":"새로운 오독이 거리를 메웠다","extra":"외","author":"","publisher":"","price":18000,"form":"택배","qty":"2권(2종)","order":"001-A825134787","date":"2021-08-31","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/25633/17/cover200/8954670474_1.jpg"},{"id":"bp123","cat":"book","shelf":"bought","title":"죽음의 엘레지","extra":"외","author":"","publisher":"","price":28110,"form":"택배","qty":"3권(3종)","order":"001-A653034687","date":"2021-08-31","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/11131/79/cover200/k282531880_1.jpg"},{"id":"bp124","cat":"book","shelf":"bought","title":"초와 그녀","extra":"","author":"","publisher":"","price":11700,"form":"택배","qty":"1권(1종)","order":"001-A453393607","date":"2021-05-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/27173/37/cover200/8932038635_1.jpg"},{"id":"bp125","cat":"book","shelf":"bought","title":"쥐와 굴","extra":"","author":"","publisher":"","price":8100,"form":"택배","qty":"1권(1종)","order":"001-A953743607","date":"2021-05-26","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26021/48/cover200/k792732190_1.jpg"},{"id":"bp126","cat":"book","shelf":"bought","title":"랭보 서한집","extra":"","author":"","publisher":"","price":14400,"form":"택배","qty":"1권(1종)","order":"001-A287973867","date":"2021-04-09","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26914/4/cover200/k602730602_1.jpg"},{"id":"bp127","cat":"book","shelf":"bought","title":"재와 사랑의 미래","extra":"외","author":"","publisher":"","price":26100,"form":"택배","qty":"3권(3종)","order":"001-A013563567","date":"2021-04-05","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26868/75/cover200/8937409038_1.jpg"},{"id":"bp128","cat":"book","shelf":"bought","title":"손을 잡으면 눈이 녹아","extra":"","author":"","publisher":"","price":9000,"form":"택배","qty":"1권(1종)","order":"001-A012923347","date":"2021-03-23","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/26666/87/cover200/8954677630_1.jpg"},{"id":"bp129","cat":"book","shelf":"bought","title":"떡갈나무와 개","extra":"외","author":"","publisher":"","price":29700,"form":"택배","qty":"3권(3종)","order":"001-A885182617","date":"2021-02-18","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/25447/18/cover200/8937475510_1.jpg"},{"id":"bp130","cat":"book","shelf":"bought","title":"삼박자 투자법","extra":"외","author":"","publisher":"","price":25650,"form":"택배","qty":"2권(2종)","order":"001-A287602097","date":"2021-01-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/25365/27/cover200/k242633712_1.jpg"},{"id":"bp131","cat":"book","shelf":"bought","title":"소르본 철학 수업","extra":"","author":"","publisher":"","price":13500,"form":"택배","qty":"1권(1종)","order":"001-A836352197","date":"2021-01-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/24825/36/cover200/k482631138_1.jpg"},{"id":"bp132","cat":"book","shelf":"bought","title":"[중고] 친애하는 사물들","extra":"","author":"","publisher":"","price":6700,"form":"합정점 배송","qty":"1권(1종)","order":"001-A208442767","date":"2021-01-01","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/1880/89/cover200/8954618650_1.jpg"},{"id":"bp133","cat":"book","shelf":"bought","title":"문체 연습","extra":"외","author":"","publisher":"","price":80200,"form":"택배","qty":"7권(7종)","order":"001-A367051327","date":"2020-11-16","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/25417/99/cover200/8954675220_1.jpg"},{"id":"bp134","cat":"book","shelf":"bought","title":"모순","extra":"","author":"","publisher":"","price":12000,"form":"택배","qty":"1권(1종)","order":"001-A606601627","date":"2020-11-16","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/2584/37/cover200/s392131969_1.jpg"},{"id":"bp135","cat":"book","shelf":"bought","title":"날개 환상통","extra":"외","author":"","publisher":"","price":31200,"form":"택배","qty":"4권(4종)","order":"001-A109541787","date":"2020-09-24","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/18831/19/cover200/893203530x_1.jpg"},{"id":"bp136","cat":"book","shelf":"bought","title":"모두 예쁜데 나만 캥거루","extra":"외","author":"","publisher":"","price":27600,"form":"택배","qty":"3권(3종)","order":"001-A584151947","date":"2020-08-06","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/21674/38/cover200/k512636697_1.jpg"},{"id":"bp137","cat":"book","shelf":"bought","title":"[중고] 예지","extra":"","author":"","publisher":"","price":5000,"form":"회원직배송","qty":"1권(1종)","order":"001-A282250696","date":"2020-06-12","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/28179/97/cover200/8961473980_1.jpg"},{"id":"bp138","cat":"book","shelf":"bought","title":"모자","extra":"","author":"","publisher":"","price":9000,"form":"택배","qty":"1권(1종)","order":"001-A216480886","date":"2020-05-20","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/40350/0/cover200/k512131494_2.jpg"},{"id":"bp139","cat":"book","shelf":"bought","title":"[중고] 사형을 언도받은 자 / 외줄타기 곡예사","extra":"외","author":"","publisher":"","price":15700,"form":"노원역점 방문구매","qty":"5권(5종)","order":"001-A153648576","date":"2019-08-12","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/6103/19/cover200/8994207546_1.jpg"},{"id":"bp140","cat":"book","shelf":"bought","title":"[중고] 검은 고양이","extra":"외","author":"","publisher":"","price":10500,"form":"노원역점 방문구매","qty":"5권(5종)","order":"001-A603818446","date":"2019-06-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/11282/16/cover200/8937429209_1.jpg"},{"id":"bp141","cat":"book","shelf":"bought","title":"[중고] 문학과 악","extra":"","author":"","publisher":"","price":16500,"form":"회원직배송","qty":"1권(1종)","order":"001-A517347926","date":"2019-06-02","group":"구매","sub":"","status":"서재","memo":""},{"id":"bp142","cat":"book","shelf":"bought","title":"[중고] 오늘 아침 단어","extra":"외","author":"","publisher":"","price":5900,"form":"노원역점 방문구매","qty":"2권(2종)","order":"001-A015396626","date":"2019-01-11","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/1197/10/cover200/8932019800_1.jpg"},{"id":"bp143","cat":"book","shelf":"bought","title":"청년 시절","extra":"외","author":"","publisher":"","price":57920,"form":"택배","qty":"6권(6종)","order":"001-A205746416","date":"2018-12-29","group":"구매","sub":"","status":"서재","memo":"","image":"https://image.aladin.co.kr/product/16733/18/cover200/8954652859_1.jpg"}];
+
+  var META = {
+    forum: { label:'학회·포럼', statuses:['관심','신청 전','신청 완료','참석 완료'] },
+    show:  { label:'공연·전시', statuses:['관심','예매 완료','관람 완료'] },
+    book:  { label:'책',       statuses:['읽고 싶은 책','읽는 중','완독','서재'] }
+  };
+  var CAT_ORDER = ['forum','show','book'];
+  var SHELF = { hold:'주문 보류', cart:'장바구니', bought:'구매 기록' };
+  var SHELF_ORDER = ['all','hold','cart','bought'];
+  var ST_CLASS = {
+    '관심':'st--watch','신청 전':'st--ready','신청 완료':'st--go','참석 완료':'st--done',
+    '예매 완료':'st--go','관람 완료':'st--done',
+    '읽고 싶은 책':'st--ready','읽는 중':'st--go','완독':'st--done','서재':'st--shelf'
+  };
+  var DONE = { '참석 완료':1, '관람 완료':1, '완독':1 };
+  var SEED_IDS = {};
+  var i;
+  for (i = 0; i < SEED.length; i++) { SEED_IDS[SEED[i].id] = 1; }
+
+  var STORE = 'eunyu-archive-v1';
+  var UIKEY = 'eunyu-archive-ui-v1';
+  var WEEK = ['일','월','화','수','목','금','토'];
+
+  /* ────────────────────────── 저장소 ────────────────────────── */
+  var canStore = (function(){
+    try { window.localStorage.setItem('__probe', '1'); window.localStorage.removeItem('__probe'); return true; }
+    catch (e) { return false; }
+  })();
+
+  function readStore(k){
+    if (!canStore) return null;
+    try { return window.localStorage.getItem(k); } catch (e) { return null; }
+  }
+  function writeStore(k, v){
+    if (!canStore) return false;
+    try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; }
+  }
+
+  /* ────────────────────────── 상태 ────────────────────────── */
+  var state = {
+    items: [],
+    deleted: [],
+    cat: 'all',
+    status: 'all',
+    shelf: 'all',
+    sort: 'default',
+    q: '',
+    limits: { forum: 60, show: 60, book: 24 }
+  };
+  var loadChanged = false;   /* 저장본 병합·정리로 내용이 바뀌었는지 */
+
+  function clone(o){
+    var r = {}, k;
+    for (k in o) { if (Object.prototype.hasOwnProperty.call(o,k)) r[k] = o[k]; }
+    return r;
+  }
+
+  function norm(o){
+    var it = clone(o);
+    it.id = String(it.id || ('u' + Math.random().toString(36).slice(2, 9)));
+    if (!META[it.cat]) it.cat = 'book';
+    it.title = String(it.title == null ? '' : it.title);
+    it.memo = String(it.memo == null ? '' : it.memo);
+    it.image = String(it.image == null ? '' : it.image);
+    it.imgpos = String(it.imgpos == null ? '' : it.imgpos);
+    it.url = String(it.url == null ? '' : it.url);
+    it.date = String(it.date == null ? '' : it.date);
+    it.time = String(it.time == null ? '' : it.time);
+    it.place = String(it.place == null ? '' : it.place);
+    it.status = it.status && META[it.cat].statuses.indexOf(it.status) >= 0
+      ? it.status : META[it.cat].statuses[0];
+    if (it.cat === 'book' && !SHELF[it.shelf]) it.shelf = 'cart';
+    return it;
+  }
+
+  /* 야구 직관 기록은 이 아카이브에서 다룸 */
+  var NOT_WANTED = /KBO|야구|트윈스|잠실야구장/;
+  function isNotWanted(it){
+    var t = String(it.title || '') + ' ' + String(it.genre || '');
+    return NOT_WANTED.test(t);
+  }
+
+  function load(){
+    var saved = null;
+    var raw = readStore(STORE);
+    if (raw) { try { saved = JSON.parse(raw); } catch (e) { saved = null; } }
+
+    var j, it, sd;
+    var seedById = {}, seedByTitle = {}, titleCount = {};
+    for (j = 0; j < SEED.length; j++) {
+      seedById[SEED[j].id] = SEED[j];
+      titleCount[SEED[j].title] = (titleCount[SEED[j].title] || 0) + 1;
+    }
+    for (j = 0; j < SEED.length; j++) {
+      /* 같은 제목이 여러 번(연극 오이디푸스 등)이면 제목 매칭은 쓰지 않는다 */
+      if (titleCount[SEED[j].title] === 1) seedByTitle[SEED[j].title] = SEED[j];
+    }
+
+    if (saved && saved.items && saved.items.length) {
+      state.deleted = saved.deleted && saved.deleted.length ? saved.deleted.slice() : [];
+      state.items = [];
+      var have = {};
+      for (j = 0; j < saved.items.length; j++) {
+        it = norm(saved.items[j]);
+        if (isNotWanted(it)) { loadChanged = true; continue; }
+        sd = seedByTitle[it.title];
+        if (sd && !have[sd.id] && String(sd.id) !== String(it.id)) {
+          /* 기본 항목인데 기준 데이터의 id 가 바뀌었으면(야구 4건 삭제 등) 새 id 로 맞춤 */
+          it.id = sd.id;
+          loadChanged = true;
+        }
+        if (seedById[it.id]) sd = seedById[it.id];
+        if (sd) {
+          /* 예전 저장본에 이미지가 비어 있으면 새 기본 데이터의 이미지를 채움 */
+          if (!it.image && sd.image) { it.image = String(sd.image); loadChanged = true; }
+          if (!it.imgpos && sd.imgpos) { it.imgpos = String(sd.imgpos); loadChanged = true; }
+        }
+        if (have[it.id]) it.id = 'u' + Math.random().toString(36).slice(2, 9);
+        have[it.id] = 1;
+        state.items.push(it);
+      }
+      for (j = 0; j < SEED.length; j++) {
+        if (!have[SEED[j].id] && state.deleted.indexOf(SEED[j].id) < 0) {
+          state.items.push(norm(clone(SEED[j])));
+          loadChanged = true;
+        }
+      }
+    } else {
+      state.items = SEED.map(function(s){ return norm(clone(s)); }).filter(function(x){ return !isNotWanted(x); });
+    }
+
+    var ui = readStore(UIKEY);
+    if (ui) {
+      try {
+        var u = JSON.parse(ui);
+        if (u && typeof u === 'object') {
+          if (u.cat && (u.cat === 'all' || META[u.cat])) state.cat = u.cat;
+          if (u.shelf && SHELF_ORDER.indexOf(u.shelf) >= 0) state.shelf = u.shelf;
+          if (u.sort && ['default','date-desc','title'].indexOf(u.sort) >= 0) state.sort = u.sort;
+        }
+      } catch (e) {}
+    }
+  }
+
+  var saveTimer = null;
+  function saveUIPrefs(){
+    writeStore(UIKEY, JSON.stringify({ cat: state.cat, shelf: state.shelf, sort: state.sort }));
+  }
+  function persist(){
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    var payload = {
+      v: 1,
+      savedAt: new Date().toISOString(),
+      items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
+      deleted: state.deleted
+    };
+    var ok = writeStore(STORE, JSON.stringify(payload));
+    if (ok) stampSaved();
+    else showStorageNotice();
+  }
+  function persistSoon(){
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){ saveTimer = null; persist(); }, 400);
+  }
+  function stampSaved(){
+    var el = document.getElementById('savedAt');
+    var d = new Date();
+    el.textContent = '방금 저장됨 · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  /* ────────────────────────── 날짜 도우미 ────────────────────────── */
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function today(){
+    var d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  function toDate(s){
+    if (!s) return null;
+    var p = String(s).split('-');
+    if (p.length < 3) return null;
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function dayDiff(s){
+    var d = toDate(s);
+    if (!d) return null;
+    return Math.round((d.getTime() - today().getTime()) / 86400000);
+  }
+  function shortMD(s){
+    var d = toDate(s);
+    if (!d) return '';
+    return (d.getMonth() + 1) + '.' + pad(d.getDate());
+  }
+  function dateLine(s, withYear){
+    var d = toDate(s);
+    if (!d) return '';
+    var y = d.getFullYear();
+    var thisYear = today().getFullYear();
+    var txt = shortMD(s) + ' ' + WEEK[d.getDay()];
+    if (withYear === true || y !== thisYear) txt = y + '.' + txt;
+    return txt;
+  }
+  function fullDate(d){
+    return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' (' + WEEK[d.getDay()] + ')';
+  }
+
+  /* ────────────────────────── 검색·필터 ────────────────────────── */
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function money(n){
+    var v = Number(n);
+    if (!v) return '';
+    return comma(v) + '원';
+  }
+  function comma(v){
+    var s = String(Math.round(v)), out = '', c = 0, k;
+    for (k = s.length - 1; k >= 0; k--) {
+      out = s.charAt(k) + out;
+      c++;
+      if (c % 3 === 0 && k > 0) out = ',' + out;
+    }
+    return out;
+  }
+  function haystack(it){
+    if (!it._hay) {
+      it._hay = [it.title, it.author, it.publisher, it.place, it.memo, it.genre,
+        it.sub, it.group, it.status, it.seller, it.qty, it.form, it.extra, SHELF[it.shelf] || '']
+        .join(' ').toLowerCase();
+    }
+    return it._hay;
+  }
+  function matchQuery(it, q){
+    if (!q) return true;
+    var words = q.toLowerCase().split(/\s+/), h = haystack(it), k;
+    for (k = 0; k < words.length; k++) { if (words[k] && h.indexOf(words[k]) < 0) return false; }
+    return true;
+  }
+
+  function filtered(){
+    var out = { forum: [], show: [], book: [] }, k, it;
+    for (k = 0; k < state.items.length; k++) {
+      it = state.items[k];
+      if (state.cat !== 'all' && it.cat !== state.cat) continue;
+      if (state.status !== 'all' && it.status !== state.status) continue;
+      if (state.shelf !== 'all' && it.cat === 'book' && it.shelf !== state.shelf) continue;
+      if (state.shelf !== 'all' && it.cat !== 'book') continue;
+      if (!matchQuery(it, state.q)) continue;
+      out[it.cat].push(it);
+    }
+    return out;
+  }
+
+  function sortList(list, cat){
+    var arr = list.slice();
+    if (state.sort === 'title') {
+      arr.sort(function(a, b){ return String(a.title).localeCompare(String(b.title), 'ko'); });
+      return arr;
+    }
+    if (state.sort === 'date-desc') {
+      arr.sort(function(a, b){
+        var x = a.date || '', y = b.date || '';
+        if (!x && !y) return 0;
+        if (!x) return 1;
+        if (!y) return -1;
+        return x < y ? 1 : (x > y ? -1 : 0);
+      });
+      return arr;
+    }
+    if (cat === 'book') {
+      var ord = { hold: 0, cart: 1, bought: 2 };
+      arr.sort(function(a, b){
+        var d = (ord[a.shelf] || 0) - (ord[b.shelf] || 0);
+        if (d) return d;
+        if (a.shelf === 'bought' && b.shelf === 'bought') {
+          return (a.date || '') < (b.date || '') ? 1 : -1;
+        }
+        return 0;
+      });
+      return arr;
+    }
+    var up = [], past = [];
+    arr.forEach(function(it){
+      var d = dayDiff(it.date);
+      if (d !== null && d >= 0) up.push(it); else past.push(it);
+    });
+    up.sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+    past.sort(function(a, b){ return a.date > b.date ? -1 : 1; });
+    return up.concat(past);
+  }
+
+  /* ────────────────────────── 카드 ────────────────────────── */
+  function upcomingDD(it){
+    if (!it.date) return null;
+    if (DONE[it.status]) return null;
+    var d = dayDiff(it.date);
+    if (d === null || d < 0 || d > 60) return null;
+    return d;
+  }
+
+  function thumbHTML(it){
+    if (!it.image) return '';
+    var style = it.imgpos ? ' style="object-position:' + esc(it.imgpos) + '"' : '';
+    return '<div class="thumb"><img src="' + esc(it.image) + '" alt="" loading="lazy" decoding="async"'
+      + ' referrerpolicy="no-referrer"' + style + '></div>';
+  }
+
+  function cardHTML(it){
+    var m = META[it.cat];
+    var cls = 'card card--' + it.cat + (it.cat === 'book' && it.shelf === 'bought' ? ' card--ledger' : '');
+    var h = '<article class="' + cls + '" data-id="' + esc(it.id) + '">';
+
+    h += '<div class="card-head"><div class="card-main">';
+    h += '<div class="card-top"><span class="tag tag--' + it.cat + '">' + m.label + '</span>';
+    if (it.pick) h += '<span class="pick">고른 일정</span>';
+    if (it.cat === 'book' && SHELF[it.shelf]) h += '<span class="shelf">' + SHELF[it.shelf] + '</span>';
+    if (it.date && it.cat !== 'book') h += '<span class="when">' + dateLine(it.date) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
+    if (it.cat === 'book' && it.shelf === 'bought' && it.date) h += '<span class="when">' + dateLine(it.date, true) + '</span>';
+    var dd = upcomingDD(it);
+    if (dd !== null) h += '<span class="dday' + (dd === 0 ? ' is-today' : '') + '">' + (dd === 0 ? '오늘' : 'D-' + dd) + '</span>';
+    if (it.deadline) {
+      var dl = dayDiff(it.deadline);
+      if (dl !== null && dl >= 0) h += '<span class="dead">신청 ~' + shortMD(it.deadline) + (dl <= 7 ? ' (D-' + dl + ')' : '') + '</span>';
+    }
+    h += '</div>';
+
+    h += '<h3 class="card-title">' + esc(it.title) + (it.extra ? ' ' + esc(it.extra) : '') + '</h3>';
+
+    if (it.cat === 'forum') {
+      if (it.place) h += '<p class="line">' + esc(it.place) + '</p>';
+    } else if (it.cat === 'show') {
+      if (it.place) h += '<p class="line">' + esc(it.place) + '</p>';
+      var bits = [];
+      if (it.genre) bits.push(it.genre);
+      if (it.seller) bits.push(it.seller);
+      if (it.seat) bits.push(it.seat);
+      if (bits.length) h += '<p class="line line--dim">' + esc(bits.join(' · ')) + '</p>';
+      if (it.price) h += '<p class="line line--price">' + money(it.price) + '</p>';
+    } else if (it.shelf === 'bought') {
+      var meta = [];
+      if (it.qty) meta.push(it.qty);
+      if (it.form) meta.push(it.form);
+      if (it.price) meta.push(money(it.price));
+      if (meta.length) h += '<p class="line line--dim">' + esc(meta.join(' · ')) + '</p>';
+    } else {
+      if (it.author) h += '<p class="line">' + esc(it.author) + '</p>';
+      var pb = [];
+      if (it.publisher) pb.push(it.publisher);
+      if (it.price) pb.push(money(it.price));
+      if (it.form) pb.push(it.form);
+      if (pb.length) h += '<p class="line line--dim">' + esc(pb.join(' · ')) + '</p>';
+      if (it.sub) h += '<button class="subtag" type="button" data-act="sub" data-sub="' + esc(it.sub) + '" title="이 분야만 보기">' + esc(it.sub) + '</button>';
+    }
+
+    h += '</div>' + thumbHTML(it) + '</div>';
+
+    h += '<input class="memo" type="text" value="' + esc(it.memo) + '" placeholder="한 줄 메모" aria-label="' + esc(it.title) + ' 메모">';
+
+    h += '<div class="card-foot">';
+    h += '<button class="state ' + (ST_CLASS[it.status] || 'st--watch') + '" type="button" data-act="state" aria-haspopup="true" aria-expanded="false">'
+       + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
+    h += '<span class="sp"></span>';
+    if (it.url) h += '<a class="mini" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
+    h += '<button class="mini" type="button" data-act="edit">편집</button>';
+    h += '<button class="mini mini--del" type="button" data-act="del">지우기</button>';
+    h += '</div></article>';
+    return h;
+  }
+
+  /* ────────────────────────── 렌더 ────────────────────────── */
+  var mainEl = document.getElementById('main');
+  var sectionsEl = document.getElementById('sections');
+  var emptyEl = document.getElementById('empty');
+
+  /* 이미지 로드 실패 → 깨진 아이콘 대신 썸네일 자리만 감춤 */
+  if (mainEl && mainEl.addEventListener) {
+    mainEl.addEventListener('error', function(e){
+      var t = e.target;
+      if (!t || !t.tagName || String(t.tagName).toUpperCase() !== 'IMG') return;
+      var box = t.parentNode;
+      if (box && box.className && String(box.className).indexOf('thumb') >= 0 && box.remove) box.remove();
+    }, true);
+  }
+
+  function renderTabs(){
+    var totals = { forum: 0, show: 0, book: 0 }, k;
+    for (k = 0; k < state.items.length; k++) totals[state.items[k].cat]++;
+    var html = '<button class="tab" type="button" data-cat="all" aria-pressed="' + (state.cat === 'all') + '">전체 <span class="n">' + state.items.length + '</span></button>';
+    CAT_ORDER.forEach(function(c){
+      html += '<button class="tab" type="button" data-cat="' + c + '" aria-pressed="' + (state.cat === c) + '">'
+        + META[c].label + ' <span class="n">' + totals[c] + '</span></button>';
+    });
+    document.getElementById('tabs').innerHTML = html;
+  }
+
+  function renderStatusChips(){
+    var list = [];
+    if (state.cat === 'all') {
+      list = META.forum.statuses.concat(META.show.statuses.filter(function(s){ return s !== '관심'; }), META.book.statuses);
+    } else {
+      list = META[state.cat].statuses.slice();
+    }
+    var counts = {}, k, it;
+    for (k = 0; k < state.items.length; k++) {
+      it = state.items[k];
+      if (state.cat !== 'all' && it.cat !== state.cat) continue;
+      if (state.shelf !== 'all' && it.cat !== 'book') continue;
+      if (state.shelf !== 'all' && it.cat === 'book' && it.shelf !== state.shelf) continue;
+      if (!matchQuery(it, state.q)) continue;
+      counts[it.status] = (counts[it.status] || 0) + 1;
+    }
+    var total = 0;
+    list.forEach(function(s){ total += counts[s] || 0; });
+    var html = '<button class="chip" type="button" data-status="all" aria-pressed="' + (state.status === 'all') + '">전체 <span class="n">' + total + '</span></button>';
+    list.forEach(function(s){
+      if (!counts[s] && state.status !== s) return;
+      html += '<button class="chip" type="button" data-status="' + esc(s) + '" aria-pressed="' + (state.status === s) + '">'
+        + esc(s) + ' <span class="n">' + counts[s] + '</span></button>';
+    });
+    var wrap = document.getElementById('statusChips');
+    wrap.innerHTML = '<span class="lbl">상태</span>' + html;
+  }
+
+  function renderShelfChips(){
+    var wrap = document.getElementById('shelfChips');
+    if (state.cat !== 'book' && state.cat !== 'all') { wrap.innerHTML = ''; wrap.hidden = true; return; }
+    wrap.hidden = false;
+    var counts = { hold: 0, cart: 0, bought: 0 }, k, it;
+    for (k = 0; k < state.items.length; k++) {
+      it = state.items[k];
+      if (it.cat !== 'book') continue;
+      if (state.status !== 'all' && it.status !== state.status) continue;
+      if (!matchQuery(it, state.q)) continue;
+      counts[it.shelf] = (counts[it.shelf] || 0) + 1;
+    }
+    var html = '<button class="chip chip--shelf" type="button" data-shelf="all" aria-pressed="' + (state.shelf === 'all') + '">서가 전체</button>';
+    ['hold','cart','bought'].forEach(function(s){
+      html += '<button class="chip chip--shelf" type="button" data-shelf="' + s + '" aria-pressed="' + (state.shelf === s) + '">'
+        + SHELF[s] + ' <span class="n">' + counts[s] + '</span></button>';
+    });
+    wrap.innerHTML = '<span class="lbl">서가</span>' + html;
+  }
+
+  function renderSections(res){
+    var order = state.cat === 'all' ? CAT_ORDER : [state.cat];
+    var html = '', idx = 0;
+    order.forEach(function(cat){
+      var list = sortList(res[cat], cat);
+      if (!list.length) return;
+      idx++;
+      var lim = state.limits[cat] || 24;
+      var shown = list.slice(0, lim);
+      html += '<section class="sec" data-cat="' + cat + '">';
+      html += '<div class="sec-head"><span class="sec-num">' + pad(idx) + '</span>'
+           + '<h2 class="sec-title">' + META[cat].label + '</h2>'
+           + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span></div>';
+      html += '<div class="grid">';
+      html += shown.map(cardHTML).join('');
+      if (list.length > shown.length) {
+        html += '<div class="more"><button type="button" data-act="more" data-cat="' + cat + '">더 보기 · 남은 ' + (list.length - shown.length) + '건</button></div>';
+      }
+      html += '</div></section>';
+    });
+    sectionsEl.innerHTML = html;
+  }
+
+  function renderStats(){
+    var totals = { forum: 0, show: 0, book: 0 }, upcoming = 0, k, it;
+    for (k = 0; k < state.items.length; k++) {
+      it = state.items[k];
+      totals[it.cat]++;
+      if (upcomingDD(it) !== null) upcoming++;
+    }
+    var html = '';
+    html += '<div class="stat stat--key"><b>' + upcoming + '</b><span>다가오는 일정</span></div>';
+    html += '<div class="stat"><b>' + totals.forum + '</b><span>학회·포럼</span></div>';
+    html += '<div class="stat"><b>' + totals.show + '</b><span>공연·전시</span></div>';
+    html += '<div class="stat"><b>' + totals.book + '</b><span>책 (장바구니 · 구매)</span></div>';
+    document.getElementById('stats').innerHTML = html;
+
+    var d = new Date();
+    document.getElementById('issueLine').textContent = 'VOL. 01 · ' + fullDate(d) + ' 기준';
+  }
+
+  function renderUpcoming(){
+    var upcoming = state.items.filter(function(it){ return upcomingDD(it) !== null; });
+    upcoming.sort(function(a, b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+    var top = upcoming.slice(0, 5);
+    var el = document.getElementById('upList');
+    if (!state.items.length) { el.innerHTML = '<li class="up-empty">아직 스크랩이 없습니다.</li>'; return; }
+    if (!top.length) { el.innerHTML = '<li class="up-empty">예정된 일정이 없습니다. 새 스크랩으로 추가해 보세요.</li>'; return; }
+    el.innerHTML = top.map(function(it){
+      var d = dayDiff(it.date);
+      var dd = d === 0 ? '오늘' : 'D-' + d;
+      var deadTxt = '';
+      if (it.deadline) {
+        var dl = dayDiff(it.deadline);
+        if (dl !== null && dl >= 0 && dl <= 14) deadTxt = '<span class="up-dead">신청 ~' + shortMD(it.deadline) + '</span>';
+      }
+      return '<li class="up-item">'
+        + '<span class="up-date"><b>' + shortMD(it.date) + '</b>' + WEEK[(toDate(it.date) || new Date()).getDay()] + '</span>'
+        + '<span class="up-body">' + esc(it.title) + (it.place ? '<span class="up-place">' + esc(it.place) + '</span>' : '') + '</span>'
+        + deadTxt
+        + '<span class="up-dday' + (d === 0 ? ' is-today' : '') + '">' + dd + '</span>'
+        + '</li>';
+    }).join('');
+  }
+
+  function render(){
+    var res = filtered();
+    renderTabs();
+    renderStatusChips();
+    renderShelfChips();
+    renderSections(res);
+    renderStats();
+    renderUpcoming();
+    var totalShown = res.forum.length + res.show.length + res.book.length;
+    emptyEl.hidden = totalShown > 0;
+  }
+
+  function toResults(){
+    if (!sectionsEl) return;
+    var top = sectionsEl.getBoundingClientRect().top + (window.pageYOffset || 0) - 90;
+    if ((window.pageYOffset || 0) > top) {
+      try { window.scrollTo({ top: top, behavior: 'smooth' }); }
+      catch (e) { try { window.scrollTo(0, top); } catch (e2) {} }
+    }
+  }
+
+  /* ────────────────────────── 카드 갱신 ────────────────────────── */
+  function byId(id){
+    for (var k = 0; k < state.items.length; k++) { if (state.items[k].id === id) return state.items[k]; }
+    return null;
+  }
+  function cardEl(id){
+    return sectionsEl.querySelector('.card[data-id="' + id + '"]');
+  }
+  function refreshCard(it){
+    var el = cardEl(it.id);
+    if (!el) { render(); return; }
+    var tmp = document.createElement('div');
+    tmp.innerHTML = cardHTML(it);
+    el.parentNode.replaceChild(tmp.firstChild, el);
+  }
+  function showStorageNotice(){
+    document.getElementById('storageNotice').hidden = false;
+  }
+
+  /* ────────────────────────── 토스트 ────────────────────────── */
+  var toastTimer = null;
+  var toastEl = document.getElementById('toast');
+  function toast(msg, actionLabel, action){
+    toastEl.hidden = false;
+    toastEl.innerHTML = '<span>' + esc(msg) + '</span>';
+    if (actionLabel) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = actionLabel;
+      b.addEventListener('click', function(){ hideToast(); action(); });
+      toastEl.appendChild(b);
+    }
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, actionLabel ? 7000 : 2600);
+  }
+  function hideToast(){
+    toastEl.hidden = true;
+    toastEl.innerHTML = '';
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+  }
+
+  /* ────────────────────────── 상태 메뉴 ────────────────────────── */
+  var menuEl = null, menuAnchor = null;
+  function closeMenu(){
+    if (menuEl && menuEl.parentNode) menuEl.parentNode.removeChild(menuEl);
+    menuEl = null;
+    if (menuAnchor) { menuAnchor.setAttribute('aria-expanded', 'false'); menuAnchor = null; }
+  }
+  function openMenu(anchor, it){
+    closeMenu();
+    var m = document.createElement('div');
+    m.className = 'menu';
+    m.setAttribute('role', 'menu');
+    m.style.visibility = 'hidden';
+    META[it.cat].statuses.forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'menuitemradio');
+      b.setAttribute('aria-checked', s === it.status ? 'true' : 'false');
+      b.textContent = s;
+      b.addEventListener('click', function(){
+        setStatus(it, s);
+        closeMenu();
+      });
+      m.appendChild(b);
+    });
+    document.body.appendChild(m);
+    menuEl = m;
+    menuAnchor = anchor;
+    anchor.setAttribute('aria-expanded', 'true');
+
+    var r = anchor.getBoundingClientRect();
+    var mw = m.offsetWidth, mh = m.offsetHeight;
+    var left = Math.min(Math.max(10, r.left), window.innerWidth - mw - 10);
+    var top = r.bottom + 6;
+    if (top + mh > window.innerHeight - 10) top = Math.max(10, r.top - mh - 6);
+    m.style.left = left + 'px';
+    m.style.top = top + 'px';
+    m.style.visibility = 'visible';
+    var first = m.querySelector('button');
+    if (first) first.focus();
+  }
+  document.addEventListener('click', function(e){
+    if (!menuEl) return;
+    if (menuEl.contains(e.target)) return;
+    if (menuAnchor && menuAnchor === e.target) return;
+    closeMenu();
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') { closeMenu(); closeModal(); }
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      document.getElementById('q').focus();
+    }
+  });
+  window.addEventListener('scroll', function(){ if (menuEl) closeMenu(); }, true);
+  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); });
+
+  function setStatus(it, s){
+    if (it.status === s) return;
+    it.status = s;
+    persist();
+    if (state.status !== 'all' || state.shelf !== 'all') render();
+    else { refreshCard(it); renderStatusChips(); renderStats(); renderShelfChips(); }
+    toast('상태를 ‘' + s + '’(으)로 바꿨습니다');
+  }
+
+  /* ────────────────────────── 삭제·되돌리기 ────────────────────────── */
+  function removeItem(id){
+    var idx = -1, k;
+    for (k = 0; k < state.items.length; k++) { if (state.items[k].id === id) idx = k; }
+    if (idx < 0) return;
+    var it = state.items.splice(idx, 1)[0];
+    if (SEED_IDS[it.id]) state.deleted.push(it.id);
+    persist();
+    render();
+    toast('‘' + (it.title.length > 18 ? it.title.slice(0, 18) + '…' : it.title) + '’ 지움', '되돌리기', function(){
+      state.items.splice(Math.min(idx, state.items.length), 0, it);
+      var di = state.deleted.indexOf(it.id);
+      if (di >= 0) state.deleted.splice(di, 1);
+      persist();
+      render();
+      toast('되돌렸습니다');
+    });
+  }
+
+  /* ────────────────────────── 폼 ────────────────────────── */
+  var modalEl = document.getElementById('modal');
+  var formEl = document.getElementById('form');
+  var editingId = null;
+  var formImage = '';
+
+  function setFormImage(src, note){
+    formImage = src ? String(src) : '';
+    var prev = document.getElementById('fImagePrev');
+    var img = document.getElementById('fImagePrevImg');
+    var nt = document.getElementById('fImageNote');
+    if (formImage) {
+      if (img) img.src = formImage;
+      if (prev) prev.hidden = false;
+      if (nt) {
+        nt.textContent = note || (formImage.indexOf('data:') === 0
+          ? '이 페이지에 내장된 이미지' : '주소로 불러오는 이미지');
+      }
+    } else {
+      if (img && img.removeAttribute) img.removeAttribute('src');
+      if (prev) prev.hidden = true;
+      if (nt) nt.textContent = '';
+    }
+  }
+
+  /* 사진 → 가로 240px JPEG data URL (저장 용량을 줄임) */
+  function compressToDataURL(file, cb){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var im = new Image();
+      im.onload = function(){
+        var w = im.width || 0, h = im.height || 0;
+        if (!w || !h) { cb(''); return; }
+        if (w > 240) { h = Math.round(h * 240 / w); w = 240; }
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        var ctx = c.getContext && c.getContext('2d');
+        if (!ctx) { cb(''); return; }
+        ctx.fillStyle = '#FFFDF6';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(im, 0, 0, w, h);
+        try { cb(c.toDataURL('image/jpeg', 0.82)); } catch (e) { cb(''); }
+      };
+      im.onerror = function(){ cb(''); };
+      im.src = String(reader.result || '');
+    };
+    reader.onerror = function(){ cb(''); };
+    reader.readAsDataURL(file);
+  }
+
+  function fillStatusOptions(cat, value){
+    var sel = document.getElementById('fStatus');
+    sel.innerHTML = META[cat].statuses.map(function(s){
+      return '<option value="' + esc(s) + '"' + (s === value ? ' selected' : '') + '>' + esc(s) + '</option>';
+    }).join('');
+  }
+  function syncFieldVisibility(cat){
+    var fields = formEl.querySelectorAll('[data-for]');
+    for (var k = 0; k < fields.length; k++) {
+      var f = fields[k];
+      var ok = (' ' + f.getAttribute('data-for') + ' ').indexOf(' ' + cat + ' ') >= 0;
+      f.style.display = ok ? '' : 'none';
+    }
+  }
+  function openForm(id){
+    editingId = id || null;
+    formEl.reset();
+    var it = id ? byId(id) : null;
+    document.getElementById('formTitle').textContent = it ? '스크랩 편집' : '새 스크랩';
+    var cat = it ? it.cat : (state.cat === 'all' ? 'forum' : state.cat);
+    document.getElementById('fCat').value = cat;
+    fillStatusOptions(cat, it ? it.status : META[cat].statuses[0]);
+    syncFieldVisibility(cat);
+    if (it) {
+      document.getElementById('fTitle').value = it.title || '';
+      document.getElementById('fDate').value = it.date || '';
+      document.getElementById('fTime').value = it.time || '';
+      document.getElementById('fPlace').value = it.place || '';
+      document.getElementById('fDeadline').value = it.deadline || '';
+      document.getElementById('fGenre').value = it.genre || '';
+      document.getElementById('fPrice').value = it.price || '';
+      document.getElementById('fAuthor').value = it.author || '';
+      document.getElementById('fPublisher').value = it.publisher || '';
+      document.getElementById('fUrl').value = it.url || '';
+      document.getElementById('fMemo').value = it.memo || '';
+      fillStatusOptions(it.cat, it.status);
+    }
+    document.getElementById('fImage').value = it && it.image && it.image.indexOf('data:') !== 0 ? it.image : '';
+    setFormImage(it ? it.image || '' : '');
+    modalEl.hidden = false;
+    document.getElementById('fTitle').focus();
+  }
+  function closeModal(){ modalEl.hidden = true; editingId = null; }
+
+  document.getElementById('fCat').addEventListener('change', function(){
+    fillStatusOptions(this.value, META[this.value].statuses[0]);
+    syncFieldVisibility(this.value);
+  });
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  document.getElementById('fImage').addEventListener('input', function(){
+    setFormImage(this.value.trim());
+  });
+  document.getElementById('fImageFile').addEventListener('change', function(){
+    var f = this.files && this.files[0];
+    if (!f) return;
+    if (!/^image\//.test(f.type || '')) {
+      window.alert('사진 파일(png · jpg · webp …)을 골라 주세요.');
+      this.value = '';
+      return;
+    }
+    var input = this;
+    compressToDataURL(f, function(uri){
+      if (!uri) {
+        window.alert('사진을 읽지 못했습니다. 다른 사진으로 해보세요.');
+        return;
+      }
+      document.getElementById('fImage').value = '';
+      setFormImage(uri, '올린 사진 · 가로 240px로 줄여 저장');
+      input.value = '';
+    });
+  });
+  document.getElementById('fImageClear').addEventListener('click', function(){
+    var fi = document.getElementById('fImageFile');
+    document.getElementById('fImage').value = '';
+    if (fi) fi.value = '';
+    setFormImage('');
+  });
+  modalEl.addEventListener('click', function(e){ if (e.target === modalEl) closeModal(); });
+
+  formEl.addEventListener('submit', function(e){
+    e.preventDefault();
+    var cat = document.getElementById('fCat').value;
+    var title = document.getElementById('fTitle').value.trim();
+    if (!title) { document.getElementById('fTitle').focus(); return; }
+    var priceRaw = document.getElementById('fPrice').value;
+    var data = {
+      cat: cat,
+      title: title,
+      status: document.getElementById('fStatus').value,
+      date: document.getElementById('fDate').value || '',
+      time: document.getElementById('fTime').value.trim(),
+      place: document.getElementById('fPlace').value.trim(),
+      deadline: document.getElementById('fDeadline').value || '',
+      genre: document.getElementById('fGenre').value.trim(),
+      price: priceRaw ? Number(priceRaw) : 0,
+      author: document.getElementById('fAuthor').value.trim(),
+      publisher: document.getElementById('fPublisher').value.trim(),
+      url: document.getElementById('fUrl').value.trim(),
+      memo: document.getElementById('fMemo').value.trim(),
+      image: formImage,
+      imgpos: ''
+    };
+    if (editingId) {
+      var it = byId(editingId);
+      if (it) {
+        var sameImg = String(it.image || '') === String(formImage || '');
+        for (var k in data) { if (Object.prototype.hasOwnProperty.call(data, k)) it[k] = data[k]; }
+        if (!sameImg) it.imgpos = '';
+        if (it.cat === 'book' && !it.shelf) it.shelf = 'cart';
+        delete it._hay;
+        persist();
+        closeModal();
+        render();
+        toast('수정했습니다');
+      }
+    } else {
+      data.id = 'u' + Date.now().toString(36);
+      if (cat === 'book') { data.shelf = 'cart'; }
+      state.items.unshift(norm(data));
+      persist();
+      closeModal();
+      state.cat = 'all';
+      state.status = 'all';
+      render();
+      revealCard(data.id);
+      toast('새 스크랩을 추가했습니다');
+    }
+  });
+
+  function revealCard(id){
+    setTimeout(function(){
+      var el = sectionsEl.querySelector('.card[data-id="' + id + '"]');
+      if (!el) return;
+      el.className += ' is-new';
+      if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      setTimeout(function(){ el.className = el.className.replace(' is-new', ''); }, 2200);
+    }, 60);
+  }
+
+  /* ────────────────────────── 이벤트 ────────────────────────── */
+  mainEl.addEventListener('click', function(e){
+    var target = e.target;
+    var actEl = target.closest ? target.closest('[data-act]') : null;
+    if (!actEl) return;
+    var act = actEl.getAttribute('data-act');
+    if (act === 'sub') {
+      var sub = actEl.getAttribute('data-sub') || '';
+      state.q = sub;
+      state.status = 'all';
+      document.getElementById('q').value = sub;
+      render();
+      return;
+    }
+    if (act === 'more') {
+      var cat = actEl.getAttribute('data-cat');
+      state.limits[cat] = (state.limits[cat] || 24) + 30;
+      renderSections(filtered());
+      return;
+    }
+    var card = actEl.closest('.card');
+    if (!card) return;
+    var id = card.getAttribute('data-id');
+    var it = byId(id);
+    if (!it) return;
+    if (act === 'state') { if (menuEl && menuAnchor === actEl) { closeMenu(); } else { openMenu(actEl, it); } }
+    else if (act === 'edit') { openForm(id); }
+    else if (act === 'del') { removeItem(id); }
+  });
+
+  mainEl.addEventListener('input', function(e){
+    if (!e.target.classList || !e.target.classList.contains('memo')) return;
+    var card = e.target.closest('.card');
+    if (!card) return;
+    var it = byId(card.getAttribute('data-id'));
+    if (!it) return;
+    it.memo = e.target.value;
+    delete it._hay;
+    persistSoon();
+  });
+  mainEl.addEventListener('change', function(e){
+    if (e.target.classList && e.target.classList.contains('memo')) persist();
+  });
+
+  document.getElementById('tabs').addEventListener('click', function(e){
+    var b = e.target.closest('.tab');
+    if (!b) return;
+    state.cat = b.getAttribute('data-cat');
+    state.status = 'all';
+    if (state.cat !== 'book' && state.cat !== 'all') state.shelf = 'all';
+    state.limits = { forum: 60, show: 60, book: 24 };
+    saveUIPrefs();
+    render();
+    toResults();
+  });
+
+  document.getElementById('statusChips').addEventListener('click', function(e){
+    var b = e.target.closest('.chip');
+    if (!b) return;
+    state.status = b.getAttribute('data-status');
+    render();
+    saveUIPrefs();
+    toResults();
+  });
+
+  document.getElementById('shelfChips').addEventListener('click', function(e){
+    var b = e.target.closest('.chip');
+    if (!b) return;
+    state.shelf = b.getAttribute('data-shelf');
+    state.limits.book = 24;
+    render();
+    saveUIPrefs();
+    toResults();
+  });
+
+  var qTimer = null;
+  document.getElementById('q').addEventListener('input', function(){
+    var v = this.value;
+    if (qTimer) clearTimeout(qTimer);
+    qTimer = setTimeout(function(){ state.q = v.trim(); render(); }, 130);
+  });
+
+  document.getElementById('sort').addEventListener('change', function(){
+    state.sort = this.value;
+    saveUIPrefs();
+    render();
+  });
+
+  document.getElementById('addBtn').addEventListener('click', function(){ openForm(null); });
+
+  /* ────────────────────────── 백업 ────────────────────────── */
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var d = new Date();
+    var name = '은유_아카이브_백업_' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '.json';
+    var payload = {
+      app: 'eunyu-archive',
+      v: 1,
+      exportedAt: d.toISOString(),
+      items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
+      deleted: state.deleted
+    };
+    var text = JSON.stringify(payload, null, 1);
+    var blob = new Blob([text], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 1500);
+    toast('백업 파일을 내려받았습니다 (' + state.items.length + '건)');
+  });
+
+  document.getElementById('importFile').addEventListener('change', function(){
+    var input = this;
+    var f = input.files && input.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var parsed = JSON.parse(reader.result);
+        var arr = Array.isArray(parsed) ? parsed : (parsed && parsed.items);
+        if (!Array.isArray(arr) || !arr.length) throw new Error('empty');
+        var cleaned = [];
+        for (var k = 0; k < arr.length; k++) {
+          var o = arr[k];
+          if (o && o.cat && META[o.cat] && typeof o.title === 'string' && !isNotWanted(o)) cleaned.push(norm(o));
+        }
+        if (!cleaned.length) throw new Error('format');
+        var ok = window.confirm('가져온 ' + cleaned.length + '건으로 지금 목록(' + state.items.length + '건)을 바꿀까요?\n\n지금 상태를 남기려면 먼저 백업을 내려받아 두세요.');
+        if (ok) {
+          state.items = cleaned;
+          state.deleted = (parsed && parsed.deleted) || [];
+          persist();
+          render();
+          toast('가져왔습니다 · ' + cleaned.length + '건');
+        }
+      } catch (err) {
+        window.alert('가져올 수 없는 파일입니다. 이 페이지의 ‘백업’으로 만든 JSON 파일을 선택해 주세요.');
+      }
+      input.value = '';
+    };
+    reader.readAsText(f);
+  });
+
+  /* ────────────────────────── 시작 ────────────────────────── */
+  load();
+  if (!canStore) showStorageNotice();
+  document.getElementById('sort').value = state.sort;
+  render();
+  if (loadChanged) persist();   /* 병합·정리 결과를 저장소에그대로 반영 */
+})();
+</script>
+</body>
+</html>
