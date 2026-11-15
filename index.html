@@ -73,9 +73,10 @@
   .brief-lead{margin:0;font-family:var(--serif);font-size:14px;line-height:1.55;color:var(--ink);letter-spacing:-.01em}
   .brief-lead b{font-weight:700;background:linear-gradient(transparent 60%, var(--lemon) 60%, var(--lemon) 92%, transparent 92%);padding:0 .05em}
   .brief-list{list-style:none;margin:9px 0 0;padding:8px 0 0;border-top:1px dotted var(--rule-2);display:grid;gap:3px}
-  .brief-list li{display:flex;gap:9px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+  .brief-list li{display:flex;align-items:baseline;gap:9px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+  .brief-body{min-width:0}
   .brief-time{flex:0 0 42px;font-variant-numeric:tabular-nums;font-weight:700;font-size:11.5px;color:var(--green);padding-top:1px}
-  .brief-list q{quotes:none;color:var(--ink-3);font-style:normal}
+  .brief-meta{color:var(--ink-3);font-size:11px;letter-spacing:.01em}
   .brief-credit{margin:9px 0 0;font-size:9.5px;letter-spacing:.02em;color:var(--ink-3)}
   .brief-credit a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   .brief-credit a:hover{color:var(--ink-2)}
@@ -312,6 +313,7 @@
     .brief{margin-top:13px;padding:11px 13px 10px}
     .brief-lead{font-size:13.5px}
     .brief-time{flex:0 0 38px}
+    .brief-meta{display:none}
     .upcoming{padding:0 16px 4px}
     .up-head h2{font-size:13.5px}
     .up-note{display:none}
@@ -358,13 +360,13 @@
         <span class="brief-label">Morning Brief</span>
         <time class="brief-when" datetime="2026-11-15T20:00+09:00">2026.11.15 (일) 저녁</time>
       </p>
-      <p class="brief-lead">내일(월) 서울은 <b>흐림, 8~17도</b>. 아침 8도까지 내려가니 가벼운 겉옷 하나 챙기면 좋겠습니다. 미세먼지는 보통입니다.</p>
+      <p class="brief-lead">내일(월) 서울은 <b>흐림, 8~17도</b>. 아침 쌀쌀하니 가벼운 겉옷 챙기기.</p>
       <ul class="brief-list">
-        <li><span class="brief-time">09:10</span><span>보험료 자동납부 카드 변경 알림 <q>흥국생명 · DB손해보험 고객센터</q></span></li>
-        <li><span class="brief-time">10:00</span><span>포럼 사전신청 알림 <q>한부모가족 포럼 신청 마감 11.17</q></span></li>
-        <li><span class="brief-time">19:00</span><span>한국공법학회 제3회 영미공법 연구포럼 세미나 <q>관심 · 장소 개별공지</q></span></li>
+        <li><span class="brief-time">09:10</span><span class="brief-body">보험료 카드 변경 알림 <span class="brief-meta">흥국생명 · DB손해보험</span></span></li>
+        <li><span class="brief-time">10:00</span><span class="brief-body">포럼 사전신청 알림 <span class="brief-meta">한부모가족 마감 11.17</span></span></li>
+        <li><span class="brief-time">19:00</span><span class="brief-body">영미공법 연구포럼 세미나 <span class="brief-meta">D-1 · 관심</span></span></li>
       </ul>
-      <p class="brief-credit">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></p>
+      <p class="brief-credit">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a></p>
     </section>
     <!-- MORNING_BRIEF_END -->
     <div class="stats" id="stats"></div>
