@@ -1091,7 +1091,7 @@
     h += '<button class="state ' + (ST_CLASS[it.status] || 'st--watch') + '" type="button" data-act="state" aria-haspopup="true" aria-expanded="false">'
        + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
     h += '<span class="sp"></span>';
-    if (it.url) h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기<span class="arrow" aria-hidden="true">↗</span></a>';
+    if (it.url) h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
     h += '<button class="mini" type="button" data-act="edit">편집</button>';
     h += '<button class="mini mini--del" type="button" data-act="del">지우기</button>';
     h += '</div></article>';
