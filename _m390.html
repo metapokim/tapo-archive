@@ -5,9 +5,10 @@
 <iframe id="fr" src="./index.html"></iframe>
 <script>
   var fr = document.getElementById('fr');
+  fr.src = './index.html?cb=' + Date.now();
   fr.addEventListener('load', function(){
     var y = Number((location.search.match(/y=(\d+)/) || [])[1] || 0);
-    try { fr.contentWindow.scrollTo(0, y); } catch (e) {}
+    try { if (y) fr.contentWindow.scrollTo(0, y); } catch (e) {}
   });
 </script>
 </body></html>
