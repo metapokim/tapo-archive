@@ -237,6 +237,36 @@
     border-radius:999px;padding:3px 8px;cursor:pointer;transition:color .15s,border-color .15s;
   }
   .brief-undo:hover,.brief-undo:focus-visible{color:var(--lemon);border-color:rgba(255,230,0,.5);outline:none}
+  /* 직접 추가한 할 일 — 목록·입력창 (아침 루틴이 브리핑 HTML을 갈아끼워도 JS가 다시 그린다) */
+  .brief-mine{list-style:none;margin:0;padding:0;display:grid;gap:0}
+  .brief-mine li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5;transition:opacity .16s ease,transform .16s ease}
+  .brief-mine li.is-going{opacity:0;transform:translateX(6px)}
+  .brief-mine .brief-body{flex:1 1 auto}
+  .brief-del{
+    flex:0 0 22px;width:22px;height:22px;margin:-2px -3px -2px 0;padding:0;border:0;background:none;
+    align-self:center;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    color:#52525B;border-radius:999px;transition:color .15s,background .15s;-webkit-tap-highlight-color:transparent;
+  }
+  .brief-del svg{display:block;width:11px;height:11px}
+  .brief-del:hover,.brief-del:focus-visible{color:#FB7185;background:rgba(251,113,133,.14);outline:none}
+  .brief-add{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:0}
+  .brief-add-in{
+    flex:1 1 auto;min-width:0;height:34px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;
+    color:#FAFAFA;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
+    padding:0 14px;letter-spacing:-.01em;transition:border-color .15s,background .15s,box-shadow .15s;
+    -webkit-appearance:none;appearance:none;
+  }
+  .brief-add-in::placeholder{color:#7E7E88;font-weight:600}
+  .brief-add-in:focus{outline:none;border-color:rgba(255,230,0,.55);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
+  .brief-add-btn{
+    flex:0 0 auto;width:34px;height:34px;padding:0 0 1px;border-radius:999px;border:1px solid var(--lemon-2);
+    background:var(--lemon);color:#18181B;font:inherit;font-size:19px;font-weight:800;line-height:1;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 6px 14px -8px rgba(255,230,0,.9);transition:transform .12s,background .16s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .brief-add-btn:hover,.brief-add-btn:focus-visible{background:#FFEC33;outline:none}
+  .brief-add-btn:active{transform:translateY(1px)}
 
   /* upcoming — white card */
   .upcoming{min-width:0;display:flex}
@@ -572,6 +602,10 @@
     .brief-when{font-size:10px}
     .brief-meta{display:none}
     .brief-check{flex-basis:30px;width:30px;height:30px;margin:-6px -4px -6px 0}
+    .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
+    .brief-add{margin-top:10px;gap:7px}
+    .brief-add-in{height:36px;font-size:16px;padding:0 15px}
+    .brief-add-btn{width:36px;height:36px;font-size:20px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
     .up-list{max-height:232px;padding-right:3px}
     .up-note{display:none}
@@ -1119,6 +1153,7 @@
         if (Object.prototype.hasOwnProperty.call(saved.brief, bk)) state.brief[bk] = saved.brief[bk];
       }
     }
+    normBrief();
 
     var j, it, sd;
     var seedById = {}, seedByTitle = {}, titleCount = {};
@@ -1974,11 +2009,19 @@
   }
   function briefIsDone(key){ return (Number(state.brief[key]) || 0) > 0; }
   function pruneBrief(){
-    var cut = new Date().getTime() - 8 * 864e5, k, ts;
+    var now = new Date().getTime(), cut = now - 8 * 864e5, k, ts;
     for (k in state.brief) {
       if (!Object.prototype.hasOwnProperty.call(state.brief, k)) continue;
+      if (k === 'todos' || k === 'todoDel') continue;          /* 직접 추가한 할 일 기록 */
+      if (k.slice(0, 5) === 'todo:') continue;                 /* 그 할 일의 완료 표시 — 날짜와 무관 */
       ts = Date.parse(k.slice(0, 10) + 'T00:00:00');
       if (ts && ts < cut) delete state.brief[k];
+    }
+    /* 지운 할 일의 흔적(tombstone)은 한 달만 남긴다 */
+    var dels = briefDels(), dc = now - 30 * 864e5, dk;
+    for (dk in dels) {
+      if (!Object.prototype.hasOwnProperty.call(dels, dk)) continue;
+      if (!(Number(dels[dk]) > dc)) delete dels[dk];
     }
   }
   function briefLabel(li){
@@ -1995,19 +2038,24 @@
     el.className = 'brief-empty';
     el.hidden = true;
     el.innerHTML = '오늘 할 일을 모두 마쳤어요<em>✓</em>';
-    var credit = sec.querySelector('.brief-credit');
-    if (credit && credit.parentNode === sec) sec.insertBefore(el, credit);
+    var anchor = sec.querySelector('.brief-mine') || sec.querySelector('.brief-credit');
+    if (anchor && anchor.parentNode === sec) sec.insertBefore(el, anchor);
     else sec.appendChild(el);
     return el;
   }
   function briefRestoreAll(){
     var list = document.querySelector('.brief .brief-list');
-    if (!list) return;
-    var now = -new Date().getTime(), any = 0, k, li, key;
-    for (k = 0; k < list.children.length; k++) {
-      li = list.children[k];
-      key = li.getAttribute('data-key');
-      if (key && briefIsDone(key)) { state.brief[key] = now; any++; }
+    var now = -new Date().getTime(), any = 0, k, li, key, todos = briefTodos();
+    if (list) {
+      for (k = 0; k < list.children.length; k++) {
+        li = list.children[k];
+        key = li.getAttribute('data-key');
+        if (key && briefIsDone(key)) { state.brief[key] = now; any++; }
+      }
+    }
+    for (k = 0; k < todos.length; k++) {
+      key = todoDoneKey(todos[k].id);
+      if (briefIsDone(key)) { state.brief[key] = now; any++; }
     }
     if (!any) return;
     persist();
@@ -2032,9 +2080,225 @@
       });
     }, 170);
   }
+  /* ────────────── 직접 추가한 할 일 ──────────────
+     아침 루틴(my-day-preparation)이 MORNING_BRIEF_START~END 사이 HTML을 날마다 통째로
+     갈아끼우므로, 목록과 입력창은 화면이 뜰 때 여기서 다시 만든다. 내용은 state.brief.todos 에
+     두어 기기 저장소와 Gist 동기화(brief)에 함께 실린다. 체크는 'todo:<id>' 키, 지운 것은
+     todoDel tombstone 으로 남겨 다른 기기의 옛 사본이 되살리지 못하게 한다. */
+  var CROSS_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
+  function briefTodos(){
+    if (!Array.isArray(state.brief.todos)) state.brief.todos = [];
+    return state.brief.todos;
+  }
+  function briefDels(){
+    var d = state.brief.todoDel;
+    if (!d || typeof d !== 'object' || Array.isArray(d)) { d = {}; state.brief.todoDel = d; }
+    return d;
+  }
+  function todoDoneKey(id){ return 'todo:' + id; }
+  function todoIsDone(id){ return (Number(state.brief[todoDoneKey(id)]) || 0) > 0; }
+  function briefClip(s){
+    s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+    return s.length > 16 ? s.slice(0, 16) + '…' : s;
+  }
+  /* 저장본·Gist 에서 온 값 정리 — 모양이 어긋난 기록은 버린다 */
+  function normBrief(){
+    var t = Array.isArray(state.brief.todos) ? state.brief.todos : [];
+    var out = [], seen = {}, k, it, d, dd, id;
+    for (k = 0; k < t.length; k++) {
+      it = t[k];
+      if (!it || typeof it !== 'object') continue;
+      id = String(it.id == null ? '' : it.id);
+      if (!id || !String(it.text == null ? '' : it.text).trim() || seen[id]) continue;
+      seen[id] = 1;
+      out.push({ id: id, text: String(it.text).replace(/\s+/g, ' ').trim().slice(0, 80),
+        added: String(it.added == null ? '' : it.added).slice(0, 10),
+        updatedAt: String(it.updatedAt == null ? '' : it.updatedAt) });
+    }
+    state.brief.todos = out;
+    d = state.brief.todoDel;
+    dd = {};
+    if (d && typeof d === 'object' && !Array.isArray(d)) {
+      for (k in d) { if (Object.prototype.hasOwnProperty.call(d, k) && Number(d[k]) > 0) dd[k] = Number(d[k]); }
+    }
+    state.brief.todoDel = dd;
+    /* 지운 항목의 완료 표시는 남기지 않는다 */
+    for (k in state.brief) {
+      if (!Object.prototype.hasOwnProperty.call(state.brief, k)) continue;
+      if (k.slice(0, 5) !== 'todo:') continue;
+      if (dd[k.slice(5)]) delete state.brief[k];
+    }
+  }
+  /* 목록·입력창이 없으면 만든다 — 루틴이 브리핑 HTML을 갈아끼운 뒤에도 여기서 되살아난다 */
+  function briefMine(sec){
+    var ul = sec.querySelector('.brief-mine');
+    var credit = sec.querySelector('.brief-credit');
+    if (!ul) {
+      ul = document.createElement('ul');
+      ul.className = 'brief-mine';
+      ul.setAttribute('aria-label', '내가 추가한 할 일');
+      ul.hidden = true;
+      if (credit && credit.parentNode === sec) sec.insertBefore(ul, credit);
+      else sec.appendChild(ul);
+    }
+    var form = sec.querySelector('.brief-add');
+    if (!form) {
+      form = document.createElement('form');
+      form.className = 'brief-add';
+      form.setAttribute('autocomplete', 'off');
+      form.setAttribute('aria-label', '할 일 추가');
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'brief-add-in';
+      inp.placeholder = '할 일 추가...';
+      inp.setAttribute('aria-label', '할 일 추가');
+      inp.setAttribute('maxlength', '80');
+      inp.setAttribute('autocomplete', 'off');
+      inp.setAttribute('enterkeyhint', 'done');
+      var btn = document.createElement('button');
+      btn.type = 'submit';
+      btn.className = 'brief-add-btn';
+      btn.textContent = '+';
+      btn.setAttribute('aria-label', '추가');
+      btn.title = '추가';
+      form.appendChild(inp);
+      form.appendChild(btn);
+      ul.parentNode.insertBefore(form, ul.nextSibling);
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var f = form.querySelector('.brief-add-in');
+        briefAddTodo(f ? f.value : '');
+      });
+    }
+    return { ul: ul, form: form, input: form.querySelector('.brief-add-in') };
+  }
+  function todoLi(t, date, isDone){
+    var li = document.createElement('li');
+    li.setAttribute('data-todo', t.id);
+    li.setAttribute('data-key', todoDoneKey(t.id));
+    li.hidden = !!isDone;
+
+    var chk = document.createElement('button');
+    chk.type = 'button';
+    chk.className = 'brief-check';
+    chk.title = '완료';
+    chk.setAttribute('aria-label', '완료 처리');
+    chk.innerHTML = CHECK_SVG;
+    chk.addEventListener('click', function(){ briefTodoCheck(t.id, li); });
+
+    var when = document.createElement('span');
+    when.className = 'brief-time';
+    when.textContent = '할 일';
+
+    var body = document.createElement('span');
+    body.className = 'brief-body';
+    body.textContent = t.text;
+    if (t.added && date && t.added !== date) {
+      var meta = document.createElement('span');
+      meta.className = 'brief-meta';
+      meta.textContent = ' ' + t.added.slice(5).replace('-', '.') + ' 추가';
+      body.appendChild(meta);
+    }
+
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'brief-del';
+    delBtn.title = '지우기';
+    delBtn.setAttribute('aria-label', '지우기');
+    delBtn.innerHTML = CROSS_SVG;
+    delBtn.addEventListener('click', function(){ briefDelTodo(t.id); });
+
+    li.appendChild(chk);
+    li.appendChild(when);
+    li.appendChild(body);
+    li.appendChild(delBtn);
+    return li;
+  }
+  function renderBriefTodos(sec){
+    var box = briefMine(sec), ul = box.ul, date = briefStamp();
+    var todos = briefTodos(), dels = briefDels(), k, t, open = 0, done = 0, live = [], dirty = false;
+    for (k = 0; k < todos.length; k++) {
+      t = todos[k];
+      if (!t || !t.id || !t.text || dels[t.id]) { dirty = true; continue; }
+      live.push(t);
+    }
+    if (dirty) { state.brief.todos = live; todos = live; }
+    while (ul.firstChild) ul.removeChild(ul.firstChild);
+    for (k = 0; k < todos.length; k++) {
+      t = todos[k];
+      if (todoIsDone(t.id)) done++; else open++;
+      ul.appendChild(todoLi(t, date, todoIsDone(t.id)));
+    }
+    ul.hidden = (open + done) === 0;
+    return { open: open, done: done, total: open + done };
+  }
+  function briefAddTodo(raw){
+    var text = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
+    var input = document.querySelector('.brief .brief-add-in');
+    if (input) input.value = '';
+    if (!text) { if (input) input.focus(); return; }
+    if (text.length > 80) text = text.slice(0, 80);
+    var todos = briefTodos(), dels = briefDels(), k, t, now = new Date().getTime(), id;
+    for (k = 0; k < todos.length; k++) {
+      t = todos[k];
+      if (!t || !t.text || dels[t.id] || t.text !== text) continue;
+      if (todoIsDone(t.id)) {                      /* 이미 체크해 둔 같은 항목은 다시 올린다 */
+        delete state.brief[todoDoneKey(t.id)];
+        t.updatedAt = new Date(now).toISOString();
+        persist();
+        renderBrief();
+        toast('‘' + briefClip(text) + '’ 다시 올렸습니다');
+      } else {
+        toast('이미 목록에 있습니다');
+      }
+      return;
+    }
+    id = 't' + now.toString(36) + Math.random().toString(36).slice(2, 6);
+    todos.push({ id: id, text: text, added: briefStamp(), updatedAt: new Date(now).toISOString() });
+    persist();
+    renderBrief();
+    toast('할 일 추가 · ' + briefClip(text));
+  }
+  function briefTodoCheck(id, li){
+    var key = todoDoneKey(id);
+    if (todoIsDone(id)) return;
+    var label = '', todos = briefTodos(), k;
+    for (k = 0; k < todos.length; k++) if (todos[k].id === id) { label = todos[k].text; break; }
+    if (li) li.classList.add('is-going');
+    state.brief[key] = new Date().getTime();
+    pruneBrief();
+    persist();
+    setTimeout(function(){
+      renderBrief();
+      toast('‘' + briefClip(label) + '’ 완료 처리', '되돌리기', function(){
+        state.brief[key] = -new Date().getTime();
+        persist();
+        renderBrief();
+        toast('되돌렸습니다');
+      });
+    }, 170);
+  }
+  function briefDelTodo(id){
+    var todos = briefTodos(), dels = briefDels(), k, rec = null;
+    for (k = 0; k < todos.length; k++) if (todos[k].id === id) { rec = todos[k]; todos.splice(k, 1); break; }
+    if (!rec) return;
+    dels[id] = new Date().getTime();
+    delete state.brief[todoDoneKey(id)];
+    persist();
+    renderBrief();
+    toast('‘' + briefClip(rec.text) + '’ 지웠습니다', '되돌리기', function(){
+      delete dels[id];
+      briefTodos().push(rec);
+      persist();
+      renderBrief();
+      toast('되돌렸습니다');
+    });
+  }
   function renderBrief(){
     var sec = document.querySelector('.brief');
     if (!sec) return;
+    var mine = renderBriefTodos(sec);
     var list = sec.querySelector('.brief-list');
     if (!list) return;
     var date = briefStamp(), rows = list.children, k, li, key, left = 0, done = 0;
@@ -2062,7 +2326,8 @@
         li.insertBefore(btn, li.firstChild);
       }
     }
-    briefEmptyEl(sec).hidden = left > 0;
+    briefEmptyEl(sec).hidden = (left + mine.open) > 0;
+    done = done + mine.done;
     var top = sec.querySelector('.brief-top');
     var chip = top ? top.querySelector('.brief-undo') : null;
     if (done > 0 && top) {
@@ -2739,9 +3004,45 @@
     var rbrief = remote.brief || {}, bk, rv, lv;
     for (bk in rbrief) {
       if (!Object.prototype.hasOwnProperty.call(rbrief, bk)) continue;
+      if (bk === 'todos' || bk === 'todoDel') continue;   /* 직접 추가한 할 일은 아래에서 따로 합친다 */
       rv = Number(rbrief[bk]) || 0;
       lv = Number(state.brief[bk]) || 0;
       if (Math.abs(rv) > Math.abs(lv)) { state.brief[bk] = rv; changed = true; }
+    }
+    /* 직접 추가한 할 일 — id 별로 마지막에 고친 쪽을 남기고, 지운 것은 tombstone 으로 합친다 */
+    var rt = Array.isArray(rbrief.todos) ? rbrief.todos : [];
+    var rd = (rbrief.todoDel && typeof rbrief.todoDel === 'object') ? rbrief.todoDel : {};
+    var mine = briefTodos(), mdel = briefDels(), seenTodo = {}, tk, rr, mm, q, dk2;
+    for (tk = 0; tk < mine.length; tk++) seenTodo[mine[tk].id] = mine[tk];
+    for (tk = 0; tk < rt.length; tk++) {
+      rr = rt[tk];
+      if (!rr || !rr.id || !rr.text) continue;
+      if (mdel[rr.id]) continue;                 /* 이 기기에서 지운 항목 */
+      mm = seenTodo[rr.id];
+      if (!mm) {
+        mm = { id: String(rr.id), text: String(rr.text).slice(0, 80),
+               added: String(rr.added == null ? '' : rr.added).slice(0, 10),
+               updatedAt: String(rr.updatedAt == null ? '' : rr.updatedAt) };
+        mine.push(mm);
+        seenTodo[mm.id] = mm;
+        changed = true;
+        continue;
+      }
+      if (String(rr.updatedAt || '') > String(mm.updatedAt || '')) {
+        mm.text = String(rr.text).slice(0, 80);
+        mm.added = String(rr.added == null ? '' : rr.added).slice(0, 10);
+        mm.updatedAt = String(rr.updatedAt == null ? '' : rr.updatedAt);
+        changed = true;
+      }
+    }
+    for (dk2 in rd) {
+      if (!Object.prototype.hasOwnProperty.call(rd, dk2)) continue;
+      if (!(Number(rd[dk2]) > 0)) continue;
+      if (!(Number(mdel[dk2]) >= Number(rd[dk2]))) mdel[dk2] = Number(rd[dk2]);
+      for (q = mine.length - 1; q >= 0; q--) {
+        if (mine[q].id === dk2) { mine.splice(q, 1); changed = true; }
+      }
+      if (state.brief['todo:' + dk2] != null) { delete state.brief['todo:' + dk2]; changed = true; }
     }
     return changed;
   }
@@ -2924,7 +3225,7 @@
     payload: function(){ return buildSyncPayload(); },
     apply: function(remote){ return applySyncPayload(remote); },
     cfg: function(){ return { connected: !!syncCfg.token, gistId: syncCfg.gistId, lastSync: syncCfg.lastSync }; },
-    brief: function(){ return { date: briefStamp(), map: state.brief }; },
+    brief: function(){ return { date: briefStamp(), map: state.brief, todos: briefTodos().slice() }; },
     kinds: function(){ return state.items.filter(function(x){ return x.cat === 'grad' || x.cat === 'news'; }).map(function(x){ return x.id + ':' + kindOf(x); }); }
   };
 
@@ -2972,6 +3273,7 @@
           state.items = cleaned;
           state.deleted = (parsed && parsed.deleted) || [];
           if (parsed && parsed.brief && typeof parsed.brief === 'object') state.brief = parsed.brief;
+          normBrief();
           persist();
           render();
           toast('가져왔습니다 · ' + cleaned.length + '건');
