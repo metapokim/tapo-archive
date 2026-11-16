@@ -193,9 +193,14 @@
 
   /* ───────────── hero ───────────── */
   .hero{
-    display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;
     max-width:1240px;width:100%;margin:0 auto;padding:8px 0 18px;align-items:stretch;
-    min-width:0;
+    min-width:0;--hero-h:396px;
+  }
+  /* 넓은 화면(데스크톱·아이패드 가로)에서만 두 카드의 폭·높이를 똑같이 맞춘다.
+     좁은 화면은 한 줄로 쌓이므로 카드마다 자연스러운 높이(아래 max-height)를 쓴다. */
+  @media (min-width:901px){
+    .brief,.up-box{height:var(--hero-h)}
   }
 
   /* morning brief — dark point card */
@@ -213,6 +218,19 @@
   .brief-when{margin-left:auto;font-size:10.5px;letter-spacing:.05em;color:#A1A1AA;font-variant-numeric:tabular-nums}
   .brief-lead{margin:0;font-size:16.5px;line-height:1.55;font-weight:600;letter-spacing:-.02em;color:#FAFAFA;word-break:keep-all}
   .brief-lead b{font-weight:800;background:var(--lemon);color:#18181B;padding:0 .2em;border-radius:5px}
+  /* 할 일만 카드 안에서 스크롤 — 라벨·날씨는 위에, 입력창·출처 줄은 아래에 고정된다.
+     그래서 할 일을 몇 개를 더해도 브리핑 카드 높이는 그대로이고 '다가오는 일정'과 계속 같다. */
+  .brief-scroll{
+    flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;padding:0 2px 0 0;
+    scrollbar-width:none;-ms-overflow-style:none;
+  }
+  .brief-scroll::-webkit-scrollbar{display:none;width:0;height:0}
+  /* 더 남아 있을 때만 아래를 살짝 흐리게 */
+  .brief-scroll[data-fade="1"]{
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),rgba(0,0,0,0));
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),rgba(0,0,0,0));
+  }
   .brief-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0}
   .brief-list li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5}
   .brief-time{flex:0 0 44px;font-variant-numeric:tabular-nums;font-weight:800;font-size:11.5px;color:var(--lemon);letter-spacing:.02em}
@@ -297,20 +315,13 @@
   .up-note{margin-left:auto;font-size:10px;letter-spacing:.06em;color:#A1A1AA;font-weight:700}
   /* 목록은 카드 높이를 고정하고 안에서만 스크롤 — 모닝 브리핑 카드와 높이 균형(≈240px = 4줄+α) */
   .up-list{
-    list-style:none;margin:0;padding:0 4px 0 0;min-width:0;
-    max-height:240px;overflow-y:auto;overscroll-behavior:contain;
-    scrollbar-gutter:stable;
+    list-style:none;margin:0;padding:0 2px 0 0;min-width:0;
+    flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;-ms-overflow-style:none;
   }
-  .up-list::-webkit-scrollbar{width:6px;height:6px}
-  .up-list::-webkit-scrollbar-button{display:none;width:0;height:0}
-  .up-list::-webkit-scrollbar-track{background:transparent}
-  .up-list::-webkit-scrollbar-corner{background:transparent}
-  .up-list::-webkit-scrollbar-thumb{background:#DCDCE0;border-radius:999px}
-  .up-list::-webkit-scrollbar-thumb:hover{background:#C4C4C9}
-  /* ::-webkit-scrollbar 를 쓰지 않는 브라우저(Firefox)만 thin 네이티브 */
-  @supports not selector(::-webkit-scrollbar){
-    .up-list{scrollbar-width:thin;scrollbar-color:#DCDCE0 transparent}
-  }
+  /* 스크롤바는 감춘다 — 터치·휠로만 위아래(브리핑 할 일 목록도 같다) */
+  .up-list::-webkit-scrollbar{display:none;width:0;height:0}
   /* 더 남아 있을 때만 아래를 살짝 흐리게 — 잘린 줄이 튀지 않게 */
   .up-list[data-fade="1"]{
     -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),rgba(0,0,0,0));
@@ -643,7 +654,9 @@
     .brief-add-in{height:30px;font-size:16px;padding:0 14px}
     .brief-add-btn{width:30px;height:30px;font-size:17px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
-    .up-list{max-height:232px;padding-right:3px}
+    .up-list{max-height:232px;padding-right:2px}
+    /* 한 줄로 쌓이는 좁은 화면 — 카드가 지나치게 길어지지 않게 목록만 제한 */
+    .brief-scroll{max-height:264px}
     .up-note{display:none}
     .up-item{padding:10px 0}
     .up-body{font-size:12.5px}
@@ -756,12 +769,14 @@
               <time class="brief-when" datetime="2026-11-16T05:25+09:00">11월 16일 월</time>
             </p>
             <p class="brief-lead">오늘(월) 서울은 <b>흐림, 8~17°C</b>. 초미세먼지 나쁨 예보라 가벼운 겉옷에 마스크 챙기기.</p>
-            <ul class="brief-list">
-              <li><span class="brief-time">09:10</span><span class="brief-body">보험료 카드 변경 알림 <span class="brief-meta">흥국생명 · DB손해보험</span></span></li>
-              <li><span class="brief-time is-todo">할 일</span><span class="brief-body">피부과 방문</span></li>
-              <li><span class="brief-time is-todo">할 일</span><span class="brief-body">블로그 포스팅 하기</span></li>
-              <li><span class="brief-time is-todo">할 일</span><span class="brief-body">속기록 불광 1 · 1시간 작업</span></li>
-            </ul>
+            <div class="brief-scroll">
+              <ul class="brief-list">
+                <li><span class="brief-time">09:10</span><span class="brief-body">보험료 카드 변경 알림 <span class="brief-meta">흥국생명 · DB손해보험</span></span></li>
+                <li><span class="brief-time is-todo">할 일</span><span class="brief-body">피부과 방문</span></li>
+                <li><span class="brief-time is-todo">할 일</span><span class="brief-body">블로그 포스팅 하기</span></li>
+                <li><span class="brief-time is-todo">할 일</span><span class="brief-body">속기록 불광 1 · 1시간 작업</span></li>
+              </ul>
+            </div>
             <p class="brief-credit"><span class="brief-credit-in">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></span></p>
           </section>
           <!-- MORNING_BRIEF_END -->
@@ -2101,13 +2116,16 @@
     });
   }
 
-  /* 목록 끝까지 내렸는지에 따라 아래 흐림을 걷는다 */
-  function upFade(){
-    var el = document.getElementById('upList');
+  /* 목록 끝까지 내렸는지에 따라 아래 흐림을 걷는다 — '다가오는 일정'과 브리핑 할 일 목록 둘 다 */
+  function fadeList(el){
     if (!el) return;
     var more = el.scrollHeight - el.clientHeight > 2;
     var atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
     el.setAttribute('data-fade', (more && !atEnd) ? '1' : '0');
+  }
+  function upFade(){
+    fadeList(document.getElementById('upList'));
+    fadeList(document.querySelector('.brief .brief-scroll'));
   }
 
   /* ────────────────────────── 아침 브리핑 체크 ──────────────────────────
@@ -2152,6 +2170,23 @@
     var t = String(c.textContent || '').replace(/\s+/g, ' ').trim();
     return t.length > 16 ? t.slice(0, 16) + '…' : t;
   }
+  /* 할 일이 사는 스크롤 상자 — 루틴이 브리핑 HTML을 통째로 갈아끼우며 상자를 빠뜨려도
+     목록·직접 추가한 할 일·빈 안내를 여기로 모아 다시 만든다. */
+  function briefScroll(sec){
+    var box = sec.querySelector('.brief-scroll');
+    if (box) return box;
+    box = document.createElement('div');
+    box.className = 'brief-scroll';
+    var anchor = sec.querySelector('.brief-add') || sec.querySelector('.brief-credit');
+    sec.insertBefore(box, anchor || null);
+    var move = ['.brief-list', '.brief-mine', '.brief-empty'], i, el;
+    for (i = 0; i < move.length; i++) {
+      el = sec.querySelector(move[i]);
+      if (el && el.parentNode === sec) box.appendChild(el);
+    }
+    box.addEventListener('scroll', upFade);
+    return box;
+  }
   function briefEmptyEl(sec){
     var el = sec.querySelector('.brief-empty');
     if (el) return el;
@@ -2159,9 +2194,7 @@
     el.className = 'brief-empty';
     el.hidden = true;
     el.innerHTML = '오늘 할 일을 모두 마쳤어요<em>✓</em>';
-    var anchor = sec.querySelector('.brief-mine') || sec.querySelector('.brief-credit');
-    if (anchor && anchor.parentNode === sec) sec.insertBefore(el, anchor);
-    else sec.appendChild(el);
+    briefScroll(sec).appendChild(el);
     return el;
   }
   function briefRestoreAll(){
@@ -2253,15 +2286,16 @@
   }
   /* 목록·입력창이 없으면 만든다 — 루틴이 브리핑 HTML을 갈아끼운 뒤에도 여기서 되살아난다 */
   function briefMine(sec){
+    var box = briefScroll(sec);
     var ul = sec.querySelector('.brief-mine');
-    var credit = sec.querySelector('.brief-credit');
     if (!ul) {
       ul = document.createElement('ul');
       ul.className = 'brief-mine';
       ul.setAttribute('aria-label', '내가 추가한 할 일');
       ul.hidden = true;
-      if (credit && credit.parentNode === sec) sec.insertBefore(ul, credit);
-      else sec.appendChild(ul);
+      box.appendChild(ul);
+    } else if (ul.parentNode !== box) {
+      box.appendChild(ul);
     }
     var form = sec.querySelector('.brief-add');
     if (!form) {
@@ -2286,7 +2320,8 @@
       btn.title = '추가';
       form.appendChild(inp);
       form.appendChild(btn);
-      ul.parentNode.insertBefore(form, ul.nextSibling);
+      /* 입력창은 스크롤 상자 밖, 카드 아래쪽에 고정 */
+      sec.insertBefore(form, box.nextSibling);
       form.addEventListener('submit', function(e){
         e.preventDefault();
         var f = form.querySelector('.brief-add-in');
@@ -2615,7 +2650,7 @@
     }
   });
   window.addEventListener('scroll', function(){ if (menuEl) closeMenu(); }, true);
-  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); });
+  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); upFade(); });
 
   function setStatus(it, s){
     if (it.status === s) return;
@@ -3494,6 +3529,8 @@
   document.getElementById('sort').value = state.sort;
   var upListBoot = document.getElementById('upList');
   if (upListBoot) upListBoot.addEventListener('scroll', upFade);
+  var briefScrollBoot = document.querySelector('.brief .brief-scroll');
+  if (briefScrollBoot) briefScrollBoot.addEventListener('scroll', upFade);
   render();
   syncToday();
   scheduleMidnight();
