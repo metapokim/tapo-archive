@@ -809,6 +809,7 @@
             <div class="brief-scroll">
               <ul class="brief-list">
                 <li><span class="brief-time">06:00</span><span class="brief-body">러닝</span></li>
+                <li><span class="brief-time">12:30</span><span class="brief-body">건우</span></li>
                 <li><span class="brief-time">18:00</span><span class="brief-body">콩지 연고 발라주기</span></li>
                 <li><span class="brief-time is-todo">할 일</span><span class="brief-body">피부과 방문</span></li>
                 <li><span class="brief-time is-todo">할 일</span><span class="brief-body">블로그 포스팅(4-1시험 리뷰)</span></li>
@@ -2321,7 +2322,9 @@
   }
   /* 오늘 목록에 이미 있는 문구를 직접 추가한 할 일에도 또 넣어 두면 두 줄로 보인다 —
      같은 문구(시각·'할 일' 라벨은 떼고 비교)가 목록에 있으면 그 사본은 지운다.
+     문구가 달라도 같은 일인 것은 아래 별칭으로 묶는다(은유 님이 직접 넣어 둔 '건우 만나기' ↔ 목록의 '건우').
      목록에서 그 줄이 사라진 날(내일 이후)에는 손대지 않으므로, 다시 넣은 할 일은 그대로 둔다. */
+  var BRIEF_TODO_SAME = { '건우 만나기': '건우' };
   function dedupeBriefTodos(){
     var list = document.querySelector('.brief .brief-list');
     if (!list) return;
@@ -2335,7 +2338,7 @@
     if (!Object.keys(have).length) return;   /* 목록이 비었거나 루틴이 갈아끼운 직후 — 건드리지 않는다 */
     for (k = 0; k < todos.length; k++) {
       t = coreBriefText(todos[k].text);
-      if (t && have[t]) drop.push(todos[k].id);
+      if (t && (have[t] || (BRIEF_TODO_SAME[t] && have[BRIEF_TODO_SAME[t]]))) drop.push(todos[k].id);
     }
     if (!drop.length) return;
     for (k = 0; k < drop.length; k++) {
@@ -2383,7 +2386,7 @@
       kid = ul.children[k];
       if (kid === li || kid.hidden || kid.tagName !== 'LI') continue;
       kr = kid.getBoundingClientRect();
-      if (y < kr.top + kr.height / 2) { before = kid; break; }
+      if (y <= kr.top + kr.height / 2) { before = kid; break; }
     }
     if (before) {
       if (li.nextSibling !== before) ul.insertBefore(li, before);
