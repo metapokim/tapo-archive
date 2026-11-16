@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<title>임시 푸터 확인</title>
+<style>
+  body{margin:0;background:#DDE3EA;font:13px/1.4 -apple-system,"Apple SD Gothic Neo",sans-serif}
+  .box{margin:12px;background:#fff;border-radius:12px;overflow:hidden;width:390px}
+  .cap{padding:6px 10px;font-weight:700;color:#334155;background:#F1F5F9}
+  iframe{display:block;width:390px;height:420px;border:0}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="cap">390 · 푸터(백업·불러오기 옆 ☁️)</div>
+  <iframe id="f" src="./index.html?foot=1"></iframe>
+</div>
+<script>
+  try { localStorage.setItem('eunyu-archive-ui-v1', JSON.stringify({cat:'all', shelf:'all', sort:'default'})); } catch (e) {}
+  var f = document.getElementById('f');
+  f.onload = function(){
+    setTimeout(function(){
+      try {
+        var w = f.contentWindow, d = f.contentDocument;
+        w.scrollTo(0, d.documentElement.scrollHeight);
+      } catch (e) { document.querySelector('.cap').textContent += ' ERR:' + e.message; }
+    }, 600);
+  };
+</script>
+</body>
+</html>
