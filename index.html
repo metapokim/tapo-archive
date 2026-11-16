@@ -1455,7 +1455,7 @@
 
     /* 대학원 입시 정보(2027 모집일정·전형·서류): 이 기기에 저장된 두 카드를 한 번만 보강한다.
        메모·상태는 건드리지 않고, 다른 기기의 옛 사본이 되돌리지 않도록 이번 갱신 시각만 남긴다. */
-    if (!(ui && ui.gradAdm20261117)) {
+    if (!(ui && ui.gradAdm20261117b)) {
       var ga, gk, gi, patched;
       for (gi = 0; gi < state.items.length; gi++) {
         it = state.items[gi];
@@ -1502,7 +1502,8 @@
       shelfCart20261116: (shelfCartSynced || prev.shelfCart20261116) ? 1 : 0,
       ynaSynced20261116: (ynaSynced || prev.ynaSynced20261116) ? 1 : 0,
       ynaSub20261116: (ynaSubSynced || prev.ynaSub20261116) ? 1 : 0,
-      gradAdm20261117: (gradAdmSynced || prev.gradAdm20261117) ? 1 : 0 }));
+      gradAdm20261117: (gradAdmSynced || prev.gradAdm20261117) ? 1 : 0,
+      gradAdm20261117b: (gradAdmSynced || prev.gradAdm20261117b) ? 1 : 0 }));
   }
   function persist(){
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
