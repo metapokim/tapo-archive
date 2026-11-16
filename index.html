@@ -207,6 +207,12 @@
   @media (min-width:901px){
     .brief,.up-box{height:var(--hero-h)}
   }
+  /* 히어로(오늘의 브리핑 + 다가오는 일정)는 '전체'에서만 — 다른 카테고리를 고르면 통째로 접어
+     그 메뉴의 필터·카드가 바로 보이게 한다. PC·아이패드·아이폰 모두 같은 규칙이다. */
+  .hero[hidden]{display:none}
+  .hero[hidden] + .filters{padding-top:12px}
+  /* 메모처럼 필터 줄도 없는 메뉴에서는 목록이 헤더에 붙지 않게 */
+  .hero[hidden] + .filters[hidden] + main{padding-top:12px}
 
   /* morning brief — dark point card */
   .brief{
@@ -1799,6 +1805,7 @@
   var mainEl = document.getElementById('main');
   var sectionsEl = document.getElementById('sections');
   var emptyEl = document.getElementById('empty');
+  var heroEl = document.querySelector('.hero');
 
   /* 이미지 로드 실패 → 깨진 아이콘 대신 썸네일 자리만 감춤 */
   if (mainEl && mainEl.addEventListener) {
@@ -2555,6 +2562,8 @@
     /* 상태·서가·정렬 줄은 카테고리를 골랐을 때만 — 전체/메모에서는 접어 둔다 */
     var filtersEl = document.getElementById('filters');
     if (filtersEl) filtersEl.hidden = (state.cat === 'all' || state.cat === 'memo');
+    /* 브리핑·다가오는 일정(.hero)은 '전체'에서만 펼친다 — 카테고리를 고르면 바로 그 목록만 */
+    if (heroEl) heroEl.hidden = (state.cat !== 'all');
     renderSections(res);
     renderStats();
     renderUpcoming();
