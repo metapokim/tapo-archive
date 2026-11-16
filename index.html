@@ -101,6 +101,7 @@
     display:inline-flex;align-items:center;gap:7px;
     padding:8px 13px;border-radius:999px;border:1px solid var(--line-2);background:#fff;
     color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:700;letter-spacing:-.01em;
+    white-space:nowrap;
     transition:background .15s,border-color .15s,box-shadow .15s,transform .12s;
   }
   .quick a:hover{background:#FAFAFA;border-color:#D4D4D8;box-shadow:0 1px 2px rgba(16,24,40,.05)}
@@ -564,11 +565,17 @@
     .foot-tools{display:flex}
     .foot-tools .btn{flex:1 1 0;font-size:12px;padding:9px 10px}
     footer .saved{margin-left:0}
-    .quick--top{display:flex;order:6;flex:1 1 100%;margin-top:2px}
-    .quick a{font-size:12px;padding:7px 12px}
+    /* 바로가기 3개(국가법령정보센터·헌법재판소·내 블로그)를 390px에서 한 줄에 */
+    .quick--top{display:flex;order:6;flex:1 1 100%;margin-top:2px;gap:6px}
+    .quick--top a{flex:1 1 auto;justify-content:center;gap:6px;font-size:12px;padding:7px 9px}
+    .quick--top a .arw{display:none}
   }
   @media (max-width:420px){
     .brief-lead{font-size:14.5px}
+  }
+  @media (max-width:360px){
+    .quick--top a{font-size:11px;padding:6px 8px;gap:5px}
+    .quick--top a svg:first-of-type{width:12px;height:12px;flex:0 0 12px}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   @media print{
@@ -594,6 +601,7 @@
     <div class="side-foot">
       <nav class="quick quick--side" aria-label="바로가기">
         <a href="https://www.law.go.kr/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 8h14"/><path d="M5 8l-2.5 5a3 3 0 0 0 5 0L5 8Z"/><path d="M19 8l-2.5 5a3 3 0 0 0 5 0L19 8Z"/></svg>국가법령정보센터<svg class="arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></a>
+        <a href="https://www.ccourt.go.kr/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 10.5 12 4l9 6.5"/></svg>헌법재판소<svg class="arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></a>
         <a href="https://blog.naver.com/metaphor365" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1L18.5 8.5a2.47 2.47 0 0 0-3.5-3.5L4.5 15.5 4 20Z"/><path d="M13.5 6.5 17.5 10.5"/></svg>내 블로그<svg class="arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></a>
       </nav>
       <div class="side-btns">
@@ -622,6 +630,7 @@
       <nav class="tabs" id="tabs" aria-label="카테고리"></nav>
       <nav class="quick quick--top" aria-label="바로가기">
         <a href="https://www.law.go.kr/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 8h14"/><path d="M5 8l-2.5 5a3 3 0 0 0 5 0L5 8Z"/><path d="M19 8l-2.5 5a3 3 0 0 0 5 0L19 8Z"/></svg>국가법령정보센터<svg class="arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></a>
+        <a href="https://www.ccourt.go.kr/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21v-9"/><path d="M9.5 21v-9"/><path d="M14.5 21v-9"/><path d="M19 21v-9"/><path d="M3 10.5 12 4l9 6.5"/></svg>헌법재판소<svg class="arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></a>
         <a href="https://blog.naver.com/metaphor365" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1L18.5 8.5a2.47 2.47 0 0 0-3.5-3.5L4.5 15.5 4 20Z"/><path d="M13.5 6.5 17.5 10.5"/></svg>내 블로그<svg class="arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></a>
       </nav>
     </header>
