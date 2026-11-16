@@ -388,11 +388,39 @@
   .line--src{font-size:11.5px;font-weight:800;letter-spacing:.01em;color:#52525B}
   .card--news .line--src,.card--grad .line--src{color:var(--green-2)}
   .card--news .line--dim,.card--grad .line--dim{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  /* 판결 요지·이후 논의처럼 여러 줄로 적은 요약 — 줄바꿈 그대로, 길면 카드 안에서만 스크롤 */
+  /* 판결 요지·이후 논의처럼 여러 줄로 적은 요약 — 줄바꿈 그대로, 길면 메모 카드처럼 카드 안에서만 스크롤 */
   .card--news .line--note,.card--grad .line--note{
     display:block;-webkit-line-clamp:unset;
     color:var(--ink-2);font-size:12px;line-height:1.62;
     white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;
+    /* 메모 카드(.memo-body)와 같은 방식 — 높이를 묶고 넘치는 만큼만 안에서 스크롤 (12px×1.62 = 6줄) */
+    max-height:117px;overflow-y:auto;padding-right:2px;
+  }
+  .card--news .line--note:focus-visible,.card--grad .line--note:focus-visible{
+    outline:2px solid var(--lemon-2);outline-offset:2px;border-radius:6px;
+  }
+  /* 카드 안에서 스크롤하는 영역(메모 본문·여러 줄 요약)의 스크롤바 — 얇게, 화살표 버튼 없이 */
+  .memo-body::-webkit-scrollbar,
+  .card--news .line--note::-webkit-scrollbar,
+  .card--grad .line--note::-webkit-scrollbar{width:6px;height:6px}
+  .memo-body::-webkit-scrollbar-button,
+  .card--news .line--note::-webkit-scrollbar-button,
+  .card--grad .line--note::-webkit-scrollbar-button{display:none;width:0;height:0}
+  .memo-body::-webkit-scrollbar-track,
+  .card--news .line--note::-webkit-scrollbar-track,
+  .card--grad .line--note::-webkit-scrollbar-track{background:transparent}
+  .memo-body::-webkit-scrollbar-corner,
+  .card--news .line--note::-webkit-scrollbar-corner,
+  .card--grad .line--note::-webkit-scrollbar-corner{background:transparent}
+  .memo-body::-webkit-scrollbar-thumb,
+  .card--news .line--note::-webkit-scrollbar-thumb,
+  .card--grad .line--note::-webkit-scrollbar-thumb{background:#DCDCE0;border-radius:999px}
+  .memo-body::-webkit-scrollbar-thumb:hover,
+  .card--news .line--note::-webkit-scrollbar-thumb:hover,
+  .card--grad .line--note::-webkit-scrollbar-thumb:hover{background:#C4C4C9}
+  /* ::-webkit-scrollbar 를 쓰지 않는 브라우저(Firefox)만 thin 네이티브 */
+  @supports not selector(::-webkit-scrollbar){
+    .memo-body,.card--news .line--note,.card--grad .line--note{scrollbar-width:thin;scrollbar-color:#DCDCE0 transparent}
   }
   .subtag{
     align-self:flex-start;margin-top:2px;font:inherit;font-size:10.5px;font-weight:700;
@@ -1561,7 +1589,11 @@
       if (it.place) h += '<p class="line">' + esc(it.place) + '</p>';
     } else if (it.cat === 'news' || it.cat === 'grad') {
       if (it.publisher) h += '<p class="line line--src">' + esc(it.publisher) + '</p>';
-      if (it.summary) h += '<p class="line line--dim' + (String(it.summary).indexOf('\n') >= 0 ? ' line--note' : '') + '">' + esc(it.summary) + '</p>';
+      if (it.summary) {
+        var isNote = String(it.summary).indexOf('\n') >= 0;
+        /* 여러 줄 요약은 카드 안에서 스크롤 — 키보드로도 넘길 수 있게 포커스를 받는다 */
+        h += '<p class="line line--dim' + (isNote ? ' line--note' : '') + '"' + (isNote ? ' tabindex="0"' : '') + '>' + esc(it.summary) + '</p>';
+      }
       if (it.sub) h += '<button class="subtag" type="button" data-act="sub" data-sub="' + esc(it.sub) + '" title="이 주제만 보기">' + esc(it.sub) + '</button>';
     } else if (it.cat === 'show') {
       if (it.place) h += '<p class="line">' + esc(it.place) + '</p>';
