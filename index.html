@@ -3787,7 +3787,17 @@
     payload: function(){ return buildSyncPayload(); },
     apply: function(remote){ return applySyncPayload(remote); },
     cfg: function(){ return { connected: !!syncCfg.token, gistId: syncCfg.gistId, lastSync: syncCfg.lastSync }; },
-    brief: function(){ return { date: briefStamp(), map: state.brief, todos: briefTodos().slice() }; },
+    brief: function(){ return { date: briefStamp(), map: state.brief, todos: briefTodos().slice(), order: briefOrder() }; },
+    /* 날씨 자동 전환 확인용 — 그 날짜에 적용될 문구와 지금 화면의 첫 줄을 읽기만 한다 */
+    weather: function(ymd){
+      var sec = document.querySelector('.brief');
+      var map = briefWeatherDays(sec), key = ymd || ymdLocal(new Date());
+      var lead = sec ? sec.querySelector('.brief-lead') : null;
+      return { ask: key, text: map[key] || null, days: Object.keys(map),
+        lead: lead ? String(lead.textContent).replace(/\s+/g, ' ').trim() : '',
+        applied: lead ? String(lead.getAttribute('data-date') || '') : '' };
+    },
+    resync: function(){ syncToday(); return true; },
     kinds: function(){ return state.items.filter(function(x){ return x.cat === 'grad' || x.cat === 'news'; }).map(function(x){ return x.id + ':' + kindOf(x); }); }
   };
 
