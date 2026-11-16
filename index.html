@@ -712,8 +712,8 @@
           <!-- 아침 브리핑은 이 두 마커 사이만 통째로 교체합니다. (updated: 2026-11-16 13:15 KST · 오늘 11/16 예보) -->
           <section class="brief" aria-label="아침 브리핑">
             <p class="brief-top">
-              <span class="brief-label">Morning Brief</span>
-              <time class="brief-when" datetime="2026-11-16T05:25+09:00">2026.11.16 (월) 아침</time>
+              <span class="brief-label">TODAY'S BRIEFING</span>
+              <time class="brief-when" datetime="2026-11-16T05:25+09:00">11월 16일 월</time>
             </p>
             <p class="brief-lead">오늘(월) 서울은 <b>흐림, 8~17°C</b>. 초미세먼지 나쁨 예보라 가벼운 겉옷에 마스크 챙기기.</p>
             <ul class="brief-list">
@@ -1427,6 +1427,37 @@
   function fullDate(d){
     return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' (' + WEEK[d.getDay()] + ')';
   }
+  /* 브리핑 카드의 날짜는 지금 시각으로 채운다 — 11월 16일 월 */
+  function todayText(d){
+    return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + WEEK[d.getDay()];
+  }
+  /* 날짜 표시(브리핑 날짜·발행 기준 줄)를 오늘로 다시 맞춘다 */
+  function syncToday(){
+    var d = new Date();
+    var t = document.querySelector('.brief .brief-when');
+    if (t) t.textContent = todayText(d);
+    var line = document.getElementById('issueLine');
+    if (line) line.textContent = 'VOL. 01 · ' + fullDate(d) + ' 기준';
+  }
+  /* 페이지를 켜 둔 채 자정을 넘겨도 날짜가 바뀌도록 다음 00:00:01 에 한 번 깨운다.
+     (datetime 속성은 브리핑을 쓴 시각 그대로 두어 체크 기록 키가 흔들리지 않게 한다) */
+  var midnightTimer = null;
+  function scheduleMidnight(){
+    if (midnightTimer) clearTimeout(midnightTimer);
+    var now = new Date();
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    var ms = next.getTime() - now.getTime();
+    midnightTimer = setTimeout(function(){
+      midnightTimer = null;
+      syncToday();
+      scheduleMidnight();
+    }, ms > 0 ? ms : 1000);
+  }
+  /* 잠들었다 깬 기기(아이폰 백그라운드)는 타이머가 늦거나 건너뛰므로 돌아올 때 한 번 더 맞춘다 */
+  function wakeToday(){ syncToday(); scheduleMidnight(); }
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) wakeToday(); });
+  window.addEventListener('focus', wakeToday);
+  window.addEventListener('pageshow', wakeToday);
 
   /* ────────────────────────── 검색·필터 ────────────────────────── */
   function esc(s){
@@ -3311,6 +3342,8 @@
   var upListBoot = document.getElementById('upList');
   if (upListBoot) upListBoot.addEventListener('scroll', upFade);
   render();
+  syncToday();
+  scheduleMidnight();
   setSyncState('idle');
   if (loadChanged) persist();   /* 병합·정리 결과를 저장소에 그대로 반영 */
   if (syncCfg.token) setTimeout(function(){ syncNow({ silent: true }); }, 700);   /* 켜 두면 열 때 한 번 맞춘다 */
