@@ -195,7 +195,7 @@
   .hero{
     display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;
     max-width:1240px;width:100%;margin:0 auto;padding:8px 0 18px;align-items:stretch;
-    min-width:0;--hero-h:396px;
+    min-width:0;--hero-h:406px;
   }
   /* 넓은 화면(데스크톱·아이패드 가로)에서만 두 카드의 폭·높이를 똑같이 맞춘다.
      좁은 화면은 한 줄로 쌓이므로 카드마다 자연스러운 높이(아래 max-height)를 쓴다. */
@@ -2532,8 +2532,8 @@
     renderSections(res);
     renderStats();
     renderUpcoming();
-    upFade();
     renderBrief();
+    upFade();   /* 브리핑 목록이 다시 그려진 뒤에야 스크롤 여부(아래 흐림)를 알 수 있다 */
     var totalShown = 0, c;
     for (c = 0; c < CAT_ORDER.length; c++) totalShown += res[CAT_ORDER[c]].length;
     if (totalShown === 0 && state.cat === 'memo') {
