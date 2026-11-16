@@ -2368,25 +2368,27 @@
   }
   function briefDragMove(x, y){
     if (!dragState) return;
-    var li = dragState.li, box = dragState.box;
+    var li = dragState.li, box = dragState.box, ul = li.parentNode;
+    if (!ul) return;
     if (Math.abs(y - dragState.y0) > 3) dragState.moved = true;
     /* 위·아래 끝에 다으면 상자가 따라 스크롤 */
     var r = box.getBoundingClientRect(), edge = 26, sp = 0;
     if (y < r.top + edge) sp = -Math.min(14, Math.round((r.top + edge - y) / 3) + 2);
     else if (y > r.bottom - edge) sp = Math.min(14, Math.round((y - (r.bottom - edge)) / 3) + 2);
     if (sp) box.scrollTop += sp;
-    /* 끄는 줄 자신은 잠시 숨기고 그 자리에 있는 줄을 찾는다 */
-    li.style.pointerEvents = 'none';
-    var over = document.elementFromPoint(x, y);
-    li.style.pointerEvents = '';
-    var target = briefDragItem(over);
-    if (!target || target === li || target.hidden) return;
-    if (target.parentNode !== li.parentNode) return;   /* 다른 목록(직접 추가)으로는 넘기지 않는다 */
-    var tr = target.getBoundingClientRect();
-    if (y > tr.top + tr.height / 2) {
-      if (li.nextSibling !== target) target.parentNode.insertBefore(li, target.nextSibling);
-    } else if (target.nextSibling !== li) {
-      target.parentNode.insertBefore(li, target);
+    /* 같은 목록의 다른 줄들 중, 가운데 선이 손가락보다 아래에 있는 첫 줄 앞에 끼운다
+       (elementFromPoint 대신 위치로 찾아 자식 요소·마스크에 희들리지 않는다) */
+    var before = null, k, kid, kr;
+    for (k = 0; k < ul.children.length; k++) {
+      kid = ul.children[k];
+      if (kid === li || kid.hidden || kid.tagName !== 'LI') continue;
+      kr = kid.getBoundingClientRect();
+      if (y < kr.top + kr.height / 2) { before = kid; break; }
+    }
+    if (before) {
+      if (li.nextSibling !== before) ul.insertBefore(li, before);
+    } else if (ul.lastElementChild !== li) {
+      ul.appendChild(li);
     }
   }
   function briefDragEnd(){
