@@ -374,7 +374,17 @@
     font-size:10.5px;font-weight:800;letter-spacing:.06em;
   }
   .sec-title{margin:0;font-size:18px;font-weight:800;letter-spacing:-.03em}
-  .sec-count{margin-left:auto;font-size:11px;font-weight:600;color:#A1A1AA;font-variant-numeric:tabular-nums}
+  .sec-count{margin-left:0;font-size:11px;font-weight:600;color:#A1A1AA;font-variant-numeric:tabular-nums}
+  /* 섹션 접기/펼치기 — 테두리·배경 없는 순수 꺾쇠(^) */
+  .sec-toggle{
+    flex:0 0 auto;margin-left:auto;width:30px;height:30px;padding:0;border:0;background:none;
+    display:inline-flex;align-items:center;justify-content:center;color:#A1A1AA;cursor:pointer;
+    border-radius:8px;-webkit-tap-highlight-color:transparent;transition:color .15s;
+  }
+  .sec-toggle:hover,.sec-toggle:focus-visible{color:var(--ink);outline:none}
+  .sec-toggle svg{display:block;width:17px;height:17px;transition:transform .2s ease}
+  .sec.is-collapsed .sec-toggle svg{transform:rotate(180deg)}
+  .sec.is-collapsed .grid{display:none}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px;min-width:0}
   .card{
     position:relative;display:flex;flex-direction:column;gap:7px;background:var(--card);min-width:0;max-width:100%;
@@ -1095,6 +1105,7 @@
     sort: 'default',
     q: '',
     kind: 'all',
+    collapsed: {},     /* 전체 보기에서 접어 둔 섭션 (cat → 1) */
     limits: { forum: 60, grad: 24, news: 24, show: 60, book: 24, memo: 60 }
   };
   var loadChanged = false;   /* 저장본 병합·정리로 내용이 바뀌었는지 */
@@ -1363,6 +1374,12 @@
       if (ui.cat && (ui.cat === 'all' || META[ui.cat])) state.cat = ui.cat;
       if (ui.shelf && SHELF_ORDER.indexOf(ui.shelf) >= 0) state.shelf = ui.shelf;
       if (ui.sort && ['default','date-desc','title'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
+      if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
+        state.collapsed = {};
+        (Array.isArray(ui.collapsed) ? ui.collapsed : Object.keys(ui.collapsed)).forEach(function(c){
+          if (META[c]) state.collapsed[c] = 1;
+        });
+      }
     }
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.shelf = 'all';
@@ -1377,6 +1394,7 @@
     if (praw) { try { prev = JSON.parse(praw); } catch (e) { prev = null; } }
     if (!prev || typeof prev !== 'object') prev = {};
     writeStore(UIKEY, JSON.stringify({ cat: state.cat, shelf: state.shelf, sort: state.sort,
+      collapsed: Object.keys(state.collapsed || {}),
       bjSynced20261115: (bjSynced || prev.bjSynced20261115) ? 1 : 0,
       forumSynced20261116: (forumSynced || prev.forumSynced20261116) ? 1 : 0,
       forumPoster20261116: (posterSynced || prev.forumPoster20261116) ? 1 : 0,
@@ -1891,10 +1909,18 @@
       idx++;
       var lim = state.limits[cat] || 24;
       var shown = list.slice(0, lim);
-      html += '<section class="sec" data-cat="' + cat + '">';
+      /* 접기는 전체 보기에서만. 카테고리를 골랐을 때는 늘 카드가 보인다 */
+      var foldable = (state.cat === 'all');
+      var collapsed = foldable && !!state.collapsed[cat];
+      html += '<section class="sec' + (collapsed ? ' is-collapsed' : '') + '" data-cat="' + cat + '">';
       html += '<div class="sec-head"><span class="sec-num">' + (META[cat].num || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
-           + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span></div>';
+           + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
+           + (foldable
+             ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
+               + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
+             : '')
+           + '</div>';
       html += '<div class="grid">';
       html += shown.map(cardHTML).join('');
       if (list.length > shown.length) {
@@ -1903,6 +1929,22 @@
       html += '</div></section>';
     });
     sectionsEl.innerHTML = html;
+  }
+
+  /* 섭션 접기/펼치기 — 화면을 다시 그리지 않고 그 자리만 바꾸어 스크롤이 튀지 않게 한다 */
+  function foldSection(cat, el){
+    if (!cat || state.cat !== 'all' || !el) return;
+    var now = !state.collapsed[cat];
+    if (now) state.collapsed[cat] = 1; else delete state.collapsed[cat];
+    el.classList.toggle('is-collapsed', now);
+    var btn = el.querySelector('.sec-toggle');
+    if (btn) {
+      var label = (META[cat] && META[cat].label) || '';
+      btn.setAttribute('aria-expanded', now ? 'false' : 'true');
+      btn.setAttribute('aria-label', label + (now ? ' 펼치기' : ' 접기'));
+      btn.title = now ? '펼치기' : '접기';
+    }
+    saveUIPrefs();
   }
 
   function renderStats(){
@@ -2792,6 +2834,13 @@
   /* ────────────────────────── 이벤트 ────────────────────────── */
   mainEl.addEventListener('click', function(e){
     var target = e.target;
+    /* 섭션 머리글(제목·건수·꺽쇠)을 누르면 그 섭션을 접고 편다 — 전체 보기에서만 */
+    var head = (target && target.closest) ? target.closest('.sec-head') : null;
+    if (head) {
+      var secEl = head.parentNode;
+      if (secEl && secEl.getAttribute) foldSection(secEl.getAttribute('data-cat'), secEl);
+      return;
+    }
     var actEl = target.closest ? target.closest('[data-act]') : null;
     if (!actEl) return;
     var act = actEl.getAttribute('data-act');
