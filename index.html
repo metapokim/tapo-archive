@@ -1245,6 +1245,15 @@
     if (p.length >= 2 && p[1]) return p[0] + '.' + Number(p[1]);
     return p[0];
   }
+  /* 기사·뉴스레터·자료, 공연·전시, 논문 카드는 연도를 늘 함께 보여준다
+     2026-11-16 → 2026.11.16 월 · 2026-10 → 2026.10 · 2025 → 2025년 */
+  function yearWhen(s){
+    var p = String(s == null ? '' : s).split('-');
+    if (!p[0]) return '';
+    if (p.length >= 3 && p[1] && p[2]) return dateLine(s, true);
+    if (p.length >= 2 && p[1]) return p[0] + '.' + Number(p[1]);
+    return p[0] + '년';
+  }
   function fullDate(d){
     return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' (' + WEEK[d.getDay()] + ')';
   }
@@ -1422,9 +1431,12 @@
     if (it.pick) h += '<span class="pick">고른 일정</span>';
     if (it.cat === 'book' && SHELF[it.shelf]) h += '<span class="shelf">' + SHELF[it.shelf] + '</span>';
     if (it.date && it.cat === 'grad') {
-      var gw = gradWhen(it.date);
+      /* 대학원 후보는 기존 형식, 논문은 연도까지 */
+      var gw = kindOf(it) === '논문' ? yearWhen(it.date) : gradWhen(it.date);
       if (gw) h += '<span class="when">' + gw + '</span>';
-    } else if (it.date && it.cat !== 'book') h += '<span class="when">' + (it.cat === 'news' ? gradWhen(it.date) : dateLine(it.date)) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
+    } else if (it.date && it.cat === 'news') h += '<span class="when">' + yearWhen(it.date) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
+    else if (it.date && it.cat === 'show') h += '<span class="when">' + yearWhen(it.date) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
+    else if (it.date && it.cat !== 'book') h += '<span class="when">' + dateLine(it.date) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
     if (it.cat === 'book' && it.shelf === 'bought' && it.date) h += '<span class="when">' + dateLine(it.date, true) + '</span>';
     if (it.cat === 'book' && it.shelf === 'read' && it.date) h += '<span class="when">읽음 ' + dateLine(it.date, true) + '</span>';
     var dd = upcomingDD(it);
