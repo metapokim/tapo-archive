@@ -170,13 +170,15 @@
   .btn--cloud.is-syncing svg{animation:cloudPulse 1.1s ease-in-out infinite}
   @keyframes cloudPulse{0%,100%{opacity:1}50%{opacity:.35}}
   /* ▾ 모바일 전용 — 검색창·카테고리·바로가기를 접고 펼친다 (PC에서는 숨김) */
-  .btn--more{display:none;flex:0 0 auto;height:32px;padding:0 9px;gap:5px;border-radius:999px;
-    border:1px solid var(--line-2);background:#fff;color:var(--ink-2);font-size:11px;font-weight:800;letter-spacing:-.01em}
-  .btn--more:hover{border-color:#D4D4D8;color:var(--ink);background:#FAFAFA}
-  .btn--more .more-cat{max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-3);font-weight:700}
-  .btn--more .chev{display:block;width:15px;height:15px;flex:0 0 15px;color:var(--ink-3);transition:transform .2s ease}
-  .topbar.is-open .btn--more{color:var(--ink);border-color:#D4D4D8}
-  .topbar.is-open .btn--more .chev{transform:rotate(180deg);color:var(--ink)}
+  .btn--more{display:none;flex:0 0 auto;width:27px;height:27px;padding:0;gap:0;border-radius:999px;
+    border:1px solid var(--lemon-2);background:var(--lemon);color:var(--ink);
+    box-shadow:0 0 0 4px rgba(255,230,0,.2);font-size:11px;font-weight:800;letter-spacing:-.01em}
+  .btn--more:hover{background:#FFEC33;border-color:var(--lemon-2)}
+  .btn--more .more-cat{max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--lemon-ink);font-weight:800}
+  .btn--more.has-cat{width:auto;padding:0 10px;gap:5px}   /* 카테고리를 고른 뒤에만 알약으로 늘어난다 */
+  .btn--more .chev{display:block;width:13px;height:13px;flex:0 0 13px;color:var(--ink);transition:transform .2s ease}
+  .topbar.is-open .btn--more{background:#FFEC33;box-shadow:0 0 0 4px rgba(255,230,0,.26)}
+  .topbar.is-open .btn--more .chev{transform:rotate(180deg)}
   .sync-steps{margin:10px 0 14px;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--ink-2)}
   .sync-steps b{font-weight:800;color:var(--ink)}
   .sync-steps code{font-size:11.5px;background:#F4F4F5;border-radius:6px;padding:1px 5px}
@@ -230,7 +232,7 @@
     cursor:pointer;-webkit-tap-highlight-color:transparent;
   }
   .brief-check::before{
-    content:"";position:absolute;inset:3px;border-radius:50%;
+    content:"";position:absolute;inset:4px;border-radius:50%;
     border:1.5px solid rgba(255,255,255,.34);transition:border-color .15s,background .15s;
   }
   .brief-check svg{position:relative;display:block;width:11px;height:11px;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
@@ -263,7 +265,7 @@
   .brief-del:hover,.brief-del:focus-visible{color:#FB7185;background:rgba(251,113,133,.14);outline:none}
   .brief-add{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:0}
   .brief-add-in{
-    flex:1 1 auto;min-width:0;height:34px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;
+    flex:1 1 auto;min-width:0;height:32px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;
     color:#FAFAFA;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
     padding:0 14px;letter-spacing:-.01em;transition:border-color .15s,background .15s,box-shadow .15s;
     -webkit-appearance:none;appearance:none;
@@ -271,8 +273,8 @@
   .brief-add-in::placeholder{color:#7E7E88;font-weight:600}
   .brief-add-in:focus{outline:none;border-color:rgba(255,230,0,.55);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
   .brief-add-btn{
-    flex:0 0 auto;width:34px;height:34px;padding:0 0 1px;border-radius:999px;border:1px solid var(--lemon-2);
-    background:var(--lemon);color:#18181B;font:inherit;font-size:19px;font-weight:800;line-height:1;
+    flex:0 0 auto;width:32px;height:32px;padding:0 0 1px;border-radius:999px;border:1px solid var(--lemon-2);
+    background:var(--lemon);color:#18181B;font:inherit;font-size:18px;font-weight:800;line-height:1;
     display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
     box-shadow:0 6px 14px -8px rgba(255,230,0,.9);transition:transform .12s,background .16s;
     -webkit-tap-highlight-color:transparent;
@@ -620,10 +622,11 @@
     .brief-when{font-size:10px}
     .brief-meta{display:none}
     .brief-check{flex-basis:30px;width:30px;height:30px;margin:-6px -4px -6px 0}
+    .brief-check::before{inset:6px}   /* 보이는 원은 18px, 누르는 영역은 30px */
     .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
     .brief-add{margin-top:10px;gap:7px}
-    .brief-add-in{height:36px;font-size:16px;padding:0 15px}
-    .brief-add-btn{width:36px;height:36px;font-size:20px}
+    .brief-add-in{height:30px;font-size:16px;padding:0 14px}
+    .brief-add-btn{width:30px;height:30px;font-size:17px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
     .up-list{max-height:232px;padding-right:3px}
     .up-note{display:none}
@@ -1794,6 +1797,8 @@
       var curLab = (state.cat !== 'all' && META[state.cat]) ? META[state.cat].label : '';
       lab.textContent = curLab;
       lab.hidden = !curLab;
+      var mb = document.getElementById('topbarMoreBtn');
+      if (mb) mb.classList.toggle('has-cat', !!curLab);
     }
   }
 
