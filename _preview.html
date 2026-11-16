@@ -399,6 +399,29 @@
   .card--news .line--note:focus-visible,.card--grad .line--note:focus-visible{
     outline:2px solid var(--lemon-2);outline-offset:2px;border-radius:6px;
   }
+  /* 카드 안에서 스크롤하는 영역(메모 본문·여러 줄 요약)의 스크롤바 — 얇게, 화살표 버튼 없이 */
+  .memo-body::-webkit-scrollbar,
+  .card--news .line--note::-webkit-scrollbar,
+  .card--grad .line--note::-webkit-scrollbar{width:6px;height:6px}
+  .memo-body::-webkit-scrollbar-button,
+  .card--news .line--note::-webkit-scrollbar-button,
+  .card--grad .line--note::-webkit-scrollbar-button{display:none;width:0;height:0}
+  .memo-body::-webkit-scrollbar-track,
+  .card--news .line--note::-webkit-scrollbar-track,
+  .card--grad .line--note::-webkit-scrollbar-track{background:transparent}
+  .memo-body::-webkit-scrollbar-corner,
+  .card--news .line--note::-webkit-scrollbar-corner,
+  .card--grad .line--note::-webkit-scrollbar-corner{background:transparent}
+  .memo-body::-webkit-scrollbar-thumb,
+  .card--news .line--note::-webkit-scrollbar-thumb,
+  .card--grad .line--note::-webkit-scrollbar-thumb{background:#DCDCE0;border-radius:999px}
+  .memo-body::-webkit-scrollbar-thumb:hover,
+  .card--news .line--note::-webkit-scrollbar-thumb:hover,
+  .card--grad .line--note::-webkit-scrollbar-thumb:hover{background:#C4C4C9}
+  /* ::-webkit-scrollbar 를 쓰지 않는 브라우저(Firefox)만 thin 네이티브 */
+  @supports not selector(::-webkit-scrollbar){
+    .memo-body,.card--news .line--note,.card--grad .line--note{scrollbar-width:thin;scrollbar-color:#DCDCE0 transparent}
+  }
   .subtag{
     align-self:flex-start;margin-top:2px;font:inherit;font-size:10.5px;font-weight:700;
     color:var(--green-2);background:var(--green-w);border:1px solid #A7F3D0;border-radius:999px;
