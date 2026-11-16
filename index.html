@@ -758,7 +758,7 @@
       </section>
     </div>
 
-    <div class="filters">
+    <div class="filters" id="filters">
       <div class="filter-bar">
         <div class="chips" id="statusChips" role="group" aria-label="상태 필터"></div>
         <select class="sel sel--sm" id="sort" aria-label="정렬">
@@ -1361,6 +1361,8 @@
       if (ui.shelf && SHELF_ORDER.indexOf(ui.shelf) >= 0) state.shelf = ui.shelf;
       if (ui.sort && ['default','date-desc','title'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
     }
+    /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
+    if (state.cat !== 'book') state.shelf = 'all';
 
     if (bjSynced || forumSynced || posterSynced || shelfCartSynced || ynaSynced || ynaSubSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
@@ -1856,7 +1858,7 @@
 
   function renderShelfChips(){
     var wrap = document.getElementById('shelfChips');
-    if (state.cat !== 'book' && state.cat !== 'all') { wrap.innerHTML = ''; wrap.hidden = true; return; }
+    if (state.cat !== 'book') { wrap.innerHTML = ''; wrap.hidden = true; return; }
     wrap.hidden = false;
     var counts = { hold: 0, cart: 0, bought: 0, read: 0 }, k, it;
     for (k = 0; k < state.items.length; k++) {
@@ -2428,6 +2430,9 @@
     renderStatusChips();
     renderKindChips();
     renderShelfChips();
+    /* 상태·서가·정렬 줄은 카테고리를 골랐을 때만 — 전체/메모에서는 접어 둔다 */
+    var filtersEl = document.getElementById('filters');
+    if (filtersEl) filtersEl.hidden = (state.cat === 'all' || state.cat === 'memo');
     renderSections(res);
     renderStats();
     renderUpcoming();
@@ -2829,7 +2834,7 @@
     state.cat = cat;
     state.status = 'all';
     state.kind = 'all';
-    if (state.cat !== 'book' && state.cat !== 'all') state.shelf = 'all';
+    if (state.cat !== 'book') state.shelf = 'all';   /* 서가 필터는 책에서만 */
     state.limits = { forum: 60, grad: 24, news: 24, show: 60, book: 24, memo: 60 };
     saveUIPrefs();
     render();

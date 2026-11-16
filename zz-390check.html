@@ -3,31 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>임시 390px 확인</title>
 <style>
   body{margin:0;background:#DDE3EA;font:13px/1.4 -apple-system,"Apple SD Gothic Neo",sans-serif}
-  .wrap{display:flex;gap:20px;padding:16px;align-items:flex-start}
+  .wrap{display:flex;gap:18px;padding:14px;align-items:flex-start}
   .box{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.15)}
   .cap{padding:6px 10px;font-weight:700;color:#334155;background:#F1F5F9}
-  iframe{display:block;width:390px;height:760px;border:0}
+  iframe{display:block;width:390px;height:780px;border:0}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="box"><div class="cap">390px · 기본(접힘)</div>
-    <iframe id="a" src="./index.html"></iframe></div>
-  <div class="box"><div class="cap">390px · ▾ 펼침(클릭)</div>
-    <iframe id="b" src="./index.html"></iframe></div>
+  <div class="box"><div class="cap">390 · 전체(접힘)</div>
+    <iframe id="a" src="./index.html?h=a"></iframe></div>
+  <div class="box"><div class="cap">390 · 전체 + ▾ 펼침</div>
+    <iframe id="b" src="./index.html?h=b"></iframe></div>
+  <div class="box"><div class="cap">390 · 책 탭(필터 보임)</div>
+    <iframe id="c" src="./index.html?h=c"></iframe></div>
 </div>
 <script>
-  var b = document.getElementById('b');
-  b.addEventListener('load', function(){
-    setTimeout(function(){
-      var d = b.contentDocument;
-      var btn = d.getElementById('topbarMoreBtn');
-      if (btn) btn.click();
-    }, 400);
-  });
+  function prep(id, fn){
+    var f = document.getElementById(id);
+    f.addEventListener('load', function(){
+      setTimeout(function(){
+        try {
+          var d = f.contentDocument;
+          var all = d.querySelector('#tabs .tab[data-cat="all"]');
+          if (all) all.click();
+          if (fn) fn(d, f);
+        } catch (e) { document.title = 'ERR ' + e.message; }
+      }, 500);
+    });
+  }
+  prep('a');
+  prep('b', function(d){ var m = d.getElementById('topbarMoreBtn'); if (m) m.click(); });
+  prep('c', function(d){ var t = d.querySelector('#tabs .tab[data-cat="book"]'); if (t) t.click(); });
 </script>
 </body>
 </html>
