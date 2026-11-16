@@ -249,7 +249,9 @@
     flex:0 0 auto;margin-left:8px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
     color:#A1A1AA;font:inherit;font-size:9.5px;font-weight:800;letter-spacing:.02em;
     border-radius:999px;padding:3px 8px;cursor:pointer;transition:color .15s,border-color .15s;
+    display:inline-flex;align-items:center;gap:4px;
   }
+  .brief-undo svg{display:block;width:10px;height:10px;flex:0 0 10px}
   .brief-undo:hover,.brief-undo:focus-visible{color:var(--lemon);border-color:rgba(255,230,0,.5);outline:none}
   /* 직접 추가한 할 일 — 목록·입력창 (아침 루틴이 브리핑 HTML을 갈아끼워도 JS가 다시 그린다) */
   .brief-mine{list-style:none;margin:0;padding:0;display:grid;gap:0}
@@ -2466,7 +2468,9 @@
         chip.addEventListener('click', briefRestoreAll);
         top.appendChild(chip);
       }
-      chip.textContent = '완료 ' + done + ' · 되돌리기';
+      chip.setAttribute('aria-label', '완료 ' + done + '건 되돌리기');
+      chip.title = '완료 ' + done + '건 되돌리기';
+      chip.innerHTML = '완료 ' + done + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v5h5"/><path d="M3.4 12.6a9 9 0 1 0 2.4-7L3 8"/></svg>';
       chip.hidden = false;
     } else if (chip) {
       chip.hidden = true;
