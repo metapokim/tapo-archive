@@ -233,10 +233,12 @@
     scrollbar-width:none;-ms-overflow-style:none;
   }
   .brief-scroll::-webkit-scrollbar{display:none;width:0;height:0}
-  /* 더 남아 있을 때만 아래를 살짝 흐리게 */
+  /* 더 남아 있을 때만 아래를 살짝 흐리게 — 잘린 줄이 튀지 않게.
+     카드가 낮아져 마지막으로 보이는 줄의 아래 여백(9px) 부근에서 경계가 끝나므로,
+     그 줄 글자까지 흐려지지 않도록 상단 흐림과 같은 폭(12px)으로 맞춘다. */
   .brief-scroll[data-fade="1"]{
-    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),rgba(0,0,0,0));
-    mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),rgba(0,0,0,0));
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
   }
   .brief-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0}
   .brief-list li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5}
