@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex,nofollow">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>임시 390px 확인</title>
 <style>
   body{margin:0;background:#DDE3EA;font:13px/1.4 -apple-system,"Apple SD Gothic Neo",sans-serif}
@@ -14,31 +13,35 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="box"><div class="cap">390 · 전체(접힘)</div>
-    <iframe id="a" src="./index.html?h=a"></iframe></div>
-  <div class="box"><div class="cap">390 · 전체 + ▾ 펼침</div>
-    <iframe id="b" src="./index.html?h=b"></iframe></div>
-  <div class="box"><div class="cap">390 · 책 탭(필터 보임)</div>
-    <iframe id="c" src="./index.html?h=c"></iframe></div>
-</div>
+<div class="wrap" id="wrap"></div>
 <script>
-  function prep(id, fn){
-    var f = document.getElementById(id);
-    f.addEventListener('load', function(){
+  /* 이 브라우저 프로필의 저장 상태(카테고리 '메모')를 '전체'로 맞춘 뒤 iframe을 만든다 */
+  try {
+    localStorage.setItem('eunyu-archive-ui-v1', JSON.stringify({cat:'all', shelf:'all', sort:'default'}));
+  } catch (e) {}
+
+  var specs = [
+    {cap:'390 · 전체(접힘)', fn:null},
+    {cap:'390 · 전체 + ▾ 펼침', fn:function(d){ var m = d.getElementById('topbarMoreBtn'); if (m) m.click(); }},
+    {cap:'390 · 책 탭(필터 보임)', fn:function(d){
+      var t = d.querySelector('#tabs .tab[data-cat="book"]'); if (t) t.click();
+      var m = d.getElementById('topbarMoreBtn'); if (m) m.click();
+    }}
+  ];
+  var wrap = document.getElementById('wrap');
+  specs.forEach(function(s, i){
+    var box = document.createElement('div'); box.className = 'box';
+    var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = s.cap;
+    var f = document.createElement('iframe');
+    f.onload = function(){
       setTimeout(function(){
-        try {
-          var d = f.contentDocument;
-          var all = d.querySelector('#tabs .tab[data-cat="all"]');
-          if (all) all.click();
-          if (fn) fn(d, f);
-        } catch (e) { document.title = 'ERR ' + e.message; }
-      }, 500);
-    });
-  }
-  prep('a');
-  prep('b', function(d){ var m = d.getElementById('topbarMoreBtn'); if (m) m.click(); });
-  prep('c', function(d){ var t = d.querySelector('#tabs .tab[data-cat="book"]'); if (t) t.click(); });
+        try { if (s.fn) s.fn(f.contentDocument); }
+        catch (e) { cap.textContent += ' ERR:' + e.message; }
+      }, 450);
+    };
+    f.src = './index.html?chk=' + i + '&t=' + Date.now();
+    box.appendChild(cap); box.appendChild(f); wrap.appendChild(box);
+  });
 </script>
 </body>
 </html>
