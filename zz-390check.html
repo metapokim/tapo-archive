@@ -9,7 +9,8 @@
   .wrap{display:flex;gap:18px;padding:14px;align-items:flex-start}
   .box{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.15)}
   .cap{padding:6px 10px;font-weight:700;color:#334155;background:#F1F5F9}
-  iframe{display:block;width:390px;height:780px;border:0}
+  iframe{display:block;width:390px;height:760px;border:0}
+  .box.tall iframe{height:1560px}
 </style>
 </head>
 <body>
@@ -23,14 +24,14 @@
   var specs = [
     {cap:'390 · 전체(접힘)', fn:null},
     {cap:'390 · 전체 + ▾ 펼침', fn:function(d){ var m = d.getElementById('topbarMoreBtn'); if (m) m.click(); }},
-    {cap:'390 · 책 탭(필터 보임)', fn:function(d){
+    {cap:'390 · 책 탭(필터 보임)', tall:true, fn:function(d){
       var t = d.querySelector('#tabs .tab[data-cat="book"]'); if (t) t.click();
       var m = d.getElementById('topbarMoreBtn'); if (m) m.click();
     }}
   ];
   var wrap = document.getElementById('wrap');
   specs.forEach(function(s, i){
-    var box = document.createElement('div'); box.className = 'box';
+    var box = document.createElement('div'); box.className = 'box' + (s.tall ? ' tall' : '');
     var cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = s.cap;
     var f = document.createElement('iframe');
     f.onload = function(){
