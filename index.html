@@ -182,6 +182,34 @@
   .brief-credit{margin:auto 0 0;padding-top:14px;font-size:9.5px;letter-spacing:.02em;color:#71717A}
   .brief-credit a{color:#8A8A93;text-decoration:underline;text-underline-offset:2px}
   .brief-credit a:hover{color:#D4D4D8}
+  /* 브리핑 항목 체크 — 누르면 오늘 목록에서 사라진다 */
+  .brief-list li{transition:opacity .16s ease,transform .16s ease}
+  .brief-list li.is-going{opacity:0;transform:translateX(6px)}
+  .brief-check{
+    position:relative;flex:0 0 26px;width:26px;height:26px;margin:-3px -2px -3px 0;padding:0;
+    align-self:center;border:0;background:none;display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .brief-check::before{
+    content:"";position:absolute;inset:3px;border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.34);transition:border-color .15s,background .15s;
+  }
+  .brief-check svg{position:relative;display:block;width:11px;height:11px;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
+  .brief-check:hover::before,.brief-check:focus-visible::before{border-color:var(--lemon);background:rgba(255,230,0,.16)}
+  .brief-check:hover svg,.brief-check:focus-visible svg{opacity:1;transform:none;color:var(--lemon)}
+  .brief-check:focus-visible{outline:none}
+  .brief-check:focus-visible::before{box-shadow:0 0 0 4px rgba(255,230,0,.26)}
+  .brief-empty{
+    margin:14px 0 0;padding:14px 0 2px;border-top:1px solid rgba(255,255,255,.09);
+    font-size:12.5px;font-weight:700;color:#D4D4D8;letter-spacing:-.01em;
+  }
+  .brief-empty em{font-style:normal;font-weight:800;color:var(--lemon);margin-left:4px}
+  .brief-undo{
+    flex:0 0 auto;margin-left:8px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
+    color:#A1A1AA;font:inherit;font-size:9.5px;font-weight:800;letter-spacing:.02em;
+    border-radius:999px;padding:3px 8px;cursor:pointer;transition:color .15s,border-color .15s;
+  }
+  .brief-undo:hover,.brief-undo:focus-visible{color:var(--lemon);border-color:rgba(255,230,0,.5);outline:none}
 
   /* upcoming — white card */
   .upcoming{min-width:0;display:flex}
@@ -193,7 +221,16 @@
   .up-head h2{margin:0;font-size:15px;font-weight:800;letter-spacing:-.025em}
   .up-head h2::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:8px;vertical-align:1px;box-shadow:0 0 0 4px rgba(16,185,129,.13)}
   .up-note{margin-left:auto;font-size:10px;letter-spacing:.06em;color:#A1A1AA;font-weight:700}
-  .up-list{list-style:none;margin:0;padding:0;min-width:0}
+  /* 목록은 카드 높이를 고정하고 안에서만 스크롤 — 모닝 브리핑 카드와 높이 균형(≈240px = 4줄+α) */
+  .up-list{
+    list-style:none;margin:0;padding:0 4px 0 0;min-width:0;
+    max-height:240px;overflow-y:auto;overscroll-behavior:contain;
+    scrollbar-width:thin;scrollbar-color:#D4D4D8 transparent;scrollbar-gutter:stable;
+  }
+  .up-list::-webkit-scrollbar{width:6px;height:6px}
+  .up-list::-webkit-scrollbar-track{background:transparent}
+  .up-list::-webkit-scrollbar-thumb{background:#DCDCE0;border-radius:999px}
+  .up-list::-webkit-scrollbar-thumb:hover{background:#C4C4C9}
   .up-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #F4F4F5;font-size:13px;min-width:0;overflow:hidden}
   .up-item:first-child{border-top:0}
   .up-date{flex:0 0 auto;font-size:11px;color:#A1A1AA;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.25}
@@ -443,7 +480,9 @@
     .brief-lead{font-size:15px}
     .brief-when{font-size:10px}
     .brief-meta{display:none}
+    .brief-check{flex-basis:30px;width:30px;height:30px;margin:-6px -4px -6px 0}
     .up-box{border-radius:22px;padding:18px 16px 6px}
+    .up-list{max-height:232px;padding-right:3px}
     .up-note{display:none}
     .up-item{padding:10px 0}
     .up-body{font-size:12.5px}
@@ -548,7 +587,7 @@
         <div class="up-box">
           <div class="up-head">
             <h2 id="upTitle">다가오는 일정</h2>
-            <span class="up-note" id="upNote">가장 가까운 다섯 건</span>
+            <span class="up-note" id="upNote"></span>
           </div>
           <ol class="up-list" id="upList"></ol>
         </div>
@@ -850,6 +889,9 @@
   var state = {
     items: [],
     deleted: [],
+    /* 아침 브리핑에서 체크한 항목 — '날짜|문구' 키에 시각(ms)을 값으로 둔다.
+       양수 = 완료, 음수 = 되돌림(기기 간 병합은 절댓값이 큰 쪽을 남긴다) */
+    brief: {},
     cat: 'all',
     status: 'all',
     shelf: 'all',
@@ -936,6 +978,14 @@
     var ui = null, u0 = null;
     var uiraw = readStore(UIKEY);
     if (uiraw) { try { u0 = JSON.parse(uiraw); if (u0 && typeof u0 === 'object') ui = u0; } catch (e) { ui = null; } }
+
+    /* 아침 브리핑 체크 기록 (날짜가 바뀌면 자동으로 새 브리핑에 적용되지 않는다) */
+    if (saved && saved.brief && typeof saved.brief === 'object') {
+      var bk;
+      for (bk in saved.brief) {
+        if (Object.prototype.hasOwnProperty.call(saved.brief, bk)) state.brief[bk] = saved.brief[bk];
+      }
+    }
 
     var j, it, sd;
     var seedById = {}, seedByTitle = {}, titleCount = {};
@@ -1093,7 +1143,8 @@
       v: 1,
       savedAt: new Date().toISOString(),
       items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
-      deleted: state.deleted
+      deleted: state.deleted,
+      brief: state.brief
     };
     var ok = writeStore(STORE, JSON.stringify(payload));
     if (ok) stampSaved();
@@ -1646,6 +1697,132 @@
     }).join('');
   }
 
+  /* ────────────────────────── 아침 브리핑 체크 ──────────────────────────
+     항목을 누르면 오늘 목록에서 사라지고, '날짜|문구' 키로 이 기기 저장소와 Gist 에 남는다.
+     브리핑 날짜(또는 문구)가 바뀌면 키가 달라져 새 브리핑과 섞이지 않는다. */
+  var CHECK_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.2 6.3 4.7 8.8 9.8 3.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function briefStamp(){
+    var t = document.querySelector('.brief .brief-when');
+    var raw = t ? String(t.getAttribute('datetime') || '') : '';
+    var m = /(\d{4}-\d{2}-\d{2})/.exec(raw);
+    if (m) return m[1];
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function briefText(li){
+    var c = li.cloneNode(true), b = c.querySelectorAll('button'), k;
+    for (k = 0; k < b.length; k++) if (b[k].parentNode) b[k].parentNode.removeChild(b[k]);
+    return String(c.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+  function briefIsDone(key){ return (Number(state.brief[key]) || 0) > 0; }
+  function pruneBrief(){
+    var cut = new Date().getTime() - 8 * 864e5, k, ts;
+    for (k in state.brief) {
+      if (!Object.prototype.hasOwnProperty.call(state.brief, k)) continue;
+      ts = Date.parse(k.slice(0, 10) + 'T00:00:00');
+      if (ts && ts < cut) delete state.brief[k];
+    }
+  }
+  function briefLabel(li){
+    var b = li.querySelector('.brief-body') || li;
+    var c = b.cloneNode(true), drop = c.querySelectorAll('.brief-meta, button'), k;
+    for (k = 0; k < drop.length; k++) if (drop[k].parentNode) drop[k].parentNode.removeChild(drop[k]);
+    var t = String(c.textContent || '').replace(/\s+/g, ' ').trim();
+    return t.length > 16 ? t.slice(0, 16) + '…' : t;
+  }
+  function briefEmptyEl(sec){
+    var el = sec.querySelector('.brief-empty');
+    if (el) return el;
+    el = document.createElement('p');
+    el.className = 'brief-empty';
+    el.hidden = true;
+    el.innerHTML = '오늘 할 일을 모두 마쳤어요<em>✓</em>';
+    var credit = sec.querySelector('.brief-credit');
+    if (credit && credit.parentNode === sec) sec.insertBefore(el, credit);
+    else sec.appendChild(el);
+    return el;
+  }
+  function briefRestoreAll(){
+    var list = document.querySelector('.brief .brief-list');
+    if (!list) return;
+    var now = -new Date().getTime(), any = 0, k, li, key;
+    for (k = 0; k < list.children.length; k++) {
+      li = list.children[k];
+      key = li.getAttribute('data-key');
+      if (key && briefIsDone(key)) { state.brief[key] = now; any++; }
+    }
+    if (!any) return;
+    persist();
+    renderBrief();
+    toast('완료한 항목을 되돌렸습니다');
+  }
+  function briefCheck(li){
+    var key = li.getAttribute('data-key');
+    if (!key || briefIsDone(key)) return;
+    var label = briefLabel(li);
+    li.classList.add('is-going');
+    state.brief[key] = new Date().getTime();
+    pruneBrief();
+    persist();
+    setTimeout(function(){
+      renderBrief();
+      toast('‘' + label + '’ 완료 처리', '되돌리기', function(){
+        state.brief[key] = -new Date().getTime();
+        persist();
+        renderBrief();
+        toast('되돌렸습니다');
+      });
+    }, 170);
+  }
+  function renderBrief(){
+    var sec = document.querySelector('.brief');
+    if (!sec) return;
+    var list = sec.querySelector('.brief-list');
+    if (!list) return;
+    var date = briefStamp(), rows = list.children, k, li, key, left = 0, done = 0;
+    for (k = 0; k < rows.length; k++) {
+      li = rows[k];
+      if (li.tagName !== 'LI') continue;
+      key = date + '|' + briefText(li);
+      li.setAttribute('data-key', key);
+      if (briefIsDone(key)) {
+        li.hidden = true;
+        li.classList.remove('is-going');
+        done++;
+      } else {
+        li.hidden = false;
+        left++;
+      }
+      if (!li.querySelector('.brief-check')) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'brief-check';
+        btn.title = '완료';
+        btn.setAttribute('aria-label', '완료 처리');
+        btn.innerHTML = CHECK_SVG;
+        btn.addEventListener('click', function(){ briefCheck(this.parentNode); });
+        li.insertBefore(btn, li.firstChild);
+      }
+    }
+    briefEmptyEl(sec).hidden = left > 0;
+    var top = sec.querySelector('.brief-top');
+    var chip = top ? top.querySelector('.brief-undo') : null;
+    if (done > 0 && top) {
+      if (!chip) {
+        chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'brief-undo';
+        chip.addEventListener('click', briefRestoreAll);
+        top.appendChild(chip);
+      }
+      chip.textContent = '완료 ' + done + ' · 되돌리기';
+      chip.hidden = false;
+    } else if (chip) {
+      chip.hidden = true;
+    }
+  }
+
   function render(){
     var res = filtered();
     renderTabs();
@@ -1655,6 +1832,7 @@
     renderSections(res);
     renderStats();
     renderUpcoming();
+    renderBrief();
     var totalShown = 0, c;
     for (c = 0; c < CAT_ORDER.length; c++) totalShown += res[CAT_ORDER[c]].length;
     if (totalShown === 0 && state.cat === 'memo') {
@@ -2255,13 +2433,13 @@
       }
     }
     return { app: APP_ID, v: 1, updatedAt: new Date().toISOString(),
-      device: syncCfg.device, items: items, ov: ov, deleted: state.deleted.slice() };
+      device: syncCfg.device, items: items, ov: ov, deleted: state.deleted.slice(), brief: state.brief };
   }
 
   /* Gist 내용을 이 기기에 병합 — 항목은 updatedAt 이 큰 쪽, 삭제 목록은 합집합 */
   function applySyncPayload(remote){
     if (!remote || remote.app !== APP_ID) return false;
-    if (!remote.items && !remote.ov && !remote.deleted) return false;
+    if (!remote.items && !remote.ov && !remote.deleted && !remote.brief) return false;
     var changed = false, k, idx, f, id, local, r, stamp;
     var del = remote.deleted || [];
     for (k = 0; k < del.length; k++) {
@@ -2297,6 +2475,14 @@
       local.updatedAt = stamp;
       delete local._hay;
       changed = true;
+    }
+    /* 브리핑 체크 — 키마다 마지막으로 바꾼 시각(절댓값)이 큰 쪽을 따른다 */
+    var rbrief = remote.brief || {}, bk, rv, lv;
+    for (bk in rbrief) {
+      if (!Object.prototype.hasOwnProperty.call(rbrief, bk)) continue;
+      rv = Number(rbrief[bk]) || 0;
+      lv = Number(state.brief[bk]) || 0;
+      if (Math.abs(rv) > Math.abs(lv)) { state.brief[bk] = rv; changed = true; }
     }
     return changed;
   }
@@ -2479,6 +2665,7 @@
     payload: function(){ return buildSyncPayload(); },
     apply: function(remote){ return applySyncPayload(remote); },
     cfg: function(){ return { connected: !!syncCfg.token, gistId: syncCfg.gistId, lastSync: syncCfg.lastSync }; },
+    brief: function(){ return { date: briefStamp(), map: state.brief }; },
     kinds: function(){ return state.items.filter(function(x){ return x.cat === 'grad' || x.cat === 'news'; }).map(function(x){ return x.id + ':' + kindOf(x); }); }
   };
 
@@ -2491,7 +2678,8 @@
       v: 1,
       exportedAt: d.toISOString(),
       items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
-      deleted: state.deleted
+      deleted: state.deleted,
+      brief: state.brief
     };
     var text = JSON.stringify(payload, null, 1);
     var blob = new Blob([text], { type: 'application/json' });
@@ -2524,6 +2712,7 @@
         if (ok) {
           state.items = cleaned;
           state.deleted = (parsed && parsed.deleted) || [];
+          if (parsed && parsed.brief && typeof parsed.brief === 'object') state.brief = parsed.brief;
           persist();
           render();
           toast('가져왔습니다 · ' + cleaned.length + '건');
