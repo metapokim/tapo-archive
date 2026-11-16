@@ -228,7 +228,10 @@
   /* 할 일만 카드 안에서 스크롤 — 라벨·날씨는 위에, 입력창·출처 줄은 아래에 고정된다.
      그래서 할 일을 몇 개를 더해도 브리핑 카드 높이는 그대로이고 '다가오는 일정'과 계속 같다. */
   .brief-scroll{
-    flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+    flex:1 1 auto;min-height:0;
+    /* 위아래로만 움직인다 — 아이패드·폰에서 손가락으로 쓸어도 좌우로 흔들리지 않게 */
+    overflow-y:auto;overflow-x:hidden;touch-action:pan-y;
+    overscroll-behavior-y:contain;overscroll-behavior-x:none;
     -webkit-overflow-scrolling:touch;padding:0 2px 0 0;
     scrollbar-width:none;-ms-overflow-style:none;
   }
@@ -240,8 +243,8 @@
     -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
     mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
   }
-  .brief-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0}
-  .brief-list li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5}
+  .brief-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0;min-width:0;max-width:100%}
+  .brief-list li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5;min-width:0;max-width:100%}
   .brief-time{flex:0 0 44px;font-variant-numeric:tabular-nums;font-weight:800;font-size:11.5px;color:var(--lemon);letter-spacing:.02em}
   /* '할 일' 라벨은 화면에서 감춘다(시각 09:10 같은 실제 시각만 남김) — 글자는 DOM에 두어 완료 표시 키가 바뀌지 않게 한다 */
   .brief-time.is-todo{display:none}
@@ -282,8 +285,8 @@
   .brief-undo svg{display:block;width:10px;height:10px;flex:0 0 10px}
   .brief-undo:hover,.brief-undo:focus-visible{color:var(--lemon);border-color:rgba(255,230,0,.5);outline:none}
   /* 직접 추가한 할 일 — 목록·입력창 (아침 루틴이 브리핑 HTML을 갈아끼워도 JS가 다시 그린다) */
-  .brief-mine{list-style:none;margin:0;padding:0;display:grid;gap:0}
-  .brief-mine li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5;transition:opacity .16s ease,transform .16s ease}
+  .brief-mine{list-style:none;margin:0;padding:0;display:grid;gap:0;min-width:0;max-width:100%}
+  .brief-mine li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5;min-width:0;max-width:100%;transition:opacity .16s ease,transform .16s ease}
   .brief-mine li.is-going{opacity:0;transform:translateX(6px)}
   .brief-mine .brief-body{flex:1 1 auto}
   .brief-del{
@@ -325,7 +328,10 @@
   /* 목록은 카드 높이를 고정하고 안에서만 스크롤 — 모닝 브리핑 카드와 높이를 --hero-h 로 똑같이 맞춘다 */
   .up-list{
     list-style:none;margin:0;padding:0 2px 0 0;min-width:0;
-    flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;
+    flex:1 1 auto;min-height:0;max-height:none;
+    /* 브리핑 할 일 목록과 같다 — 위아래로만, 카드 밖으로 넘겨도 페이지는 그대로 */
+    overflow-y:auto;overflow-x:hidden;touch-action:pan-y;
+    overscroll-behavior-y:contain;overscroll-behavior-x:none;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;-ms-overflow-style:none;
   }
@@ -665,11 +671,12 @@
     .brief-add-in{height:30px;font-size:16px;padding:0 14px}
     .brief-add-btn{width:30px;height:30px;font-size:17px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
-    /* 폰 폭에서도 5줄(≈263px)에서 딱 떨어지게 — 브리핑 목록과 같은 264px */
-    .up-list{max-height:264px;padding-right:2px}
-    /* 한 줄로 쌓이는 좁은 화면 — 카드가 지나치게 길어지지 않게 목록만 제한 */
-    .brief-scroll{max-height:264px}
-    .up-note{display:none}
+    /* 한 줄로 쌓이는 좁은 화면에서도 두 카드 높이를 똑같이 고정한다.
+       실측(390px, '다가오는 일정' 5건): 목록 264.8 + 머리 23.3 + 여백 24 + 테두리 2 = 317.3px.
+       할 일이 6개·8개로 늘어도 브리핑 카드는 이 높이 그대로이고 .brief-scroll 안에서만 스크롤된다. */
+    .brief,.up-box{height:318px}
+    .up-list{max-height:none;padding-right:2px}
+    .brief-scroll{max-height:none}
     .up-item{padding:10px 0}
     .up-body{font-size:12.5px}
     .up-body .up-place{display:none}
@@ -2050,7 +2057,7 @@
     var rows = upcomingRows();
     var el = document.getElementById('upList');
     var noteEl = document.getElementById('upNote');
-    if (noteEl) noteEl.textContent = rows.length ? '다가오는 ' + rows.length + '건' : '';
+    if (noteEl) noteEl.textContent = rows.length ? rows.length + '건' : '';
     if (!rows.length) {
       el.innerHTML = '<li class="up-empty">' + (state.items.length ? '예정된 일정이 없습니다. 새 스크랩으로 추가해 보세요.' : '아직 스크랩이 없습니다.') + '</li>';
       return;
