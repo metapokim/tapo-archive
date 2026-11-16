@@ -1303,7 +1303,7 @@
     if (it.date && it.cat === 'grad') {
       var gw = gradWhen(it.date);
       if (gw) h += '<span class="when">' + gw + '</span>';
-    } else if (it.date && it.cat !== 'book') h += '<span class="when">' + dateLine(it.date) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
+    } else if (it.date && it.cat !== 'book') h += '<span class="when">' + (it.cat === 'news' ? gradWhen(it.date) : dateLine(it.date)) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
     if (it.cat === 'book' && it.shelf === 'bought' && it.date) h += '<span class="when">' + dateLine(it.date, true) + '</span>';
     if (it.cat === 'book' && it.shelf === 'read' && it.date) h += '<span class="when">읽음 ' + dateLine(it.date, true) + '</span>';
     var dd = upcomingDD(it);
