@@ -234,7 +234,7 @@
   .up-list{
     list-style:none;margin:0;padding:0 4px 0 0;min-width:0;
     max-height:240px;overflow-y:auto;overscroll-behavior:contain;
-    scrollbar-width:thin;scrollbar-color:#D4D4D8 transparent;scrollbar-gutter:stable;
+    scrollbar-gutter:stable;
   }
   .up-list::-webkit-scrollbar{width:6px;height:6px}
   .up-list::-webkit-scrollbar-button{display:none;width:0;height:0}
@@ -242,6 +242,10 @@
   .up-list::-webkit-scrollbar-corner{background:transparent}
   .up-list::-webkit-scrollbar-thumb{background:#DCDCE0;border-radius:999px}
   .up-list::-webkit-scrollbar-thumb:hover{background:#C4C4C9}
+  /* ::-webkit-scrollbar 를 쓰지 않는 브라우저(Firefox)만 thin 네이티브 */
+  @supports not selector(::-webkit-scrollbar){
+    .up-list{scrollbar-width:thin;scrollbar-color:#DCDCE0 transparent}
+  }
   /* 더 남아 있을 때만 아래를 살짝 흐리게 — 잘린 줄이 튀지 않게 */
   .up-list[data-fade="1"]{
     -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),rgba(0,0,0,0));
