@@ -231,6 +231,11 @@
   .up-list::-webkit-scrollbar-track{background:transparent}
   .up-list::-webkit-scrollbar-thumb{background:#DCDCE0;border-radius:999px}
   .up-list::-webkit-scrollbar-thumb:hover{background:#C4C4C9}
+  /* 더 남아 있을 때만 아래를 살짝 흐리게 — 잘린 줄이 튀지 않게 */
+  .up-list[data-fade="1"]{
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),rgba(0,0,0,0));
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),rgba(0,0,0,0));
+  }
   .up-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #F4F4F5;font-size:13px;min-width:0;overflow:hidden}
   .up-item:first-child{border-top:0}
   .up-date{flex:0 0 auto;font-size:11px;color:#A1A1AA;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.25}
@@ -1697,6 +1702,15 @@
     }).join('');
   }
 
+  /* 목록 끝까지 내렸는지에 따라 아래 흐림을 걷는다 */
+  function upFade(){
+    var el = document.getElementById('upList');
+    if (!el) return;
+    var more = el.scrollHeight - el.clientHeight > 2;
+    var atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+    el.setAttribute('data-fade', (more && !atEnd) ? '1' : '0');
+  }
+
   /* ────────────────────────── 아침 브리핑 체크 ──────────────────────────
      항목을 누르면 오늘 목록에서 사라지고, '날짜|문구' 키로 이 기기 저장소와 Gist 에 남는다.
      브리핑 날짜(또는 문구)가 바뀌면 키가 달라져 새 브리핑과 섞이지 않는다. */
@@ -1832,6 +1846,7 @@
     renderSections(res);
     renderStats();
     renderUpcoming();
+    upFade();
     renderBrief();
     var totalShown = 0, c;
     for (c = 0; c < CAT_ORDER.length; c++) totalShown += res[CAT_ORDER[c]].length;
@@ -2739,6 +2754,8 @@
   load();
   if (!canStore) showStorageNotice();
   document.getElementById('sort').value = state.sort;
+  var upListBoot = document.getElementById('upList');
+  if (upListBoot) upListBoot.addEventListener('scroll', upFade);
   render();
   setSyncState('idle');
   if (loadChanged) persist();   /* 병합·정리 결과를 저장소에 그대로 반영 */
