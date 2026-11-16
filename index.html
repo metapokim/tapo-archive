@@ -1407,7 +1407,15 @@
         + META[c].label + ' <span class="n">' + totals[c] + '</span></button>';
       nav += navBtn(c, META[c].label, totals[c]);
     });
-    document.getElementById('tabs').innerHTML = html;
+    var tabsEl = document.getElementById('tabs');
+    tabsEl.innerHTML = html;
+    /* 폭이 좁은 화면에서 고른 탭(기사·뉴스레터·자료 등)이 잘려 보이지 않게 가로로만 따라간다 */
+    var actTab = tabsEl.querySelector ? tabsEl.querySelector('[aria-pressed="true"]') : null;
+    if (actTab) {
+      var tl = actTab.offsetLeft, tr = tl + actTab.offsetWidth;
+      if (tl < tabsEl.scrollLeft) tabsEl.scrollLeft = Math.max(0, tl - 8);
+      else if (tr > tabsEl.scrollLeft + tabsEl.clientWidth) tabsEl.scrollLeft = tr - tabsEl.clientWidth + 8;
+    }
     var navEl = document.getElementById('sideNav');
     if (navEl) navEl.innerHTML = nav;
   }
