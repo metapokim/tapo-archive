@@ -220,7 +220,8 @@
   .brief-time.is-todo{display:none}
   .brief-body{min-width:0;color:#E4E4E7;font-weight:500;word-break:keep-all}
   .brief-meta{color:#8A8A93;font-size:11px;font-weight:500}
-  .brief-credit{margin:auto 0 0;padding-top:14px;font-size:9.5px;letter-spacing:.02em;color:#71717A}
+  .brief-credit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:auto 0 0;padding-top:14px;font-size:9.5px;letter-spacing:.02em;color:#71717A}
+  .brief-credit-in{min-width:0}
   .brief-credit a{color:#8A8A93;text-decoration:underline;text-underline-offset:2px}
   .brief-credit a:hover{color:#D4D4D8}
   /* 브리핑 항목 체크 — 누르면 오늘 목록에서 사라진다 */
@@ -246,7 +247,7 @@
   }
   .brief-empty em{font-style:normal;font-weight:800;color:var(--lemon);margin-left:4px}
   .brief-undo{
-    flex:0 0 auto;margin-left:8px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
+    flex:0 0 auto;margin-left:auto;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
     color:#A1A1AA;font:inherit;font-size:9.5px;font-weight:800;letter-spacing:.02em;
     border-radius:999px;padding:3px 8px;cursor:pointer;transition:color .15s,border-color .15s;
     display:inline-flex;align-items:center;gap:4px;
@@ -761,7 +762,7 @@
               <li><span class="brief-time is-todo">할 일</span><span class="brief-body">블로그 포스팅 하기</span></li>
               <li><span class="brief-time is-todo">할 일</span><span class="brief-body">속기록 불광 1 · 1시간 작업</span></li>
             </ul>
-            <p class="brief-credit">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></p>
+            <p class="brief-credit"><span class="brief-credit-in">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></span></p>
           </section>
           <!-- MORNING_BRIEF_END -->
       <section class="upcoming" id="upcoming" aria-labelledby="upTitle">
@@ -2458,16 +2459,23 @@
     var labels = sec.querySelectorAll('.brief-time'), kk;
     for (kk = 0; kk < labels.length; kk++) markTodoLabel(labels[kk]);
     done = done + mine.done;
-    var top = sec.querySelector('.brief-top');
-    var chip = top ? top.querySelector('.brief-undo') : null;
-    if (done > 0 && top) {
+    /* 완료 n 되돌리기 칩은 브리핑 맨 아래 날씨 출처 줄의 오른쪽 끝에 붙는다 */
+    var credit = sec.querySelector('.brief-credit');
+    if (!credit) {
+      credit = document.createElement('p');
+      credit.className = 'brief-credit';
+      credit.appendChild(document.createElement('span')).className = 'brief-credit-in';
+      sec.appendChild(credit);
+    }
+    var chip = sec.querySelector('.brief-undo');
+    if (done > 0) {
       if (!chip) {
         chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'brief-undo';
         chip.addEventListener('click', briefRestoreAll);
-        top.appendChild(chip);
       }
+      if (chip.parentNode !== credit) credit.appendChild(chip);   /* 옛 자리(상단)에 있으면 옮긴다 */
       chip.setAttribute('aria-label', '완료 ' + done + '건 되돌리기');
       chip.title = '완료 ' + done + '건 되돌리기';
       chip.innerHTML = '완료 ' + done + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v5h5"/><path d="M3.4 12.6a9 9 0 1 0 2.4-7L3 8"/></svg>';
