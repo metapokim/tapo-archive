@@ -54,6 +54,17 @@
     return;
   }
 
-  out.textContent = '?m=seed 또는 ?m=dump';
+  /* m=reset : 확인용으로 심은 값을 지워 새 기기 상태(기준 데이터)로 되돌린다 */
+  if (m === 'reset') {
+    var c2 = cfg();
+    if (c2 && c2.token) { out.textContent = 'SYNC CONFIGURED — 되돌리기를 중단했습니다.'; return; }
+    localStorage.removeItem(STORE);
+    localStorage.removeItem(UI);
+    out.textContent = '지움 — 잠시 뒤 아카이브로 이동합니다.';
+    setTimeout(function(){ location.replace('index.html?v=' + Date.now()); }, 900);
+    return;
+  }
+
+  out.textContent = '?m=seed | ?m=dump | ?m=reset';
 })();
 </script>
