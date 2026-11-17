@@ -895,11 +895,11 @@
         <label for="fCat">종류</label>
         <select id="fCat" name="cat">
           <option value="forum">학회·포럼</option>
-          <option value="show">공연·전시</option>
-          <option value="video">영상·기타자료</option>
-          <option value="book">책</option>
-          <option value="news">기사·뉴스레터</option>
           <option value="grad">대학원·논문</option>
+          <option value="news">기사·뉴스레터</option>
+          <option value="video">영상·기타자료</option>
+          <option value="show">공연·전시</option>
+          <option value="book">책</option>
         </select>
       </div>
       <div class="field">
@@ -1063,12 +1063,13 @@
     forum: { num:'01', label:'학회·포럼', statuses:['관심','신청 전','신청 완료','참석 완료'] },
     grad:  { num:'02', label:'대학원·논문', statuses:['관심','읽기 전','읽는 중','정리 완료'] },
     news:  { num:'03', label:'기사·뉴스레터', statuses:['읽기 전','읽는 중','읽음'] },
-    show:  { num:'04', label:'공연·전시', statuses:['관심','예매 완료','관람 완료'] },
-    video: { num:'05', label:'영상·기타자료', statuses:['시청 전','시청 중','시청 완료'] },
+    video: { num:'04', label:'영상·기타자료', statuses:['시청 전','시청 중','시청 완료'] },
+    show:  { num:'05', label:'공연·전시', statuses:['관심','예매 완료','관람 완료'] },
     book:  { num:'06', label:'책',       statuses:['읽고 싶은 책','읽는 중','완독','서재'] },
     memo:  { num:'07', label:'메모',     statuses:['메모'] }
   };
-  var CAT_ORDER = ['forum','grad','news','show','video','book','memo'];
+  /* 메뉴 순서(2026-11-18): 전체 · 학회·포럼 · 대학원·논문 · 기사·뉴스레터 · 영상·기타자료 · 공연·전시 · 책 · 메모 */
+  var CAT_ORDER = ['forum','grad','news','video','show','book','memo'];
   /* 대학원·논문 / 기사·뉴스레터 / 영상·기타자료 안에서 배지·구분 필터를 가르는 값.
      2026-11-18 '자료'(PDF)는 기사 탭에서 떼어 '영상·기타자료'로 옮겼다. */
   var KINDS = { grad:['대학원','논문'], news:['기사','뉴스레터','판례'], show:['공연','전시','기타'], video:['영상','기타자료'] };
