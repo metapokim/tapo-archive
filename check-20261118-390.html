@@ -4530,14 +4530,18 @@
   (function(){
     var f = document.querySelector('.brief .brief-add-time');
     if (f) { f.value = '16:08'; f.dispatchEvent(new Event('input', { bubbles: true })); }
-    ['.side', '.topbar', '#filters', '#main', 'footer', '.upcoming'].forEach(function(sel){
+    ['#filters', '#main', 'footer', '.upcoming'].forEach(function(sel){
       var e = document.querySelector(sel); if (e) e.style.display = 'none';
     });
-    var wide = window.innerWidth > 700;
-    var hero = document.querySelector('.hero');
-    if (hero) hero.style.cssText = wide ? 'display:block;padding:18px;width:660px' : 'display:block;padding:12px;width:auto';
     var b = document.querySelector('.brief');
-    if (b) b.style.cssText = (wide ? 'width:612px;' : 'max-width:100%;') + 'flex:none;height:auto;min-height:0';
+    if (window.innerWidth > 700) {
+      ['.side', '.topbar'].forEach(function(sel){ var e = document.querySelector(sel); if (e) e.style.display = 'none'; });
+      var hero = document.querySelector('.hero');
+      if (hero) hero.style.cssText = 'display:block;padding:18px;width:660px';
+      if (b) b.style.cssText = 'width:612px;flex:none;height:auto;min-height:0';
+    } else if (b) {
+      b.style.cssText = 'height:auto;min-height:0';
+    }
     document.body.style.background = '#F4F4F5';
   })();
   </script>
