@@ -1298,6 +1298,8 @@
     collapsed: {},     /* 전체 보기에서 접어 둔 섭션 (cat → 1) */
     limits: baseLimits()
   };
+  /* 검색 중에만 쓰는 임시 접힘 상태 (cat → 1) — 저장하지 않으므로 검색어를 지우면 사라진다 */
+  var searchFold = {};
   var loadChanged = false;   /* 저장본 병합·정리로 내용이 바뀌었는지 */
 
   var syncCfg = { token: '', gistId: '', device: '', lastSync: '' };
@@ -2242,6 +2244,16 @@
   var emptyEl = document.getElementById('empty');
   var heroEl = document.querySelector('.hero');
 
+  /* 검색 중인가 — 검색창의 값(q.trim())이 비어 있지 않을 때 */
+  function isSearching(){ return !!(state.q && state.q.trim()); }
+  /* 브리핑·다가오는 일정(.hero)은 '전체'에서만, 그리고 모바일(≤900px)에서 검색 중일 때는 숨긴다.
+     검색어를 지우면 숨김이 풀려 원래대로 다시 보인다. */
+  function applyHero(){
+    if (!heroEl) return;
+    heroEl.hidden = (state.cat !== 'all') || (isSearching() && window.innerWidth <= 900);
+  }
+  if (window.addEventListener) window.addEventListener('resize', applyHero);
+
   /* 이미지 로드 실패 → 깨진 아이콘 대신 썸네일 자리만 감춤
      3안 영상 썸네일(.vthumb)은 maxresdefault → data-fallback(hqdefault) → 자리 삭제 순서로 내려간다. */
   if (mainEl && mainEl.addEventListener) {
@@ -2414,7 +2426,8 @@
       var shown = list.slice(0, lim);
       /* 접기는 전체 보기에서만. 카테고리를 골랐을 때는 늘 카드가 보인다 */
       var foldable = (state.cat === 'all');
-      var collapsed = foldable && !!state.collapsed[cat];
+      /* 검색 중에는 매칭 카드가 있는 섹션을 자동으로 펼친다 (저장해 둔 접힘 상태는 건드리지 않는다) */
+      var collapsed = foldable && (isSearching() ? !!searchFold[cat] : !!state.collapsed[cat]);
       html += '<section class="sec' + (collapsed ? ' is-collapsed' : '') + '" data-cat="' + cat + '">';
       html += '<div class="sec-head"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
@@ -2437,8 +2450,14 @@
   /* 섭션 접기/펼치기 — 화면을 다시 그리지 않고 그 자리만 바꾸어 스크롤이 튀지 않게 한다 */
   function foldSection(cat, el){
     if (!cat || state.cat !== 'all' || !el) return;
-    var now = !state.collapsed[cat];
-    if (now) state.collapsed[cat] = 1; else delete state.collapsed[cat];
+    var now;
+    if (isSearching()) {
+      /* 검색 중 접기는 임시 — 검색어를 지우면 저장해 둔 원래 상태로 돌아간다 */
+      if (searchFold[cat]) { delete searchFold[cat]; now = false; } else { searchFold[cat] = 1; now = true; }
+    } else {
+      now = !state.collapsed[cat];
+      if (now) state.collapsed[cat] = 1; else delete state.collapsed[cat];
+    }
     el.classList.toggle('is-collapsed', now);
     var btn = el.querySelector('.sec-toggle');
     if (btn) {
@@ -2447,7 +2466,7 @@
       btn.setAttribute('aria-label', label + (now ? ' 펼치기' : ' 접기'));
       btn.title = now ? '펼치기' : '접기';
     }
-    saveUIPrefs();
+    if (!isSearching()) saveUIPrefs();
   }
 
   function renderStats(){
@@ -3275,8 +3294,10 @@
     /* 상태·서가·정렬 줄은 카테고리를 골랐을 때만 — 전체/메모에서는 접어 둔다 */
     var filtersEl = document.getElementById('filters');
     if (filtersEl) filtersEl.hidden = (state.cat === 'all' || state.cat === 'memo');
-    /* 브리핑·다가오는 일정(.hero)은 '전체'에서만 펼친다 — 카테고리를 고르면 바로 그 목록만 */
-    if (heroEl) heroEl.hidden = (state.cat !== 'all');
+    /* 브리핑·다가오는 일정(.hero)은 '전체'에서만 펼친다 — 카테고리를 고르면 바로 그 목록만.
+       모바일에서 검색 중일 때도 숨긴다(applyHero). */
+    if (!isSearching()) searchFold = {};   /* 검색 중 임시 접힘은 검색어를 지우면 사라진다 */
+    applyHero();
     renderSections(res);
     renderStats();
     renderUpcoming();
