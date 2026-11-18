@@ -851,7 +851,6 @@
             <div class="brief-scroll">
               <ul class="brief-list">
                 <li><span class="brief-time">14:00</span><span class="brief-body">덕소2 대의원회 · 와부읍 덕소로 73 2층 202호(세양아르비채리버)</span></li>
-                <li><span class="brief-time">11/21(토)</span><span class="brief-body">11:00 대치미도상가 임시총회 · 대치동 사랑교회(삼성로 150)</span></li>
                 <li><span class="brief-body">내일(11/19) 연합뉴스 다문화포럼(14:00) 일정 확인</span></li>
                 <li><span class="brief-body">평등법 입법예고(~11/26) 쟁점 살펴보기</span></li>
                 <li><span class="brief-body">DB손해보험(1588-0100) 카드 자동이체 변경 확인</span></li>
@@ -1084,6 +1083,7 @@
   /* 2026-11-16 ~ 12-31 아이폰 '내 캘린더'(네이버 캘린더)에서 확인한 일정 중
      아카이브(SEED)에 없는 것만 — '다가오는 일정' 카드에서만 쓴다. 탭·개수에는 넣지 않는다. */
   var CALENDAR_EVENTS = [
+    { date: '2026-11-21', title: '대치미도상가 임시총회', time: '11:00~12:00', place: '대치동 사랑교회(삼성로 150)' },
     { date: '2026-11-22', title: '현주 졸업전시 방문', time: '11:00~12:00', place: '홍대 미진플로어' },
     { date: '2026-11-26', title: '정민 생일', time: '', place: '' },
     { date: '2026-11-28', title: '하람 결혼', time: '14:30~15:30', place: '아펠가모 공덕 7층 마리에홀' },
@@ -1093,12 +1093,18 @@
     { date: '2026-12-08', title: '[최종 마감] 한국현대문학특강 기말 논문 업로드 (18:00)', time: '17:00~18:00', place: '' }
   ];
 
-  /* 2026-11-18 은유 님 요청 — 가야 하는 이 두 회의(덕소2 대의원회·대치미도상가 임시총회)는
-     TODAY'S BRIEFING 맨 윗줄에만 적고 '다가오는 일정'에는 넣지 않는다.
+  /* 2026-11-18 은유 님 요청(수정) — 회의 일정은 당일이 아니면 '다가오는 일정'에만 두고,
+     당일이 되면 '다가오는 일정'에서 빼 TODAY'S BRIEFING 맨 윗줄에만 적는다.
+     덕소2 대의원회(11/18)는 브리핑에 늘 있어 왔으므로 지금도 '다가오는 일정'에서는 늘 뺀다.
      캘린더·카드 어느 쪽으로 들어와도 여기서 걸러 낸다. */
-  var UPCOMING_HIDE = /덕소2|대치미도/;
+  var UPCOMING_HIDE = /덕소2/;
+  var MEETING = /덕소2|대치미도/;
   function hiddenInUpcoming(title){
     return UPCOMING_HIDE.test(String(title == null ? '' : title).replace(/\s+/g, ''));
+  }
+  /* 그날이 된 회의는 '다가오는 일정'에서 뺀다 — 그날 아침 브리핑 맨 윗줄에만 적힌다 */
+  function meetingToday(title, d){
+    return Number(d) === 0 && MEETING.test(String(title == null ? '' : title).replace(/\s+/g, ''));
   }
 
   var META = {
@@ -1182,6 +1188,9 @@
   /* 2026-11-18 회의 2건(덕소2 대의원회·대치미도상가 임시총회)을 브리핑 맨 윗줄에 넣었다 —
      이미 기기 저장본·끌어 둔 할 일 순서를 둔 기기에서도 두 줄이 맨 위에 오도록 한 번만 맞춘다. */
   var briefMeetSynced = false;
+  /* 2026-11-18 대치미도상가 임시총회는 당일이 아니면 '다가오는 일정'에만 두기로 바꿨다 —
+     기기에 남은 대치미도 줄(순서 키·직접 추가한 할 일)을 한 번만 걷어 낸다. */
+  var briefMeetMoveSynced = false;
   /* 2026-11-16 동성부부 판결: 기사 카드와 판결문 카드를 한 장으로 합친다 —
      이 기기에 옛 판결문 카드(doc20260605_2025na10110)와 옛 기사 카드가 남아 있어도 한 번만 정리한다. */
   var YNA_ID = 'n20260610_yna', YNA_DOC_ID = 'doc20260605_2025na10110';
@@ -1650,16 +1659,16 @@
       caseNotesSynced = true;
     }
 
-    /* 2026-11-18 회의 2건(덕소2 대의원회 · 대치미도상가 임시총회)은 TODAY'S BRIEFING 맨 윗줄에만 적는다.
-       이 기기에 끌어 둔 할 일 순서(brief.order)가 있으면 새 두 줄이 '순서에 없는 줄'로 뒤로 밀리므로,
-       두 줄의 키를 순서 기록의 맨 앞으로 올린다. 같은 회의를 직접 추가해 둔 할 일이 남아 있으면
+    /* 2026-11-18 덕소2 대의원회는 TODAY'S BRIEFING 맨 윗줄에 적는다.
+       이 기기에 끌어 둔 할 일 순서(brief.order)가 있으면 새 줄이 '순서에 없는 줄'로 뒤로 밀리므로,
+       그 줄의 키를 순서 기록의 맨 앞으로 올린다. 같은 회의를 직접 추가해 둔 할 일이 남아 있으면
        브리핑에 두 번 보이지 않도록 지운 표시를 남겨 정리한다(다른 기기의 옛 사본이 되살리지 못하게).
-       '다가오는 일정'에서는 hiddenInUpcoming 이 두 회의를 걸러 낸다. */
+       '다가오는 일정'에서는 hiddenInUpcoming 이 덕소2를 걸러 낸다. */
     if (!(ui && ui.briefMeet20261118)) {
       var mkKeys = [], mkLis = document.querySelectorAll('.brief .brief-list > li'), mki, mkk, mkOrd;
       for (mki = 0; mki < mkLis.length; mki++) {
         mkk = briefItemKey(mkLis[mki]);
-        if (mkk && (mkk.indexOf('덕소2') >= 0 || mkk.indexOf('대치미도') >= 0)) mkKeys.push(mkk);
+        if (mkk && mkk.indexOf('덕소2') >= 0) mkKeys.push(mkk);
       }
       mkOrd = briefOrder();
       if (mkKeys.length && mkOrd.list.length) {
@@ -1670,7 +1679,7 @@
       var mtd = briefTodos(), mdel = briefDels(), mdrop = [], mti, mtk;
       for (mti = 0; mti < mtd.length; mti++) {
         mtk = coreBriefText(mtd[mti].text);
-        if (mtk.length && mtk.length <= 40 && (mtk.indexOf('덕소2') >= 0 || mtk.indexOf('대치미도') >= 0)) mdrop.push(mtd[mti].id);
+        if (mtk.length && mtk.length <= 40 && mtk.indexOf('덕소2') >= 0) mdrop.push(mtd[mti].id);
       }
       for (mti = 0; mti < mdrop.length; mti++) {
         mdel[mdrop[mti]] = new Date().getTime();
@@ -1678,6 +1687,36 @@
       }
       if (mdrop.length) { state.brief.todos = mtd.filter(function(x){ return mdrop.indexOf(x.id) < 0; }); loadChanged = true; }
       briefMeetSynced = true;
+    }
+
+    /* 2026-11-18 은유 님 요청(수정) — 대치미도상가 임시총회(11/21)는 당일이 아니면 '다가오는 일정'에만 두고
+       브리핑에는 넣지 않는다. 앞서 두 회의를 함께 브리핑 맨 위에 올리며 이 기기에 남은 대치미도 줄의
+       순서 키(brief.order)와 직접 추가해 둔 할 일(state.brief.todos)을 한 번만 걷어 낸다.
+       덕소2 줄은 브리핑 맨 윗줄에 그대로 두도록 순서 기록의 맨 앞으로 올린다. */
+    if (!(ui && ui.briefMeetMove20261118)) {
+      var mvOrd = briefOrder(), mvList = [], mvFirst = '', mvi;
+      for (mvi = 0; mvi < mvOrd.list.length; mvi++) {
+        if (String(mvOrd.list[mvi]).indexOf('대치미도') >= 0) continue;
+        if (!mvFirst && String(mvOrd.list[mvi]).indexOf('덕소2') >= 0) mvFirst = String(mvOrd.list[mvi]);
+        mvList.push(mvOrd.list[mvi]);
+      }
+      if (mvFirst) mvList = [mvFirst].concat(mvList.filter(function(x){ return x !== mvFirst; }));
+      if (mvList.length !== mvOrd.list.length || (mvFirst && mvOrd.list[0] !== mvFirst)) {
+        mvOrd.list = mvList.slice(0, 200);
+        mvOrd.at = new Date().getTime();
+        loadChanged = true;
+      }
+      var mvTd = briefTodos(), mvDel = briefDels(), mvDrop = [], mvk;
+      for (mvi = 0; mvi < mvTd.length; mvi++) {
+        mvk = coreBriefText(mvTd[mvi].text);
+        if (mvk.indexOf('대치미도') >= 0) mvDrop.push(mvTd[mvi].id);
+      }
+      for (mvi = 0; mvi < mvDrop.length; mvi++) {
+        mvDel[mvDrop[mvi]] = new Date().getTime();
+        delete state.brief[todoDoneKey(mvDrop[mvi])];
+      }
+      if (mvDrop.length) { state.brief.todos = mvTd.filter(function(x){ return mvDrop.indexOf(x.id) < 0; }); loadChanged = true; }
+      briefMeetMoveSynced = true;
     }
 
     if (ui) {
@@ -1694,7 +1733,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.shelf = 'all';
 
-    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || mediaSplitSynced || ewhaSynced || briefMeetSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -1716,7 +1755,8 @@
       caseNotes20261117: (caseNotesSynced || prev.caseNotes20261117) ? 1 : 0,
       mediaTabSplit20261118: (mediaSplitSynced || prev.mediaTabSplit20261118) ? 1 : 0,
       forumEwha20261118: (ewhaSynced || prev.forumEwha20261118) ? 1 : 0,
-      briefMeet20261118: (briefMeetSynced || prev.briefMeet20261118) ? 1 : 0 }));
+      briefMeet20261118: (briefMeetSynced || prev.briefMeet20261118) ? 1 : 0,
+      briefMeetMove20261118: (briefMeetMoveSynced || prev.briefMeetMove20261118) ? 1 : 0 }));
   }
   function persist(){
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
@@ -2454,7 +2494,8 @@
       ev = CALENDAR_EVENTS[k];
       d = dayDiff(ev.date);
       if (d === null || d < 0 || d > 60) continue;
-      if (hiddenInUpcoming(ev.title)) continue;      /* 회의 2간은 브리핑 상단에만 */
+      if (hiddenInUpcoming(ev.title)) continue;      /* 덕소2는 브리핑 상단에만 */
+      if (meetingToday(ev.title, d)) continue;       /* 당일이 된 회의는 브리핑 상단에만 */
       if (inArchive(ev)) continue;
       out.push({ date: ev.date, title: ev.title, time: ev.time || '', place: ev.place || '', d: d, cal: true });
     }
@@ -2464,9 +2505,10 @@
     var rows = [], k, it, d;
     for (k = 0; k < state.items.length; k++) {
       it = state.items[k];
-      if (hiddenInUpcoming(it.title)) continue;      /* 회의 2간은 브리핑 상단에만 */
+      if (hiddenInUpcoming(it.title)) continue;      /* 덕소2는 브리핑 상단에만 */
       d = upcomingDD(it);
       if (d === null) continue;
+      if (meetingToday(it.title, d)) continue;       /* 당일이 된 회의는 브리핑 상단에만 */
       rows.push({ date: it.date, title: it.title, place: it.place || '', d: d, item: it });
     }
     rows = rows.concat(calendarUpcoming());
