@@ -306,7 +306,7 @@
   .brief-list li.brief-drag .brief-body,.brief-mine li.brief-drag .brief-body{color:#FAFAFA}
   /* 끄는 동안에는 상자·페이지가 따라 스크롤되지 않는다 */
   .brief--dragging .brief-scroll{touch-action:none;cursor:grabbing}
-  .brief-mine .brief-body{flex:1 1 auto}
+  .brief-list li[data-todo] .brief-body,.brief-mine .brief-body{flex:1 1 auto}
   .brief-del{
     flex:0 0 22px;width:22px;height:22px;margin:-2px -3px -2px 0;padding:0;border:0;background:none;
     align-self:center;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
@@ -315,20 +315,35 @@
   .brief-del svg{display:block;width:11px;height:11px}
   .brief-del:hover,.brief-del:focus-visible{color:#FB7185;background:rgba(251,113,133,.14);outline:none}
   .brief-add{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:0}
-  /* 시각(선택) — 비워 두면 예전과 똑같이 시간 없는 '할 일'로 들어가고, 고르면 왼쪽 노란 시각으로 보인다 */
-  .brief-add-timewrap{position:relative;flex:0 0 auto;display:flex;align-items:center;min-width:0}
-  .brief-add-time{
-    width:76px;height:32px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:800;
-    color:#FAFAFA;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
-    padding:0 8px;letter-spacing:-.01em;text-align:center;font-variant-numeric:tabular-nums;
-    -webkit-appearance:none;appearance:none;
-    transition:border-color .15s,background .15s,box-shadow .15s,color .15s,padding .15s;
+  /* 시각(선택) — 비워 두면 예전과 똑같이 시간 없는 '할 일'로 들어가고, 고르면 왼쪽 노란 시각으로 보인다.
+     아이폰 사파리는 type=time 을 '오후 / 4:08' 두 줄로 크게 그려 pill 을 넘겼다(2026-11-18 사진).
+     그래서 보이는 글자는 우리가 24시간 '16:08' 한 줄로 그리고, 실제 입력칸은 투명하게 pill 위에 얹어
+     탭하면 아이폰 기본 시간 휠이 그대로 뜨게 한다(오전·오후 없이 24시간 표기). */
+  .brief-add-timewrap{
+    position:relative;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    width:76px;height:32px;min-width:0;border-radius:999px;overflow:hidden;padding:0 8px;
+    background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
+    transition:border-color .15s,background .15s,box-shadow .15s,padding .15s;
   }
-  .brief-add-time:focus{outline:none;border-color:rgba(255,230,0,.55);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
-  .brief-add-time.is-set{color:var(--lemon);padding-right:16px}
-  .brief-add-time::-webkit-date-and-time-value{text-align:center;margin:0}
-  .brief-add-time::-webkit-datetime-edit{text-align:center}
-  .brief-add-time::-webkit-calendar-picker-indicator{opacity:.4;filter:invert(1) brightness(1.5);cursor:pointer;width:10px;padding:0;margin:0}
+  .brief-add-timewrap:focus-within{border-color:rgba(255,230,0,.55);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
+  .brief-add-timewrap.is-set{padding-right:16px}
+  .brief-add-time-face{
+    display:inline-flex;align-items:center;gap:3px;pointer-events:none;
+    font-size:12px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;
+    color:#FAFAFA;font-variant-numeric:tabular-nums;
+  }
+  .brief-add-timewrap.is-set .brief-add-time-face{color:var(--lemon)}
+  .brief-add-timewrap:not(.is-set) .brief-add-time-face{color:#7E7E88}
+  .brief-add-time-face svg{display:block;width:10px;height:10px;flex:0 0 10px;opacity:.5}
+  /* 실제 입력 — 투명하게 pill 위를 덮는다. 탭하면 아이폰 기본 시간 휠이 열린다 */
+  .brief-add-time{
+    position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;
+    opacity:0;background:none;color:transparent;-webkit-appearance:none;appearance:none;
+    font-size:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .brief-add-time::-webkit-date-and-time-value{opacity:0;margin:0}
+  .brief-add-time::-webkit-datetime-edit{opacity:0}
+  .brief-add-time::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;padding:0;cursor:pointer}
   .brief-add-time-x{
     position:absolute;right:3px;top:50%;transform:translateY(-50%);z-index:2;
     width:16px;height:16px;padding:0;border:0;border-radius:999px;background:none;cursor:pointer;
@@ -745,8 +760,9 @@
     .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
     .brief-add{margin-top:10px;gap:7px}
     .brief-add-in{height:30px;font-size:16px;padding:0 14px}
-    .brief-add-time{width:72px;height:30px;font-size:15px;padding:0 6px}
-    .brief-add-time.is-set{padding-right:15px}
+    .brief-add-timewrap{width:72px;height:30px;padding:0 6px}
+    .brief-add-timewrap.is-set{padding-right:15px}
+    .brief-add-time-face{font-size:11.5px}
     .brief-add-btn{width:30px;height:30px;font-size:17px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
     /* 한 줄로 쌓이는 좁은 화면에서도 두 카드 높이를 똑같이 고정한다.
@@ -2774,6 +2790,39 @@
       for (k = 0; k < arr.length; k++) ul.appendChild(arr[k]);
     }
   }
+  /* ────────────── 시각이 있는 일정은 늘 맨 위, 시각 순 ──────────────
+     기본 일정(.brief-list 의 .brief-time)과 직접 추가한 할 일 모두 'HH:MM' 이 있으면
+     목록 맨 위에서 오름차순으로 서고, 시각 없는 줄은 그 아래에 지금 차례대로 남는다.
+     끌어 둔 순서(applyBriefOrder)보다 이 규칙이 마지막에 이긴다 — 2026-11-18 은유 님 요청
+     ("시간 있는 일정은 항상 제일 상단에 시간순으로", PC·아이패드·모바일 모두). */
+  function briefItemTime(el){
+    if (!el || !el.querySelector) return '';
+    var t = el.querySelector('.brief-time');
+    if (!t || t.classList.contains('is-todo')) return '';   /* '할 일' 라벨은 시각이 아니다 */
+    return briefNormTime(String(t.textContent || '').replace(/\s+/g, ''));
+  }
+  function sortBriefByTime(){
+    var sec = document.querySelector('.brief');
+    if (!sec) return;
+    var list = sec.querySelector('.brief-list');
+    if (!list) return;
+    var arr = [], k, li, same = true;
+    for (k = 0; k < list.children.length; k++) {
+      li = list.children[k];
+      if (li.tagName !== 'LI') continue;
+      arr.push({ el: li, i: arr.length, t: briefItemTime(li) });
+    }
+    if (arr.length < 2) return;
+    arr.sort(function(a, b){
+      var ag = a.t ? 0 : 1, bg = b.t ? 0 : 1;
+      if (ag !== bg) return ag - bg;                  /* 시각 있는 줄이 먼저 */
+      if (a.t !== b.t) return a.t < b.t ? -1 : 1;     /* 시각은 이른 순 */
+      return a.i - b.i;                               /* 같으면 지금 차례 그대로 */
+    });
+    for (k = 0; k < arr.length; k++) if (list.children[k] !== arr[k].el) { same = false; break; }
+    if (same) return;
+    for (k = 0; k < arr.length; k++) list.appendChild(arr[k].el);
+  }
   /* 오늘 목록에 이미 있는 문구를 직접 추가한 할 일에도 또 넣어 두면 두 줄로 보인다 —
      같은 문구(시각·'할 일' 라벨은 떼고 비교)가 목록에 있으면 그 사본은 지운다.
      문구가 달라도 같은 일인 것은 아래 별칭으로 묶는다(은유 님이 직접 넣어 둔 '건우 만나기' ↔ 목록의 '건우').
@@ -2786,6 +2835,7 @@
     for (k = 0; k < list.children.length; k++) {
       li = list.children[k];
       if (li.tagName !== 'LI') continue;
+      if (li.hasAttribute('data-todo')) continue;   /* 목록에 함께 그린 직접 추가한 할 일은 비교 대상이 아니다 */
       t = coreBriefText(briefText(li));
       if (t) have[t] = 1;
     }
@@ -2857,8 +2907,10 @@
     dragState = null;
     if (!moved) return false;                 /* 톡 누른 것이면 아무것도 저장하지 않는다 */
     briefDragLock = new Date().getTime();     /* 끌고 난 직후의 클릭은 삼킨다 */
+    var timed = briefItemTime(li);
+    sortBriefByTime();                        /* 시각이 있는 줄은 끌어도 제 시각 자리로 돌아간다 */
     saveBriefOrder();
-    toast('할 일 순서를 바꿨습니다');
+    toast(timed ? '시각 있는 할 일은 시각 순서로 놓입니다' : '할 일 순서를 바꿨습니다');
     upFade();
     return true;
   }
@@ -3038,13 +3090,20 @@
     return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
   }
   function briefTimeInput(){ return document.querySelector('.brief .brief-add-time'); }
-  /* 시각을 골랐을 때만 레몬색과 지우기(×)를 보인다 */
+  var CLOCK_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><circle cx="6" cy="6" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6.1l1.9 1.2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+  /* 시각을 골랐을 때만 레몬색과 지우기(×)를 보인다.
+     pill 안의 보이는 글자는 24시간 '16:08' 한 줄(오전·오후 없이) — 고르지 않았으면 시계 + '--:--'.
+     실제 입력칸은 투명해서 아이폰 기본 시간 휠만 연다. */
   function briefSyncTimeChip(){
     var tin = briefTimeInput();
     if (!tin) return;
-    var set = !!tin.value;
+    var v = String(tin.value || '').trim(), set = !!v;
     if (set !== tin.classList.contains('is-set')) tin.classList.toggle('is-set', set);
-    var x = tin.parentNode ? tin.parentNode.querySelector('.brief-add-time-x') : null;
+    var wrap = tin.parentNode;
+    if (wrap && wrap.classList && wrap.classList.contains('is-set') !== set) wrap.classList.toggle('is-set', set);
+    var face = (wrap && wrap.querySelector) ? wrap.querySelector('.brief-add-time-face') : null;
+    if (face) face.innerHTML = set ? (briefNormTime(v) || v) : CLOCK_SVG + '<span>--:--</span>';
+    var x = (wrap && wrap.querySelector) ? wrap.querySelector('.brief-add-time-x') : null;
     if (x) x.hidden = !set;
   }
   function briefClip(s){
@@ -3121,9 +3180,14 @@
       inp.setAttribute('autocomplete', 'off');
       inp.setAttribute('enterkeyhint', 'done');
 
-      /* 시각(선택) — 비워 두면 예전처럼 '할 일', 고르면 왼쪽에 노란 시각으로 */
+      /* 시각(선택) — 비워 두면 예전처럼 '할 일', 고르면 왼쪽에 노란 시각으로
+         (보이는 글자는 .brief-add-time-face 가 24시간 한 줄로 그리고, 입력칸은 투명하게 위를 덮는다) */
       var tw = document.createElement('span');
       tw.className = 'brief-add-timewrap';
+      var face = document.createElement('span');
+      face.className = 'brief-add-time-face';
+      face.setAttribute('aria-hidden', 'true');
+      face.innerHTML = CLOCK_SVG + '<span>--:--</span>';
       var tin = document.createElement('input');
       tin.type = 'time';
       tin.className = 'brief-add-time';
@@ -3137,6 +3201,7 @@
       tdel.title = '시각 지우기';
       tdel.setAttribute('aria-label', '시각 지우기');
       tdel.hidden = true;
+      tw.appendChild(face);
       tw.appendChild(tin);
       tw.appendChild(tdel);
 
@@ -3212,6 +3277,11 @@
   }
   function renderBriefTodos(sec){
     var box = briefMine(sec), ul = box.ul, date = briefStamp();
+    /* 직접 추가한 할 일도 기본 목록(.brief-list)에 함께 그린다 — 시각이 있는 줄을 기본 일정과
+       나란히 시각 순으로 세우려면 두 목록으로 나뉘어 있으면 안 되기 때문(2026-11-18 요청). */
+    var host = sec.querySelector('.brief-list') || ul;
+    var olds = host.querySelectorAll('li[data-todo]'), oi;
+    for (oi = 0; oi < olds.length; oi++) if (olds[oi].parentNode) olds[oi].parentNode.removeChild(olds[oi]);
     var todos = briefTodos(), dels = briefDels(), k, t, open = 0, done = 0, live = [], dirty = false;
     for (k = 0; k < todos.length; k++) {
       t = todos[k];
@@ -3223,9 +3293,9 @@
     for (k = 0; k < todos.length; k++) {
       t = todos[k];
       if (todoIsDone(t.id)) done++; else open++;
-      ul.appendChild(todoLi(t, date, todoIsDone(t.id)));
+      host.appendChild(todoLi(t, date, todoIsDone(t.id)));
     }
-    ul.hidden = (open + done) === 0;
+    ul.hidden = true;                         /* 직접 추가한 할 일은 위 목록에 함께 그린다 */
     return { open: open, done: done, total: open + done };
   }
   function briefAddTodo(raw, rawTime){
@@ -3319,6 +3389,7 @@
     for (k = 0; k < rows.length; k++) {
       li = rows[k];
       if (li.tagName !== 'LI') continue;
+      if (li.hasAttribute('data-todo')) continue;   /* 자기 완료 키(todo:아이디)·체크 버튼을 이미 갖고 있다 */
       key = date + '|' + briefText(li);
       li.setAttribute('data-key', key);
       if (briefIsDone(key)) {
@@ -3370,6 +3441,8 @@
     }
     /* 끌어 둔 순서를 늘 다시 입힌다 — 체크·동기화로 다시 그려도 차례가 흔들리지 않게 */
     applyBriefOrder();
+    /* 그 위에 시각 순서를 마지막으로 세운다 — 시각이 있는 줄은 늘 맨 위에서 이른 순 */
+    sortBriefByTime();
   }
 
   function render(){
