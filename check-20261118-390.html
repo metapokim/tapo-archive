@@ -896,10 +896,9 @@
                 <li><span class="brief-time">21:00</span><span class="brief-body">현주 졸업선물 주문</span></li>
                 <li><span class="brief-body">평등법 입법예고(~11/26) 쟁점 살펴보기</span></li>
                 <li><span class="brief-time">09:30</span><span class="brief-body">성곡도서관 책 반납</span></li>
-                <li><span class="brief-body">DB손해보험(1588-0100) 카드 자동이체 변경 확인</span></li>
                 <li><span class="brief-time">14:00</span><span class="brief-body">덕소2 대의원회 · 와부읍 덕소로 73 2층 202호(세양아르비채리버)</span></li>
                 <li><span class="brief-time">16:30</span><span class="brief-body">이화여대 젠더포럼 온라인 참석</span></li>
-                <li><span class="brief-body">김연수 소설 읽기</span></li>
+                <li><span class="brief-body">DB손해보험(1588-0100) 카드 자동이체 변경 확인</span></li>
               </ul>
             </div>
             <p class="brief-credit"><span class="brief-credit-in">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></span></p>
@@ -4534,9 +4533,9 @@
       var e = document.querySelector(sel); if (e) e.style.display = 'none';
     });
     var hero = document.querySelector('.hero');
-    if (hero) { hero.style.display = 'block'; hero.style.padding = '18px'; }
+    if (hero) { hero.style.cssText = 'display:block;padding:18px'; }
     var b = document.querySelector('.brief');
-    if (b) { b.style.maxWidth = '612px'; b.style.margin = '0 auto'; }
+    if (b) { b.style.cssText += ';width:612px;flex:0 0 612px;margin:0;height:332px'; }
     document.body.style.background = '#F4F4F5';
   })();
   </script>
