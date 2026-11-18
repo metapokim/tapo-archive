@@ -2033,7 +2033,7 @@
       h += '<a class="vthumb" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer"'
         +  ' aria-label="영상 열기: ' + esc(it.title) + '" title="새 탭에서 영상 열기">';
       h += '<img src="' + esc(hi) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"';
-      if (!it.image) h += ' onerror="this.onerror=null;this.src=\'' + esc(thumbOf(it)) + '\'"';
+      if (!it.image) h += ' data-fallback="' + esc(thumbOf(it)) + '"';
       if (it.imgpos) h += ' style="object-position:' + esc(it.imgpos) + '"';
       h += '>';
       h += '<span class="vplay" aria-hidden="true"></span></a>';
@@ -2200,13 +2200,22 @@
   var emptyEl = document.getElementById('empty');
   var heroEl = document.querySelector('.hero');
 
-  /* 이미지 로드 실패 → 깨진 아이콘 대신 썸네일 자리만 감춤 */
+  /* 이미지 로드 실패 → 깨진 아이콘 대신 썸네일 자리만 감춤
+     3안 영상 썸네일(.vthumb)은 maxresdefault → data-fallback(hqdefault) → 자리 삭제 순서로 내려간다. */
   if (mainEl && mainEl.addEventListener) {
     mainEl.addEventListener('error', function(e){
       var t = e.target;
       if (!t || !t.tagName || String(t.tagName).toUpperCase() !== 'IMG') return;
       var box = t.parentNode;
-      if (box && box.className && String(box.className).indexOf('thumb') >= 0 && box.remove) box.remove();
+      if (!box || !box.className) return;
+      var cn = String(box.className);
+      if (cn.indexOf('vthumb') >= 0) {
+        var alt = t.getAttribute('data-fallback');
+        if (alt && t.getAttribute('src') !== alt) t.setAttribute('src', alt);
+        else if (box.remove) box.remove();
+        return;
+      }
+      if (cn.indexOf('thumb') >= 0 && box.remove) box.remove();
     }, true);
   }
 
