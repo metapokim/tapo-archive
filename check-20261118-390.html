@@ -4525,7 +4525,8 @@
 </script>
   <script>
   /* 미리보기 전용 파일 — 실제 사이트(index.html)에는 없는 임시 화면.
-     브리핑 카드만 남기고, 시각 pill 에 16:08 을 넣은 상태를 보여 준다(값 저장·동기화 없음). */
+     브리핑 카드만 남기고, 시각 pill 에 16:08 을 넣은 상태를 보여 준다(값 저장·동기화 없음).
+     목록이 전부 보이도록 카드 높이만 auto 로 둔다(실제 카드는 안에서 스크롤). */
   (function(){
     var f = document.querySelector('.brief .brief-add-time');
     if (f) { f.value = '16:08'; f.dispatchEvent(new Event('input', { bubbles: true })); }
@@ -4533,9 +4534,9 @@
       var e = document.querySelector(sel); if (e) e.style.display = 'none';
     });
     var hero = document.querySelector('.hero');
-    if (hero) { hero.style.cssText = 'display:block;padding:18px'; }
+    if (hero) hero.style.cssText = 'display:block;padding:18px;width:660px';
     var b = document.querySelector('.brief');
-    if (b) { b.style.cssText += ';width:612px;flex:0 0 612px;margin:0;height:332px'; }
+    if (b) b.style.cssText = 'width:612px;flex:none;height:auto;min-height:0';
     document.body.style.background = '#F4F4F5';
   })();
   </script>
