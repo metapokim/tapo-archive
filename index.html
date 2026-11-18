@@ -2217,6 +2217,17 @@
       }
       if (cn.indexOf('thumb') >= 0 && box.remove) box.remove();
     }, true);
+    /* 유튜브 영상에 maxresdefault 가 없으면 120×90 자리표시자를 404 응답 본문으로 보내고,
+       브라우저는 그 본문을 그대로 그려 오류 이벤트가 뜨지 않는다. 회색 빈 칸 대신 hqdefault 로 내려간다. */
+    mainEl.addEventListener('load', function(e){
+      var t = e.target;
+      if (!t || !t.tagName || String(t.tagName).toUpperCase() !== 'IMG') return;
+      var box = t.parentNode;
+      if (!box || !box.className || String(box.className).indexOf('vthumb') < 0) return;
+      var alt = t.getAttribute('data-fallback');
+      if (!alt || t.getAttribute('src') === alt) return;
+      if (t.naturalWidth && t.naturalWidth < 300) t.setAttribute('src', alt);
+    }, true);
   }
 
   var NAV_ICONS = {
