@@ -1226,6 +1226,16 @@
   }
 
   /* ────────────────────────── 상태 ────────────────────────── */
+  /* 모바일(≤640px)에서는 탭을 열었을 때 카드가 5개만 먼저 보이고, 아래 '더 보기'로 더 불러온다.
+     태블릿·데스크톱은 기존 개수 그대로(포럼·공연·메모 60, 나머지 24). */
+  var LIMITS = { forum: 60, grad: 24, news: 24, video: 24, show: 60, book: 24, memo: 60 };
+  function baseLimits(){
+    var out = {}, k;
+    for (k in LIMITS) {
+      if (Object.prototype.hasOwnProperty.call(LIMITS, k)) out[k] = window.innerWidth <= 640 ? 5 : LIMITS[k];
+    }
+    return out;
+  }
   var state = {
     items: [],
     deleted: [],
@@ -1239,7 +1249,7 @@
     q: '',
     kind: 'all',
     collapsed: {},     /* 전체 보기에서 접어 둔 섭션 (cat → 1) */
-    limits: { forum: 60, grad: 24, news: 24, show: 60, book: 24, memo: 60 }
+    limits: baseLimits()
   };
   var loadChanged = false;   /* 저장본 병합·정리로 내용이 바뀌었는지 */
 
@@ -3569,7 +3579,7 @@
     state.status = 'all';
     state.kind = 'all';
     if (state.cat !== 'book') state.shelf = 'all';   /* 서가 필터는 책에서만 */
-    state.limits = { forum: 60, grad: 24, news: 24, show: 60, book: 24, memo: 60 };
+    state.limits = baseLimits();
     saveUIPrefs();
     render();
     toResults();
@@ -3633,7 +3643,7 @@
     var b = e.target.closest('.chip');
     if (!b) return;
     state.shelf = b.getAttribute('data-shelf');
-    state.limits.book = 24;
+    state.limits.book = baseLimits().book;
     render();
     saveUIPrefs();
     toResults();
