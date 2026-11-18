@@ -898,7 +898,7 @@
                 <li><span class="brief-time">09:30</span><span class="brief-body">성곡도서관 책 반납</span></li>
                 <li><span class="brief-time">14:00</span><span class="brief-body">덕소2 대의원회 · 와부읍 덕소로 73 2층 202호(세양아르비채리버)</span></li>
                 <li><span class="brief-time">16:30</span><span class="brief-body">이화여대 젠더포럼 온라인 참석</span></li>
-                <li><span class="brief-body">DB손해보험(1588-0100) 카드 자동이체 변경 확인</span></li>
+                <li><span class="brief-body">DB손해보험(1588-0100) 카드 자동이체 확인</span></li>
               </ul>
             </div>
             <p class="brief-credit"><span class="brief-credit-in">날씨 <a href="https://developer.apple.com/weatherkit/data-source-attribution/" target="_blank" rel="noopener">&#xF8FF; Weather</a> · <a href="https://www.airkorea.or.kr/" target="_blank" rel="noopener">AirKorea · 한국환경공단</a></span></p>
@@ -4533,10 +4533,11 @@
     ['.side', '.topbar', '#filters', '#main', 'footer', '.upcoming'].forEach(function(sel){
       var e = document.querySelector(sel); if (e) e.style.display = 'none';
     });
+    var wide = window.innerWidth > 700;
     var hero = document.querySelector('.hero');
-    if (hero) hero.style.cssText = 'display:block;padding:18px;width:660px';
+    if (hero) hero.style.cssText = wide ? 'display:block;padding:18px;width:660px' : 'display:block;padding:12px;width:auto';
     var b = document.querySelector('.brief');
-    if (b) b.style.cssText = 'width:612px;flex:none;height:auto;min-height:0';
+    if (b) b.style.cssText = (wide ? 'width:612px;' : 'max-width:100%;') + 'flex:none;height:auto;min-height:0';
     document.body.style.background = '#F4F4F5';
   })();
   </script>
