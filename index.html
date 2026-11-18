@@ -467,6 +467,36 @@
   /* 영상 카드 썸네일은 유튜브 화면비(16:9) — 세로 표지(3:4)와 달리 옆에 납작하게 */
   .card--video .thumb{flex:0 0 112px;width:112px}
   .card--video .thumb img{aspect-ratio:16 / 9;border-radius:10px}
+  /* ── 3안: 상단 가로 분할 컴팩트형 ──
+     배지 줄([영상] 날짜) 아래에 16:9 썸네일과 제목(3줄)·채널명을 나란히(세로 중앙),
+     그 아래 전체 폭 1px 구분선을 두고 요약·태그·메모·버튼을 이어 붙인다. */
+  .card--vcompact .vrow{display:flex;align-items:center;gap:12px;min-width:0;margin-top:2px}
+  .card--vcompact .vthumb{
+    position:relative;flex:0 0 36%;min-width:118px;max-width:168px;display:block;
+    border-radius:10px;overflow:hidden;background:#0B0B0C;line-height:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .card--vcompact .vthumb img{
+    display:block;width:100%;height:auto;aspect-ratio:16 / 9;object-fit:cover;border-radius:10px;
+  }
+  .card--vcompact .vthumb:hover img{opacity:.93}
+  .card--vcompact .vthumb:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  /* 우하단 작은 흰 원형 ▶ 배지 */
+  .card--vcompact .vplay{
+    position:absolute;right:5px;bottom:5px;width:22px;height:22px;border-radius:50%;
+    background:rgba(255,255,255,.94);box-shadow:0 1px 3px rgba(0,0,0,.28);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .card--vcompact .vplay::before{
+    content:'';display:block;width:0;height:0;margin-left:2px;
+    border-left:7px solid #18181B;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;
+  }
+  .card--vcompact .vmeta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:5px}
+  .card--vcompact .vmeta .card-title{
+    margin:0;font-size:15.5px;line-height:1.38;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
+  }
+  .card--vcompact .vsep{display:block;height:1px;background:var(--line-2);margin:5px 0 3px}
   .card-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:20px}
   .tag{font-size:10px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:#F4F4F5;color:#52525B}
   .tag--forum{background:var(--green-w);color:var(--green-2)}
@@ -720,6 +750,8 @@
     .thumb{flex:0 0 88px;width:88px}
     .card--ledger .thumb{flex-basis:68px;width:68px}
     .card--video .thumb{flex-basis:104px;width:104px}
+    /* 3안: 좁은 화면에서는 제목을 한 단계 줄인다 */
+    .card--vcompact .vmeta .card-title{font-size:15px}
     .sec{margin-bottom:26px}
     .sec-title{font-size:17px}
     .frow{grid-template-columns:1fr}
@@ -736,6 +768,10 @@
   }
   @media (max-width:420px){
     .brief-lead{font-size:14.5px}
+  }
+  /* 3안: 휴대폰 폭에서는 썸네일을 132×74(16:9)로 고정 */
+  @media (max-width:640px){
+    .card--vcompact .vthumb{flex:0 0 132px;width:132px;min-width:0;max-width:none}
   }
   @media (max-width:360px){
     .quick--top a{font-size:11px;padding:6px 8px;gap:5px}
@@ -1981,6 +2017,34 @@
     return '<div class="thumb"><img src="' + esc(src) + '" alt="" loading="lazy" decoding="async"'
       + ' referrerpolicy="no-referrer"' + style + '></div>';
   }
+  /* 고해상도 썸네일(maxresdefault). 유튜브에 없으면 onerror 로 hqdefault(480×360)로 내려가고,
+     그 위아래 검은 레터박스는 16:9 프레임의 object-fit:cover 가 덜어낸다. */
+  function thumbMaxOf(it){
+    if (it.image) return it.image;
+    var id = ytId(it.url) || ytId(it.extraUrl);
+    return id ? 'https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg' : '';
+  }
+  /* 3안(상단 가로 분할 컴팩트형) — 썸네일 + 제목·제작자 줄 */
+  function videoRowHTML(it){
+    var hi = thumbMaxOf(it);
+    var h = '<div class="vrow">';
+    if (hi) {
+      var link = it.url || it.extraUrl || '';
+      h += '<a class="vthumb" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer"'
+        +  ' aria-label="영상 열기: ' + esc(it.title) + '" title="새 탭에서 영상 열기">';
+      h += '<img src="' + esc(hi) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"';
+      if (!it.image) h += ' onerror="this.onerror=null;this.src=\'' + esc(thumbOf(it)) + '\'"';
+      if (it.imgpos) h += ' style="object-position:' + esc(it.imgpos) + '"';
+      h += '>';
+      h += '<span class="vplay" aria-hidden="true"></span></a>';
+    }
+    h += '<div class="vmeta"><h3 class="card-title">' + esc(it.title) + (it.extra ? ' ' + esc(it.extra) : '') + '</h3>';
+    if (it.publisher) h += '<p class="line line--src">' + esc(it.publisher) + '</p>';
+    h += '</div></div>';
+    /* 전체 폭 1px 구분선 — 이 아래로 요약·태그·메모·버튼 */
+    h += '<span class="vsep" aria-hidden="true"></span>';
+    return h;
+  }
 
   /* 메모 작성·수정 시각을 11.16 10:32 꼴로 */
   function memoWhen(s){
@@ -2014,10 +2078,13 @@
   function cardHTML(it){
     if (it.cat === 'memo') return memoCardHTML(it);
     var m = META[it.cat];
-    var cls = 'card card--' + it.cat + (it.cat === 'book' && it.shelf === 'bought' ? ' card--ledger' : '');
+    /* 영상 카드 중 유튜브 썸네일이 있는 것만 3안(상단 가로 분할 컴팩트형) — 기타자료 PDF 카드는 기존 형식 */
+    var opt3 = it.cat === 'video' && kindOf(it) !== '기타자료' && !!thumbOf(it);
+    var cls = 'card card--' + it.cat + (it.cat === 'book' && it.shelf === 'bought' ? ' card--ledger' : '')
+      + (opt3 ? ' card--vcompact' : '');
     var h = '<article class="' + cls + '" data-id="' + esc(it.id) + '">';
 
-    h += '<div class="card-head"><div class="card-main">';
+    if (!opt3) h += '<div class="card-head"><div class="card-main">';
     var badge = m.label, badgeCls = 'tag--' + it.cat;
     if (it.cat === 'grad') {
       var gk = kindOf(it);
@@ -2058,9 +2125,13 @@
     }
     h += '</div>';
 
+    if (opt3) h += videoRowHTML(it);
+
     var accentKind = DONE[it.status] ? 'green' : (dd !== null || it.pick ? 'lemon' : 'soft');
-    h += '<h3 class="card-title">' + esc(it.title) + (it.extra ? ' ' + esc(it.extra) : '') + '</h3>';
-    h += '<span class="accent accent--' + accentKind + '" aria-hidden="true"></span>';
+    if (!opt3) {
+      h += '<h3 class="card-title">' + esc(it.title) + (it.extra ? ' ' + esc(it.extra) : '') + '</h3>';
+      h += '<span class="accent accent--' + accentKind + '" aria-hidden="true"></span>';
+    }
 
     if (it.cat === 'forum') {
       if (it.place) h += '<p class="line">' + esc(it.place) + '</p>';
@@ -2083,8 +2154,8 @@
       if (it.price) h += '<p class="line line--price">' + money(it.price) + '</p>';
       if (it.summary) h += '<p class="line line--dim">' + esc(it.summary) + '</p>';
     } else if (it.cat === 'video') {
-      /* 채널명과 한 줄 설명 — 썸네일은 thumbHTML 이 유튜브 링크에서 알아서 붙인다 */
-      if (it.publisher) h += '<p class="line line--src">' + esc(it.publisher) + '</p>';
+      /* 채널명과 한 줄 설명 — 3안은 채널명을 제목 옆에 이미 적었고, 썸네일은 videoRowHTML 이 붙인다 */
+      if (it.publisher && !opt3) h += '<p class="line line--src">' + esc(it.publisher) + '</p>';
       if (it.summary) h += '<p class="line line--dim">' + esc(it.summary) + '</p>';
       if (it.sub) h += '<button class="subtag" type="button" data-act="sub" data-sub="' + esc(it.sub) + '" title="이 주제만 보기">' + esc(it.sub) + '</button>';
     } else if (it.shelf === 'bought') {
@@ -2106,7 +2177,7 @@
       else if (it.sub) h += '<button class="subtag" type="button" data-act="sub" data-sub="' + esc(it.sub) + '" title="이 분야만 보기">' + esc(it.sub) + '</button>';
     }
 
-    h += '</div>' + thumbHTML(it) + '</div>';
+    if (!opt3) h += '</div>' + thumbHTML(it) + '</div>';
 
     h += '<input class="memo" type="text" value="' + esc(it.memo) + '" placeholder="한 줄 메모" aria-label="' + esc(it.title) + ' 메모">';
 
