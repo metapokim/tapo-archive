@@ -814,6 +814,8 @@
             <p class="brief-lead">가벼운 우산 챙기시고 저녁·내일 영하권(-2°C) 대비 따뜻하게 입으세요.</p>
             <div class="brief-scroll">
               <ul class="brief-list">
+                <li><span class="brief-time">14:00</span><span class="brief-body">덕소2 대의원회 · 와부읍 덕소로 73 2층 202호(세양아르비채리버)</span></li>
+                <li><span class="brief-time">11/21(토)</span><span class="brief-body">11:00 대치미도상가 임시총회 · 대치동 사랑교회(삼성로 150)</span></li>
                 <li><span class="brief-body">내일(11/19) 연합뉴스 다문화포럼(14:00) 일정 확인</span></li>
                 <li><span class="brief-body">평등법 입법예고(~11/26) 쟁점 살펴보기</span></li>
                 <li><span class="brief-body">DB손해보험(1588-0100) 카드 자동이체 변경 확인</span></li>
@@ -1055,6 +1057,14 @@
     { date: '2026-12-08', title: '[최종 마감] 한국현대문학특강 기말 논문 업로드 (18:00)', time: '17:00~18:00', place: '' }
   ];
 
+  /* 2026-11-18 은유 님 요청 — 가야 하는 이 두 회의(덕소2 대의원회·대치미도상가 임시총회)는
+     TODAY'S BRIEFING 맨 윗줄에만 적고 '다가오는 일정'에는 넣지 않는다.
+     캘린더·카드 어느 쪽으로 들어와도 여기서 걸러 낸다. */
+  var UPCOMING_HIDE = /덕소2|대치미도/;
+  function hiddenInUpcoming(title){
+    return UPCOMING_HIDE.test(String(title == null ? '' : title).replace(/\s+/g, ''));
+  }
+
   var META = {
     forum: { num:'01', label:'학회·포럼', statuses:['관심','신청 전','신청 완료','참석 완료'] },
     grad:  { num:'02', label:'대학원·논문', statuses:['관심','읽기 전','읽는 중','정리 완료'] },
@@ -1133,6 +1143,9 @@
      기기에 남은 사본도 한 번만 옮기고, 옛 상태말은 시청 쪽 말로 바꾼다(메모는 그대로). */
   var MEDIA_STATUS = { '읽기 전':'시청 전', '읽는 중':'시청 중', '읽음':'시청 완료', '정리 완료':'시청 완료' };
   var mediaSplitSynced = false;
+  /* 2026-11-18 회의 2건(덕소2 대의원회·대치미도상가 임시총회)을 브리핑 맨 윗줄에 넣었다 —
+     이미 기기 저장본·끌어 둔 할 일 순서를 둔 기기에서도 두 줄이 맨 위에 오도록 한 번만 맞춘다. */
+  var briefMeetSynced = false;
   /* 2026-11-16 동성부부 판결: 기사 카드와 판결문 카드를 한 장으로 합친다 —
      이 기기에 옛 판결문 카드(doc20260605_2025na10110)와 옛 기사 카드가 남아 있어도 한 번만 정리한다. */
   var YNA_ID = 'n20260610_yna', YNA_DOC_ID = 'doc20260605_2025na10110';
@@ -1591,6 +1604,36 @@
       caseNotesSynced = true;
     }
 
+    /* 2026-11-18 회의 2건(덕소2 대의원회 · 대치미도상가 임시총회)은 TODAY'S BRIEFING 맨 윗줄에만 적는다.
+       이 기기에 끌어 둔 할 일 순서(brief.order)가 있으면 새 두 줄이 '순서에 없는 줄'로 뒤로 밀리므로,
+       두 줄의 키를 순서 기록의 맨 앞으로 올린다. 같은 회의를 직접 추가해 둔 할 일이 남아 있으면
+       브리핑에 두 번 보이지 않도록 지운 표시를 남겨 정리한다(다른 기기의 옛 사본이 되살리지 못하게).
+       '다가오는 일정'에서는 hiddenInUpcoming 이 두 회의를 걸러 낸다. */
+    if (!(ui && ui.briefMeet20261118)) {
+      var mkKeys = [], mkLis = document.querySelectorAll('.brief .brief-list > li'), mki, mkk, mkOrd;
+      for (mki = 0; mki < mkLis.length; mki++) {
+        mkk = briefItemKey(mkLis[mki]);
+        if (mkk && (mkk.indexOf('덕소2') >= 0 || mkk.indexOf('대치미도') >= 0)) mkKeys.push(mkk);
+      }
+      mkOrd = briefOrder();
+      if (mkKeys.length && mkOrd.list.length) {
+        mkOrd.list = mkKeys.concat(mkOrd.list.filter(function(x){ return mkKeys.indexOf(x) < 0; })).slice(0, 200);
+        mkOrd.at = new Date().getTime();
+        loadChanged = true;
+      }
+      var mtd = briefTodos(), mdel = briefDels(), mdrop = [], mti, mtk;
+      for (mti = 0; mti < mtd.length; mti++) {
+        mtk = coreBriefText(mtd[mti].text);
+        if (mtk.length && mtk.length <= 40 && (mtk.indexOf('덕소2') >= 0 || mtk.indexOf('대치미도') >= 0)) mdrop.push(mtd[mti].id);
+      }
+      for (mti = 0; mti < mdrop.length; mti++) {
+        mdel[mdrop[mti]] = new Date().getTime();
+        delete state.brief[todoDoneKey(mdrop[mti])];
+      }
+      if (mdrop.length) { state.brief.todos = mtd.filter(function(x){ return mdrop.indexOf(x.id) < 0; }); loadChanged = true; }
+      briefMeetSynced = true;
+    }
+
     if (ui) {
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
       if (ui.shelf && SHELF_ORDER.indexOf(ui.shelf) >= 0) state.shelf = ui.shelf;
@@ -1605,7 +1648,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.shelf = 'all';
 
-    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || mediaSplitSynced || ewhaSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || mediaSplitSynced || ewhaSynced || briefMeetSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -1626,7 +1669,8 @@
       gradAdm20261117b: (gradAdmSynced || prev.gradAdm20261117b) ? 1 : 0,
       caseNotes20261117: (caseNotesSynced || prev.caseNotes20261117) ? 1 : 0,
       mediaTabSplit20261118: (mediaSplitSynced || prev.mediaTabSplit20261118) ? 1 : 0,
-      forumEwha20261118: (ewhaSynced || prev.forumEwha20261118) ? 1 : 0 }));
+      forumEwha20261118: (ewhaSynced || prev.forumEwha20261118) ? 1 : 0,
+      briefMeet20261118: (briefMeetSynced || prev.briefMeet20261118) ? 1 : 0 }));
   }
   function persist(){
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
@@ -2309,6 +2353,7 @@
       ev = CALENDAR_EVENTS[k];
       d = dayDiff(ev.date);
       if (d === null || d < 0 || d > 60) continue;
+      if (hiddenInUpcoming(ev.title)) continue;      /* 회의 2간은 브리핑 상단에만 */
       if (inArchive(ev)) continue;
       out.push({ date: ev.date, title: ev.title, time: ev.time || '', place: ev.place || '', d: d, cal: true });
     }
@@ -2318,6 +2363,7 @@
     var rows = [], k, it, d;
     for (k = 0; k < state.items.length; k++) {
       it = state.items[k];
+      if (hiddenInUpcoming(it.title)) continue;      /* 회의 2간은 브리핑 상단에만 */
       d = upcomingDD(it);
       if (d === null) continue;
       rows.push({ date: it.date, title: it.title, place: it.place || '', d: d, item: it });
