@@ -3109,6 +3109,7 @@
       form = document.createElement('form');
       form.className = 'brief-add';
       form.setAttribute('autocomplete', 'off');
+      form.setAttribute('novalidate', '');   /* 비워 둔 시각 입력이 폼 검사에 걸려 추가가 막히지 않게 */
       form.setAttribute('aria-label', '할 일 추가');
       var inp = document.createElement('input');
       inp.type = 'text';
@@ -3129,7 +3130,6 @@
       tin.title = '시각 (선택) — 비우면 시간 없는 할 일';
       tin.setAttribute('aria-label', '시각 선택 (비우면 시간 없는 할 일)');
       tin.setAttribute('autocomplete', 'off');
-      tin.setAttribute('step', '60');
       var tdel = document.createElement('button');
       tdel.type = 'button';
       tdel.className = 'brief-add-time-x';
