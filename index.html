@@ -787,13 +787,15 @@
     .brief-add-time-face{font-size:11.5px}
     .brief-add-btn{width:28px;height:28px;font-size:16px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
-    /* 2026-11-18: 다가오는 일정(.up-box)은 5줄이 안 잘리고 딱 끊기는 318px로 유지하고,
-       첫 화면에서 '학회·포럼' 줄이 아래로 내려가도록 브리핑(.brief)만 440px로 늘린다(합계 758px). */
-    .brief{height:440px}
-    .up-box{height:318px}
+    /* 2026-11-19: 브리핑(.brief) 아래에 남던 여백을 한 줄만큼(40px) 줄이고(440 → 400),
+       그 40px을 그대로 '다가오는 일정'(.up-box)에 넘긴다 — 두 카드 합계 758px은 그대로라
+       첫 화면에서 '학회·포럼' 줄은 여전히 아래로 내려가고, 다가오는 일정은 5줄이 다 보인다.
+       줄 높이가 내용에 따라 달라지므로 5번째 줄에서 끊는 것은 fitUpList() 가 맡는다. */
+    .brief{height:400px}
+    .up-box{height:358px}
     .up-list{max-height:none;padding-right:2px}
     .brief-scroll{max-height:none}
-    .up-item{padding:10px 0}
+    .up-item{padding:12px 0}
     .up-body{font-size:12.5px}
     .up-body .up-place{display:none}
     .filters{padding-bottom:12px;gap:6px}
@@ -1346,8 +1348,7 @@
     return out;
   }
   var state = {
-    items: [],
-    deleted: [],
+    items: [],    deleted: [],
     /* 아침 브리핑에서 체크한 항목 — '날짜|문구' 키에 시각(ms)을 값으로 둔다.
        양수 = 완료, 음수 = 되돌림(기기 간 병합은 절댓값이 큰 쪽을 남긴다) */
     brief: {},
@@ -1363,6 +1364,17 @@
   /* 검색 중에만 쓰는 임시 접힘 상태 (cat → 1) — 저장하지 않으므로 검색어를 지우면 사라진다 */
   var searchFold = {};
   var loadChanged = false;   /* 저장본 병합·정리로 내용이 바뀌었는지 */
+
+  /* 화면 폭이 바뀌면(아이패드에서 폰으로, 웹뷰가 늦게 폭을 확정한 경우 등) 카드 몇 개를
+     먼저 보일지도 다시 정한다 — 폰 폭인데 데스크톱 값(24건)이 남아 탭마다 5건이 안 되던 문제
+     (2026-11-19 은유 님 신고 — '기사 탭도 다른 탭처럼 5개만') 방지. */
+  var limitsNarrow = (window.innerWidth <= 640);
+  function syncLimits(){
+    var narrow = (window.innerWidth <= 640);
+    if (narrow === limitsNarrow) return;
+    limitsNarrow = narrow;
+    state.limits = baseLimits();
+  }
 
   var syncCfg = { token: '', gistId: '', device: '', lastSync: '' };
   var syncTimer = null, syncBusy = false, syncApplying = false;
@@ -2636,6 +2648,18 @@
     }).join('');
   }
 
+  /* 모바일에서는 '다가오는 일정'을 다섯 줄까지만 — 줄 높이가 내용에 따라 달라져도
+     (주소·시간이 붙은 두 줄짜리 일정 등) 5번째 줄 끝에서 딱 끊어 6번째 줄이
+     반쯤 걸치지 않게 한다. 2026-11-19 은유 님 요청(모바일에서 아래가 잘려 보임). */
+  function fitUpList(){
+    var ul = document.getElementById('upList');
+    if (!ul) return;
+    if (window.innerWidth > 900) { ul.style.maxHeight = ''; return; }
+    var lis = ul.children, n = Math.min(5, lis.length), h = 0, i;
+    for (i = 0; i < n; i++) h += lis[i].getBoundingClientRect().height;
+    ul.style.maxHeight = h ? Math.ceil(h) + 'px' : '';
+  }
+
   /* 다가오는 일정 줄 → 그 카드로 이동 (탭 전환·필터 풀기·스크롤·반짝임) */
   function goToCard(id){
     var it = byId(id);
@@ -3472,6 +3496,7 @@
   }
 
   function render(){
+    syncLimits();
     var res = filtered();
     renderTabs();
     renderStatusChips();
@@ -3489,6 +3514,7 @@
     renderUpcoming();
     renderBrief();
     upFade();   /* 브리핑 목록이 다시 그려진 뒤에야 스크롤 여부(아래 흐림)를 알 수 있다 */
+    fitUpList();   /* 모바일에서는 다가오는 일정을 5번째 줄에서 끊는다 */
     var totalShown = 0, c;
     for (c = 0; c < CAT_ORDER.length; c++) totalShown += res[CAT_ORDER[c]].length;
     if (totalShown === 0 && state.cat === 'memo') {
@@ -3607,7 +3633,17 @@
     }
   });
   window.addEventListener('scroll', function(){ if (menuEl) closeMenu(); }, true);
-  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); upFade(); });
+  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); upFade(); fitUpList(); });
+  /* 폰 폭(≤640px)에 들어오고 나갈 때는 카드 몇 개를 먼저 보일지도 다시 계산해 그린다 */
+  var narrowTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(narrowTimer);
+    narrowTimer = setTimeout(function(){
+      if ((window.innerWidth <= 640) === limitsNarrow) return;
+      syncLimits();
+      render();
+    }, 120);
+  });
 
   function setStatus(it, s){
     if (it.status === s) return;
