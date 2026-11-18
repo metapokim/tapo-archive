@@ -251,7 +251,7 @@
   }
   .brief-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:0;min-width:0;max-width:100%}
   .brief-list li{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px;line-height:1.5;min-width:0;max-width:100%}
-  .brief-time{flex:0 0 44px;font-variant-numeric:tabular-nums;font-weight:800;font-size:11.5px;color:var(--lemon);letter-spacing:.02em}
+  .brief-time{flex:0 0 44px;font-variant-numeric:tabular-nums;font-weight:800;font-size:11.5px;line-height:1;color:var(--lemon);letter-spacing:.02em}
   /* '할 일' 라벨은 화면에서 감춘다(시각 09:10 같은 실제 시각만 남김) — 글자는 DOM에 두어 완료 표시 키가 바뀌지 않게 한다 */
   .brief-time.is-todo{display:none}
   .brief-body{min-width:0;color:#E4E4E7;font-weight:500;word-break:keep-all}
@@ -787,13 +787,10 @@
     .brief-add-time-face{font-size:11.5px}
     .brief-add-btn{width:28px;height:28px;font-size:16px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
-    /* 한 줄로 쌓이는 좁은 화면에서도 두 카드 높이를 똑같이 고정한다.
-       실측(390px): 목록 5줄 261.1 + 머리 23.3 + 여백 24 + 테두리 2 = 310.4px → 318px 이면 5줄에서 딱 끊겼다.
-       2026-11-18 요청으로 380px 로 늘렸다 — 목록 자리가 326.8px 이 되어 '다가오는 일정'은 6줄에서 끊기고
-       (6줄 316.8px + 아래 흐림 12px 이 빈 자리에만 걸린다), 브리핑은 할 일 4개가 스크롤 없이 다 들어간다.
-       이 높이만큼 아이폰 첫 화면에서 '학회·포럼' 줄이 아래로 내려간다.
-       할 일이 더 늘어도 브리핑 카드는 이 높이 그대로이고 .brief-scroll 안에서만 스크롤된다. */
-    .brief,.up-box{height:380px}
+    /* 2026-11-18: 다가오는 일정(.up-box)은 5줄이 안 잘리고 딱 끊기는 318px로 유지하고,
+       첫 화면에서 '학회·포럼' 줄이 아래로 내려가도록 브리핑(.brief)만 440px로 늘린다(합계 758px). */
+    .brief{height:440px}
+    .up-box{height:318px}
     .up-list{max-height:none;padding-right:2px}
     .brief-scroll{max-height:none}
     .up-item{padding:10px 0}
