@@ -315,6 +315,29 @@
   .brief-del svg{display:block;width:11px;height:11px}
   .brief-del:hover,.brief-del:focus-visible{color:#FB7185;background:rgba(251,113,133,.14);outline:none}
   .brief-add{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:0}
+  /* 시각(선택) — 비워 두면 예전과 똑같이 시간 없는 '할 일'로 들어가고, 고르면 왼쪽 노란 시각으로 보인다 */
+  .brief-add-timewrap{position:relative;flex:0 0 auto;display:flex;align-items:center;min-width:0}
+  .brief-add-time{
+    width:76px;height:32px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:800;
+    color:#FAFAFA;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
+    padding:0 8px;letter-spacing:-.01em;text-align:center;font-variant-numeric:tabular-nums;
+    -webkit-appearance:none;appearance:none;
+    transition:border-color .15s,background .15s,box-shadow .15s,color .15s,padding .15s;
+  }
+  .brief-add-time:focus{outline:none;border-color:rgba(255,230,0,.55);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
+  .brief-add-time.is-set{color:var(--lemon);padding-right:16px}
+  .brief-add-time::-webkit-date-and-time-value{text-align:center;margin:0}
+  .brief-add-time::-webkit-datetime-edit{text-align:center}
+  .brief-add-time::-webkit-calendar-picker-indicator{opacity:.4;filter:invert(1) brightness(1.5);cursor:pointer;width:10px;padding:0;margin:0}
+  .brief-add-time-x{
+    position:absolute;right:3px;top:50%;transform:translateY(-50%);z-index:2;
+    width:16px;height:16px;padding:0;border:0;border-radius:999px;background:none;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;color:#52525B;
+    -webkit-tap-highlight-color:transparent;transition:color .15s,background .15s;
+  }
+  .brief-add-time-x[hidden]{display:none}
+  .brief-add-time-x svg{display:block;width:9px;height:9px}
+  .brief-add-time-x:hover,.brief-add-time-x:focus-visible{color:#FB7185;background:rgba(251,113,133,.18);outline:none}
   .brief-add-in{
     flex:1 1 auto;min-width:0;height:32px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;
     color:#FAFAFA;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
@@ -722,6 +745,8 @@
     .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
     .brief-add{margin-top:10px;gap:7px}
     .brief-add-in{height:30px;font-size:16px;padding:0 14px}
+    .brief-add-time{width:72px;height:30px;font-size:15px;padding:0 6px}
+    .brief-add-time.is-set{padding-right:15px}
     .brief-add-btn{width:30px;height:30px;font-size:17px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
     /* 한 줄로 쌓이는 좁은 화면에서도 두 카드 높이를 똑같이 고정한다.
@@ -3004,6 +3029,24 @@
   }
   function todoDoneKey(id){ return 'todo:' + id; }
   function todoIsDone(id){ return (Number(state.brief[todoDoneKey(id)]) || 0) > 0; }
+  /* 시각은 'HH:MM' 하나로 맞춘다 — 비었거나 모양이 어긋나면 시간 없는 할 일 */
+  function briefNormTime(v){
+    var m = /^(\d{1,2}):(\d{2})$/.exec(String(v == null ? '' : v).trim());
+    if (!m) return '';
+    var h = Number(m[1]), mi = Number(m[2]);
+    if (!(h >= 0 && h < 24 && mi >= 0 && mi < 60)) return '';
+    return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
+  }
+  function briefTimeInput(){ return document.querySelector('.brief .brief-add-time'); }
+  /* 시각을 골랐을 때만 레몬색과 지우기(×)를 보인다 */
+  function briefSyncTimeChip(){
+    var tin = briefTimeInput();
+    if (!tin) return;
+    var set = !!tin.value;
+    if (set !== tin.classList.contains('is-set')) tin.classList.toggle('is-set', set);
+    var x = tin.parentNode ? tin.parentNode.querySelector('.brief-add-time-x') : null;
+    if (x) x.hidden = !set;
+  }
   function briefClip(s){
     s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
     return s.length > 16 ? s.slice(0, 16) + '…' : s;
@@ -3019,6 +3062,7 @@
       if (!id || !String(it.text == null ? '' : it.text).trim() || seen[id]) continue;
       seen[id] = 1;
       out.push({ id: id, text: String(it.text).replace(/\s+/g, ' ').trim().slice(0, 80),
+        time: briefNormTime(it.time),
         added: String(it.added == null ? '' : it.added).slice(0, 10),
         updatedAt: String(it.updatedAt == null ? '' : it.updatedAt) });
     }
@@ -3075,21 +3119,51 @@
       inp.setAttribute('maxlength', '80');
       inp.setAttribute('autocomplete', 'off');
       inp.setAttribute('enterkeyhint', 'done');
+
+      /* 시각(선택) — 비워 두면 예전처럼 '할 일', 고르면 왼쪽에 노란 시각으로 */
+      var tw = document.createElement('span');
+      tw.className = 'brief-add-timewrap';
+      var tin = document.createElement('input');
+      tin.type = 'time';
+      tin.className = 'brief-add-time';
+      tin.title = '시각 (선택) — 비우면 시간 없는 할 일';
+      tin.setAttribute('aria-label', '시각 선택 (비우면 시간 없는 할 일)');
+      tin.setAttribute('autocomplete', 'off');
+      tin.setAttribute('step', '60');
+      var tdel = document.createElement('button');
+      tdel.type = 'button';
+      tdel.className = 'brief-add-time-x';
+      tdel.innerHTML = CROSS_SVG;
+      tdel.title = '시각 지우기';
+      tdel.setAttribute('aria-label', '시각 지우기');
+      tdel.hidden = true;
+      tw.appendChild(tin);
+      tw.appendChild(tdel);
+
       var btn = document.createElement('button');
       btn.type = 'submit';
       btn.className = 'brief-add-btn';
       btn.textContent = '+';
       btn.setAttribute('aria-label', '추가');
       btn.title = '추가';
+      form.appendChild(tw);
       form.appendChild(inp);
       form.appendChild(btn);
       /* 입력창은 스크롤 상자 밖, 카드 아래쪽에 고정 */
       sec.insertBefore(form, box.nextSibling);
+      tin.addEventListener('input', briefSyncTimeChip);
+      tin.addEventListener('change', briefSyncTimeChip);
+      tdel.addEventListener('click', function(){
+        tin.value = '';
+        briefSyncTimeChip();
+        inp.focus();
+      });
       form.addEventListener('submit', function(e){
         e.preventDefault();
         var f = form.querySelector('.brief-add-in');
-        briefAddTodo(f ? f.value : '');
+        briefAddTodo(f ? f.value : '', tin.value);
       });
+      briefSyncTimeChip();
     }
     return { ul: ul, form: form, input: form.querySelector('.brief-add-in') };
   }
@@ -3108,8 +3182,9 @@
     chk.addEventListener('click', function(){ briefTodoCheck(t.id, li); });
 
     var when = document.createElement('span');
-    when.className = 'brief-time is-todo';
-    when.textContent = '할 일';
+    var whenTime = briefNormTime(t.time);
+    when.className = whenTime ? 'brief-time' : 'brief-time is-todo';
+    when.textContent = whenTime || '할 일';
 
     var body = document.createElement('span');
     body.className = 'brief-body';
@@ -3153,16 +3228,28 @@
     ul.hidden = (open + done) === 0;
     return { open: open, done: done, total: open + done };
   }
-  function briefAddTodo(raw){
+  function briefAddTodo(raw, rawTime){
     var text = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
+    var time = briefNormTime(rawTime);
     var input = document.querySelector('.brief .brief-add-in');
     if (input) input.value = '';
+    var tin = briefTimeInput();
+    if (tin) { tin.value = ''; briefSyncTimeChip(); }
     if (!text) { if (input) input.focus(); return; }
     if (text.length > 80) text = text.slice(0, 80);
     var todos = briefTodos(), dels = briefDels(), k, t, now = new Date().getTime(), id;
     for (k = 0; k < todos.length; k++) {
       t = todos[k];
       if (!t || !t.text || dels[t.id] || t.text !== text) continue;
+      if (briefNormTime(t.time) !== time) {          /* 같은 문구를 시각만 바꿔 다시 넣으면 시각을 고친다 */
+        t.time = time;
+        t.updatedAt = new Date(now).toISOString();
+        persist();
+        renderBrief();
+        toast(time ? '‘' + briefClip(text) + '’ 시각을 ' + time + '로 바꿨습니다'
+                   : '‘' + briefClip(text) + '’ 시각을 지웠습니다');
+        return;
+      }
       if (todoIsDone(t.id)) {                      /* 이미 체크해 둔 같은 항목은 다시 올린다 */
         delete state.brief[todoDoneKey(t.id)];
         t.updatedAt = new Date(now).toISOString();
@@ -3175,10 +3262,10 @@
       return;
     }
     id = 't' + now.toString(36) + Math.random().toString(36).slice(2, 6);
-    todos.push({ id: id, text: text, added: briefStamp(), updatedAt: new Date(now).toISOString() });
+    todos.push({ id: id, text: text, time: time, added: briefStamp(), updatedAt: new Date(now).toISOString() });
     persist();
     renderBrief();
-    toast('할 일 추가 · ' + briefClip(text));
+    toast('할 일 추가 · ' + (time ? time + ' ' : '') + briefClip(text));
   }
   function briefTodoCheck(id, li){
     var key = todoDoneKey(id);
@@ -4036,6 +4123,7 @@
       mm = seenTodo[rr.id];
       if (!mm) {
         mm = { id: String(rr.id), text: String(rr.text).slice(0, 80),
+               time: briefNormTime(rr.time),
                added: String(rr.added == null ? '' : rr.added).slice(0, 10),
                updatedAt: String(rr.updatedAt == null ? '' : rr.updatedAt) };
         mine.push(mm);
@@ -4045,6 +4133,7 @@
       }
       if (String(rr.updatedAt || '') > String(mm.updatedAt || '')) {
         mm.text = String(rr.text).slice(0, 80);
+        mm.time = briefNormTime(rr.time);
         mm.added = String(rr.added == null ? '' : rr.added).slice(0, 10);
         mm.updatedAt = String(rr.updatedAt == null ? '' : rr.updatedAt);
         changed = true;
