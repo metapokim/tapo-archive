@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>TAPO’s archive · 스크랩 노트</title>
 <meta name="theme-color" content="#F7F7F8">
@@ -363,6 +363,20 @@
   }
   .brief-add-in::placeholder{color:#7E7E88;font-weight:500}
   .brief-add-in:focus{outline:none;border-color:rgba(255,230,0,.55);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
+  /* iOS 사파리는 16px 보다 작은 입력칸을 누르면 화면을 저절로 확대한다(2026-11-18 요청).
+     글씨는 지금처럼 12.5px 로 보이게 두되, 브라우저가 보는 입력칸 글씨는 16px 로 두어 확대가 일어나지 않게 한다.
+     16px × 0.78125 = 12.5px — 입력칸을 감싼 상자 안에서만 0.78125배로 줄여 그리고,
+     상자(30px·모바일 28px)는 그대로 두어 줄 안의 자리·높이가 예전과 같다. */
+  .brief-add-inwrap{position:relative;display:flex;flex:1 1 auto;min-width:0;height:30px}
+  @supports (-webkit-touch-callout:none){
+    .brief-add-inwrap > .brief-add-in{
+      position:absolute;left:0;top:0;flex:none;width:128%;height:128%;
+      transform:scale(.78125);transform-origin:0 0;
+      font-size:16px;border-width:1.28px;padding:0 16.64px;
+    }
+    /* 포커스 테두리(3px)도 줄이 그린 뒤 3px 로 보이게 */
+    .brief-add-inwrap > .brief-add-in:focus{box-shadow:0 0 0 3.84px rgba(255,230,0,.14)}
+  }
   .brief-add-btn{
     flex:0 0 auto;width:30px;height:30px;padding:0 0 1px;border-radius:999px;border:1px solid var(--lemon-2);
     background:var(--lemon);color:#18181B;font:inherit;font-size:17px;font-weight:800;line-height:1;
@@ -762,16 +776,23 @@
     .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
     .brief-add{margin-top:10px;gap:7px}
     /* 시각 pill(30px)에 맞춰 입력창은 28px, + 버튼도 28px — 글씨는 목록과 같은 12.5px */
+    .brief-add-inwrap{height:28px}
     .brief-add-in{height:28px;font-size:12.5px;padding:0 12px}
+    /* 아이폰은 입력칸을 16px 로 그린 뒤 0.78125배로 줄이므로(자동 확대 방지) 안쪽 여백도 그만큼 키워 12px 로 보이게 */
+    @supports (-webkit-touch-callout:none){
+      .brief-add-inwrap > .brief-add-in{padding:0 15.36px}
+    }
     .brief-add-timewrap{width:72px;height:30px;padding:0 6px}
     .brief-add-timewrap.is-set{padding-right:15px}
     .brief-add-time-face{font-size:11.5px}
     .brief-add-btn{width:28px;height:28px;font-size:16px}
     .up-box{border-radius:22px;padding:18px 16px 6px}
     /* 한 줄로 쌓이는 좁은 화면에서도 두 카드 높이를 똑같이 고정한다.
-       실측(390px, '다가오는 일정' 5건): 목록 264.8 + 머리 23.3 + 여백 24 + 테두리 2 = 317.3px.
-       할 일이 6개·8개로 늘어도 브리핑 카드는 이 높이 그대로이고 .brief-scroll 안에서만 스크롤된다. */
-    .brief,.up-box{height:318px}
+       실측(390px): 목록 5줄 261.1 + 머리 23.3 + 여백 24 + 테두리 2 = 310.4px → 318px 이면 5줄에서 딱 끊겼다.
+       2026-11-18 요청으로 370px 로 늘렸다 — 목록 자리가 316.8px 이 되어 '다가오는 일정'은 6줄에서 끊기고,
+       브리핑은 할 일 4개가 스크롤 없이 다 들어간다. 이 높이만큼 아이폰 첫 화면에서 '학회·포럼' 줄이 아래로 내려간다.
+       할 일이 더 늘어도 브리핑 카드는 이 높이 그대로이고 .brief-scroll 안에서만 스크롤된다. */
+    .brief,.up-box{height:370px}
     .up-list{max-height:none;padding-right:2px}
     .brief-scroll{max-height:none}
     .up-item{padding:10px 0}
@@ -3214,8 +3235,13 @@
       btn.textContent = '+';
       btn.setAttribute('aria-label', '추가');
       btn.title = '추가';
+      /* 입력칸은 감싼 상자에 넣는다 — iOS 에서 16px 로 그린 뒤 0.78125배로 줄여 그려도(자동 확대 방지)
+         줄 안에서 차지하는 자리와 높이는 예전 그대로다. */
+      var inwrap = document.createElement('span');
+      inwrap.className = 'brief-add-inwrap';
+      inwrap.appendChild(inp);
       form.appendChild(tw);
-      form.appendChild(inp);
+      form.appendChild(inwrap);
       form.appendChild(btn);
       /* 입력창은 스크롤 상자 밖, 카드 아래쪽에 고정 */
       sec.insertBefore(form, box.nextSibling);
