@@ -372,12 +372,12 @@
   .up-dday.is-today{background:var(--green);color:#fff}
   .up-dead{flex:0 0 auto;flex-shrink:0;white-space:nowrap;font-size:10.5px;font-weight:700;color:var(--green-2);letter-spacing:.01em}
   .up-empty{color:#8A8A93;font-size:12.5px;padding:16px 2px;border-top:1px solid #F4F4F5}
-  /* 캘린더에서 온 일정 — '캘린더' 배지와 시간·장소를 한 줄 더 */
+  /* 캘린더에서 온 일정 — 시간·장소를 한 줄 더
+     ('캘린더' 배지는 쓰지 않는다 — 2026-11-18 은유 님 요청) */
   .up-item--cal{align-items:flex-start}
   .up-item--cal .up-body{display:flex;flex-direction:column;gap:3px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
   .up-cal-title{font-weight:600}
   .up-cal-meta{display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px;font-size:11px;font-weight:600;color:#A1A1AA}
-  .up-cal-tag{flex:0 0 auto;font-size:9px;font-weight:800;letter-spacing:.06em;color:#52525B;background:#F4F4F5;border-radius:999px;padding:2px 6px;line-height:1.3}
   .up-cal-when{min-width:0;word-break:keep-all}
   .up-item--cal .up-dday{margin-top:1px}
   /* 줄을 누르면 그 카드로 이동 — 누를 수 있는 줄 표시 */
@@ -2538,7 +2538,7 @@
         if (r.place) when.push(esc(r.place));
         return '<li class="up-item up-item--cal up-item--cal-only" role="button" tabindex="0" data-cal="1" aria-label="' + esc(r.title) + ' — 네이버 캘린더 전용 일정">' + dateCell
           + '<span class="up-body"><span class="up-cal-title">' + esc(r.title) + '</span>'
-          + '<span class="up-cal-meta"><span class="up-cal-tag">캘린더</span>'
+          + '<span class="up-cal-meta">'
           + (when.length ? '<span class="up-cal-when">' + when.join(' · ') + '</span>' : '')
           + '</span></span>' + dday + '</li>';
       }
