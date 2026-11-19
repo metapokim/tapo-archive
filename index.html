@@ -410,8 +410,8 @@
   /* 스크롤바는 감춘다 — 터치·휠로만 위아래(브리핑 할 일 목록도 같다) */
   .up-list::-webkit-scrollbar{display:none;width:0;height:0}
   /* 더 남아 있을 때만 아래를 살짝 흐리게 — 잘린 줄이 튀지 않게.
-     흐림 폭은 줄의 아래 여백과 같게 둔다(2026-11-19: 줄 여백 12→6px 로 줄인 휴대폰에서는
-     모바일 블록에서 6px 로 다시 정한다). 좁은 폰에서 5번째 줄 글자까지 흐려지지 않게. */
+     카드 높이가 5줄에 딱 맞춰져 이제 경계가 줄과 줄 사이(테두리)에 떨어지므로,
+     5번째 줄 글자까지 흐려지지 않도록 흐림 폭을 줄의 아래 여백(11px)만큼만 둔다. */
   .up-list[data-fade="1"]{
     -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
     mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
@@ -766,22 +766,18 @@
     .topbar:not(.is-open) #tabs,
     .topbar:not(.is-open) #topbarQuick{display:none}
     .search{order:5;flex:1 1 100%;max-width:none}
-    /* 2026-11-19(2): 아이폰 Safari 가시 화면(≈700px)에 브리핑+다가오는 일정 두 카드가
-       한 화면에 딱 들어오도록 히어로 위·아래 여백과 카드 사이를 조금 줄인다(10→6 · 14→10 · 16→14). */
-    .hero{grid-template-columns:minmax(0,1fr);gap:10px;padding:6px 0 14px}
-    .brief{border-radius:22px;padding:16px 18px 8px}
-    /* 브리핑 카드 안쪽도 한 단계 조인다 — 줄인 만큼 할 일 목록이 그대로 3~4줄 보인다 */
-    .brief-top{margin-bottom:11px}
-    .brief-list{margin-top:10px}
-    .brief-list li,.brief-mine li{padding:8px 0}
-    .brief-credit{padding-top:8px}
+    /* 2026-11-19(3): '다가오는 일정' 카드가 5번째 줄 바로 아래에서 끝나 카드가 약 30px 낮아졌으므로,
+       그만큼 아래 여백(padding-bottom)을 16→32px 로 늘려 '학회·포럼' 섹션 헤더가
+       아이폰 첫 화면(390×844)에 다시 올라오지 않게 한다(secHeadTop ≈ 861px). */
+    .hero{grid-template-columns:minmax(0,1fr);gap:14px;padding:10px 0 32px}
+    .brief{border-radius:22px;padding:20px 18px 14px}
     .brief-lead{font-size:15px}
     .brief-when{font-size:10px}
     .brief-meta{display:none}
     .brief-check{flex-basis:30px;width:30px;height:30px;margin:-6px -4px -6px 0}
     .brief-check::before{inset:6px}   /* 보이는 원은 18px, 누르는 영역은 30px */
     .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
-    .brief-add{margin-top:8px;gap:7px}
+    .brief-add{margin-top:10px;gap:7px}
     /* 시각 pill(30px)에 맞춰 입력창은 28px, + 버튼도 28px — 글씨는 목록과 같은 12.5px */
     .brief-add-inwrap{height:28px}
     .brief-add-in{height:28px;font-size:12.5px;padding:0 12px}
@@ -793,22 +789,20 @@
     .brief-add-timewrap.is-set{padding-right:15px}
     .brief-add-time-face{font-size:11.5px}
     .brief-add-btn{width:28px;height:28px;font-size:16px}
-    .up-box{border-radius:22px;padding:12px 16px 4px}
-    /* 2026-11-19(2): '다가오는 일정' 카드의 아래 흰 여백이 크던 문제(고정 358px 인데 5줄은 282px라
-       카드 안에 30px가 비었다)를 없앤다 — 높이를 내용에 맞추고(height:auto), 줄 사이 여백을
-       12→6px 로 줄여 카드가 5번째 줄 끝에서 바로 끝나게 한다. 5줄에서 끊는 것은 fitUpList() 가 맡는다.
-       브리핑 카드도 400→348px 로 조여 두 카드가 아이폰 Safari 가시 화면(≈700px)에 함께 들어온다.
-       (348px 이면 접힌 1줄짜리 할 일 네 줄까지 그대로 보이고 다섯 줄째부터 카드 안에서 스크롤된다.) */
-    .brief{height:348px}
+    .up-box{border-radius:22px;padding:18px 16px 14px}
+    /* 2026-11-19: 브리핑(.brief) 아래에 남던 여백을 한 줄만큼(40px) 줄이고(440 → 400),
+       그 40px을 그대로 '다가오는 일정'(.up-box)에 넘긴다 — 두 카드 합계 758px은 그대로라
+       첫 화면에서 '학회·포럼' 줄은 여전히 아래로 내려가고, 다가오는 일정은 5줄이 다 보인다.
+       줄 높이가 내용에 따라 달라지므로 5번째 줄에서 끊는 것은 fitUpList() 가 맡는다. */
+    .brief{height:400px}
+    /* 2026-11-19(3): 4005431 의 넉넉한 간격(브리핑 400px·줄 여백 12px)은 그대로 두고,
+       카드 아래에 남던 흰 여백(고정 358px 인데 5줄은 327px라 30.5px가 비었다)만 없앤다.
+       높이를 내용에 맞추고(height:auto) 아래 여백은 14px — 카드가 5번째 줄 바로 아래에서 끝난다.
+       5줄에서 끊는 것은 fitUpList() 가 맡는다. */
     .up-box{height:auto;min-height:0}
     .up-list{max-height:none;padding-right:2px}
     .brief-scroll{max-height:none}
-    .up-item{padding:6px 0}
-    /* 줄 아래 여백이 6px 라 흐림도 6px — 5번째 줄 글자는 흐려지지 않는다 */
-    .up-list[data-fade="1"]{
-      -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 6px),rgba(0,0,0,0));
-      mask-image:linear-gradient(to bottom,#000 calc(100% - 6px),rgba(0,0,0,0));
-    }
+    .up-item{padding:12px 0}
     .up-body{font-size:12.5px}
     .up-body .up-place{display:none}
     .filters{padding-bottom:12px;gap:6px}
@@ -2670,7 +2664,9 @@
     if (window.innerWidth > 900) { ul.style.maxHeight = ''; return; }
     var lis = ul.children, n = Math.min(5, lis.length), h = 0, i;
     for (i = 0; i < n; i++) h += lis[i].getBoundingClientRect().height;
-    ul.style.maxHeight = h ? Math.ceil(h) + 'px' : '';
+    /* 5줄 높이를 올림하지 않고 그대로 쓴다 — 올림하면 6번째 줄의 윗 테두리(1px 미만)가
+       목록 아래에 남아 카드 끝에 흐릿한 가로줄처럼 보인다(2026-11-19 은유 님 3차 수정). */
+    ul.style.maxHeight = h ? h + 'px' : '';
   }
 
   /* 다가오는 일정 줄 → 그 카드로 이동 (탭 전환·필터 풀기·스크롤·반짝임) */
@@ -3526,8 +3522,10 @@
     renderStats();
     renderUpcoming();
     renderBrief();
-    upFade();   /* 브리핑 목록이 다시 그려진 뒤에야 스크롤 여부(아래 흐림)를 알 수 있다 */
+    /* 2026-11-19(3): 카드 높이가 내용에 맞춰지면서(height:auto) 목록의 실제 스크롤 여부는
+       fitUpList() 가 5줄로 끊은 뒤에야 정해진다 — 순서를 바꿔 흐림을 그 뒤에 계산한다. */
     fitUpList();   /* 모바일에서는 다가오는 일정을 5번째 줄에서 끊는다 */
+    upFade();   /* 브리핑 목록이 다시 그려진 뒤에야 스크롤 여부(아래 흐림)를 알 수 있다 */
     var totalShown = 0, c;
     for (c = 0; c < CAT_ORDER.length; c++) totalShown += res[CAT_ORDER[c]].length;
     if (totalShown === 0 && state.cat === 'memo') {
@@ -3646,7 +3644,7 @@
     }
   });
   window.addEventListener('scroll', function(){ if (menuEl) closeMenu(); }, true);
-  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); upFade(); fitUpList(); });
+  window.addEventListener('resize', function(){ if (menuEl) closeMenu(); fitUpList(); upFade(); });
   /* 폰 폭(≤640px)에 들어오고 나갈 때는 카드 몇 개를 먼저 보일지도 다시 계산해 그린다 */
   var narrowTimer = null;
   window.addEventListener('resize', function(){
