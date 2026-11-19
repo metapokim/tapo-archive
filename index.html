@@ -574,14 +574,14 @@
   /* 카드 상단 오른쪽 끝의 아주 작은 하이라이트 단추 — 누르면 카드가 아주 연한 레몬색으로 켜지고,
      다시 누르면 원래 흰 카드로 돌아간다. 배지 줄의 높이·간격은 건드리지 않는다. */
   .lemon-dot{
-    margin-left:auto;flex:0 0 auto;position:relative;z-index:2;
-    width:13px;height:13px;padding:0;border-radius:50%;
+    margin-left:auto;margin-right:-8px;flex:0 0 auto;position:relative;z-index:2;
+    width:12px;height:12px;padding:0;border-radius:50%;
     border:1.5px solid #D4D4D8;background:#FFF;cursor:pointer;
     -webkit-tap-highlight-color:transparent;
     transition:background .16s ease,border-color .16s ease,box-shadow .16s ease;
   }
   /* 눈에 보이지 않는 넓은 히트박스 — 레이아웃에는 영향이 없다 */
-  .lemon-dot::before{content:'';position:absolute;left:-8px;top:-8px;right:-8px;bottom:-8px;border-radius:50%}
+  .lemon-dot::before{content:'';position:absolute;left:-9px;top:-9px;right:-9px;bottom:-9px;border-radius:50%}
   .lemon-dot:hover{border-color:#A1A1AA}
   .lemon-dot:focus-visible{outline:2px solid var(--lemon-2);outline-offset:3px}
   .lemon-dot.is-on{background:var(--lemon);border-color:var(--lemon-2);box-shadow:0 0 0 2px rgba(250,204,21,.22)}
