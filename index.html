@@ -2078,10 +2078,12 @@
       return arr;
     }
     if (cat === 'memo') {
-      arr.sort(function(a, b){
-        var x = String(a.created || a.date || ''), y = String(b.created || b.date || '');
-        return x < y ? 1 : (x > y ? -1 : 0);   /* 새로 쓴 메모가 위로 */
-      });
+      /* 시각은 '+09:00'과 'Z' 표기가 섮여 있어 글자 비교로는 순서가 틀어린다 — 실제 시각으로 견준다 */
+      var when = function(it){
+        var t = Date.parse(String(it.created || it.updated || it.date || ''));
+        return isNaN(t) ? 0 : t;
+      };
+      arr.sort(function(a, b){ return when(b) - when(a); });   /* 새로 쓴 메모가 위로 */
       return arr;
     }
     if (cat === 'book') {
