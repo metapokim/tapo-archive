@@ -996,7 +996,7 @@
 <div class="modal" id="modal" hidden>
   <form class="sheet" id="form" novalidate>
     <h2 id="formTitle">새 스크랩</h2>
-    <p class="hint">제목과 종류만 있으면 저장됩니다. 나머지는 나중에 고쳐도 됩니다.</p>
+    <p class="hint" id="formHint">제목과 종류만 있으면 저장됩니다. 나머지는 나중에 고쳐도 됩니다.</p>
 
     <div class="frow">
       <div class="field">
@@ -1008,6 +1008,7 @@
           <option value="video">영상·기타자료</option>
           <option value="show">공연·전시</option>
           <option value="book">책</option>
+          <option value="memo">메모</option>
         </select>
       </div>
       <div class="field">
@@ -1071,11 +1072,15 @@
         <label for="fSummary">요약</label>
         <textarea id="fSummary" name="summary" rows="3" style="min-height:78px" placeholder="기사에서 붙들고 싶은 대목 · 논문이 붙든 주장 (줄을 바꿔 여러 줄로 적어도 됩니다)"></textarea>
       </div>
-      <div class="field full">
+      <div class="field full" data-for="memo">
+        <label for="fBody">본문</label>
+        <textarea id="fBody" name="body" rows="8" placeholder="생각나는 대로 적어 두세요. 줄바꿈은 그대로 저장됩니다."></textarea>
+      </div>
+      <div class="field full" data-for="forum show news grad video book">
         <label for="fImage">이미지 URL (포스터 · 책표지)</label>
         <input id="fImage" name="image" type="text" inputmode="url" autocomplete="off" placeholder="https://… 또는 아래에서 사진 올리기">
       </div>
-      <div class="field full">
+      <div class="field full" data-for="forum show news grad video book">
         <label for="fImageFile">사진 올리기</label>
         <div class="imgrow">
           <input id="fImageFile" name="imagefile" type="file" accept="image/*">
@@ -1086,7 +1091,7 @@
           <span class="inote" id="fImageNote"></span>
         </div>
       </div>
-      <div class="field full">
+      <div class="field full" data-for="forum show news grad video book">
         <label for="fMemo">한 줄 메모</label>
         <input id="fMemo" name="memo" type="text" placeholder="신청 마감, 같이 갈 사람, 읽는 이유…">
       </div>
@@ -3765,12 +3770,26 @@
     summary: '영상에서 붙들고 싶은 대목 · 보고 난 뒤 든 생각',
     memo: '나중에 볼 때 까먹지 않을 것 · 같이 볼 사람'
   };
+  var MEMO_HINTS = {
+    title: '예: 가족구성권 포럼에서 들은 말 (비워도 됩니다)',
+    body: '생각나는 대로 적어 두세요. 줄바꿈은 그대로 저장됩니다.'
+  };
   function tuneFormHints(cat){
     var src = cat === 'video' ? VIDEO_HINTS : FORM_HINTS;
-    document.getElementById('fTitle').placeholder = src.title;
+    document.getElementById('fTitle').placeholder = cat === 'memo' ? MEMO_HINTS.title : src.title;
     document.getElementById('fUrl').placeholder = src.url;
     document.getElementById('fSummary').placeholder = src.summary;
     document.getElementById('fMemo').placeholder = src.memo;
+    document.getElementById('fBody').placeholder = MEMO_HINTS.body;
+    /* 메모는 제목 없이 본문만으로도 저장된다 */
+    document.getElementById('fTitle').required = cat !== 'memo';
+    var hint = document.getElementById('formHint');
+    if (hint) hint.textContent = cat === 'memo'
+      ? '제목 없이 본문만 적어도 저장됩니다. 저장한 메모는 ‘메모’ 탭에 쌓입니다.'
+      : '제목과 종류만 있으면 저장됩니다. 나머지는 나중에 고쳐도 됩니다.';
+    /* 새로 적을 때는 종류가 메모면 창 제목도 '새 메모'로 */
+    var ft = document.getElementById('formTitle');
+    if (ft && !editingId) ft.textContent = cat === 'memo' ? '새 메모' : '새 스크랩';
   }
   function openForm(id){
     editingId = id || null;
@@ -3798,6 +3817,7 @@
       document.getElementById('fSummary').value = it.summary || '';
       document.getElementById('fUrl').value = it.url || '';
       document.getElementById('fMemo').value = it.memo || '';
+      document.getElementById('fBody').value = it.cat === 'memo' ? (it.body || '') : '';
       fillStatusOptions(it.cat, it.status);
     }
     document.getElementById('fImage').value = it && it.image && it.image.indexOf('data:') !== 0 ? it.image : '';
@@ -3847,7 +3867,11 @@
     e.preventDefault();
     var cat = document.getElementById('fCat').value;
     var title = document.getElementById('fTitle').value.trim();
-    if (!title) { document.getElementById('fTitle').focus(); return; }
+    var body = document.getElementById('fBody').value.replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    if (!title && !(cat === 'memo' && body.trim())) {
+      (cat === 'memo' ? document.getElementById('fBody') : document.getElementById('fTitle')).focus();
+      return;
+    }
     var priceRaw = document.getElementById('fPrice').value;
     var data = {
       cat: cat,
@@ -3873,6 +3897,8 @@
       image: formImage,
       imgpos: ''
     };
+    /* 메모는 본문(body)에 적는다 — 카드가 body 를 줄바꿈 그대로 출력한다 */
+    if (cat === 'memo') data.body = body;
     if (editingId) {
       var it = byId(editingId);
       if (it) {
@@ -3891,14 +3917,16 @@
       /* 새 책은 상태에 맞는 서가로 — 완독은 읽은 책, 서재는 구매 기록, 나머지는 읽는 중 */
       if (cat === 'book') { data.shelf = data.status === '완독' ? 'read' : (data.status === '서재' ? 'bought' : 'reading'); }
       data.updatedAt = new Date().toISOString();
+      /* 메모 카드의 작성 시각(11.19 18:30)이 뜨도록 created·updated 도 남긴다 */
+      if (cat === 'memo') { data.created = data.updatedAt; data.updated = data.updatedAt; }
       state.items.unshift(norm(data));
       persist();
       closeModal();
-      state.cat = 'all';
+      state.cat = cat === 'memo' ? 'memo' : 'all';
       state.status = 'all';
       render();
       revealCard(data.id);
-      toast('새 스크랩을 추가했습니다');
+      toast(cat === 'memo' ? '메모를 저장했습니다' : '새 스크랩을 추가했습니다');
     }
   });
 
