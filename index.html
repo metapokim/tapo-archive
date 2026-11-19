@@ -494,7 +494,7 @@
   .card{
     position:relative;display:flex;flex-direction:column;gap:7px;background:var(--card);min-width:0;max-width:100%;
     border:1px solid var(--line);border-radius:var(--radius);padding:16px;
-    box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+    box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
   }
   .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-h);border-color:#E7E7EA}
   .card.is-new{animation:cardIn 2.4s ease-out}
@@ -571,6 +571,22 @@
   .dday{font-size:10px;font-weight:800;color:#18181B;background:var(--lemon);border-radius:999px;padding:3px 8px;font-variant-numeric:tabular-nums}
   .dday.is-today{background:var(--green);color:#fff}
   .dead{font-size:10px;font-weight:700;color:var(--green-2);letter-spacing:.01em}
+  /* 카드 상단 오른쪽 끝의 아주 작은 하이라이트 단추 — 누르면 카드가 아주 연한 레몬색으로 켜지고,
+     다시 누르면 원래 흰 카드로 돌아간다. 배지 줄의 높이·간격은 건드리지 않는다. */
+  .lemon-dot{
+    margin-left:auto;flex:0 0 auto;position:relative;z-index:2;
+    width:13px;height:13px;padding:0;border-radius:50%;
+    border:1.5px solid #D4D4D8;background:#FFF;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .16s ease,border-color .16s ease,box-shadow .16s ease;
+  }
+  /* 눈에 보이지 않는 넓은 히트박스 — 레이아웃에는 영향이 없다 */
+  .lemon-dot::before{content:'';position:absolute;left:-8px;top:-8px;right:-8px;bottom:-8px;border-radius:50%}
+  .lemon-dot:hover{border-color:#A1A1AA}
+  .lemon-dot:focus-visible{outline:2px solid var(--lemon-2);outline-offset:3px}
+  .lemon-dot.is-on{background:var(--lemon);border-color:var(--lemon-2);box-shadow:0 0 0 2px rgba(250,204,21,.22)}
+  .card.is-lemon{background:#FEFCE8;border-color:#F2EECA}
+  .card.is-lemon:hover{border-color:#E9E3B6}
   .card-title{margin:2px 0 0;font-size:16px;line-height:1.42;font-weight:800;letter-spacing:-.025em;color:var(--ink);word-break:keep-all;overflow-wrap:anywhere}
   .card--ledger .card-title{font-size:14px;font-weight:600;line-height:1.45;letter-spacing:-.01em}
   .accent{display:block;height:3px;width:100%;border-radius:999px;background:#F1F1F3;margin:1px 0 2px}
@@ -1369,6 +1385,9 @@
     /* 아침 브리핑에서 체크한 항목 — '날짜|문구' 키에 시각(ms)을 값으로 둔다.
        양수 = 완료, 음수 = 되돌림(기기 간 병합은 절댓값이 큰 쪽을 남긴다) */
     brief: {},
+    /* 카드 하이라이트 — 카드 id 에 마지막으로 켜고 끈 시각(ms)을 둔다.
+       양수 = 켜짐(아주 연한 레몬색), 음수 = 꺼짐 (기기 간 병합은 절댓값이 큰 쪽을 남긴다) */
+    lemon: {},
     cat: 'all',
     status: 'all',
     shelf: 'all',
@@ -1485,6 +1504,13 @@
       var bk;
       for (bk in saved.brief) {
         if (Object.prototype.hasOwnProperty.call(saved.brief, bk)) state.brief[bk] = saved.brief[bk];
+      }
+    }
+    /* 카드 하이라이트(연한 레몬색) 기록 */
+    if (saved && saved.lemon && typeof saved.lemon === 'object') {
+      var lk0;
+      for (lk0 in saved.lemon) {
+        if (Object.prototype.hasOwnProperty.call(saved.lemon, lk0)) state.lemon[lk0] = Number(saved.lemon[lk0]) || 0;
       }
     }
     normBrief();
@@ -1878,7 +1904,8 @@
       savedAt: new Date().toISOString(),
       items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
       deleted: state.deleted,
-      brief: state.brief
+      brief: state.brief,
+      lemon: state.lemon
     };
     var ok = writeStore(STORE, JSON.stringify(payload));
     if (ok) stampSaved();
@@ -2201,6 +2228,35 @@
     return h;
   }
 
+  /* ── 카드 하이라이트 (아주 연한 레몬색) ──
+     카드 상단 오른쪽 끝의 작은 단추로 켜고 끈다. 상태는 카드 id 별 시각(ms)으로 저장해
+     이 기기의 localStorage 와 기기 간 Gist 동기화에 함께 실린다. */
+  function lemonOn(id){ return (Number(state.lemon[id]) || 0) > 0; }
+  function lemonDot(it){
+    var on = lemonOn(it.id);
+    return '<button class="lemon-dot' + (on ? ' is-on' : '') + '" type="button" data-act="lemon"'
+      + ' aria-pressed="' + (on ? 'true' : 'false') + '"'
+      + ' aria-label="이 카드 하이라이트 ' + (on ? '끄기' : '켜기') + '"'
+      + ' title="' + (on ? '하이라이트 끄기' : '하이라이트 켜기') + '"></button>';
+  }
+  function toggleLemon(it, card){
+    if (!it) return;
+    var on = !lemonOn(it.id);
+    var now = new Date().getTime();
+    state.lemon[it.id] = on ? now : -now;
+    if (card) {
+      card.classList.toggle('is-lemon', on);
+      var dot = card.querySelector('.lemon-dot');
+      if (dot) {
+        dot.classList.toggle('is-on', on);
+        dot.setAttribute('aria-pressed', on ? 'true' : 'false');
+        dot.setAttribute('aria-label', '이 카드 하이라이트 ' + (on ? '끄기' : '켜기'));
+        dot.title = on ? '하이라이트 끄기' : '하이라이트 켜기';
+      }
+    }
+    persist();
+  }
+
   /* 메모 작성·수정 시각을 11.16 10:32 꼴로 */
   function memoWhen(s){
     var d = s ? new Date(s) : null;
@@ -2211,10 +2267,11 @@
     var title = String(it.title || '').trim();
     var body = String(it.body || '');
     var when = memoWhen(it.updated || it.created);
-    var h = '<article class="card card--memo" data-id="' + esc(it.id) + '">';
+    var h = '<article class="card card--memo' + (lemonOn(it.id) ? ' is-lemon' : '') + '" data-id="' + esc(it.id) + '">';
     h += '<div class="card-head"><div class="card-main">';
     h += '<div class="card-top"><span class="tag tag--memo">메모</span>';
     if (when) h += '<span class="when">' + when + '</span>';
+    h += lemonDot(it);
     h += '</div>';
     if (title) h += '<h3 class="card-title">' + esc(title) + '</h3>';
     else if (!body.trim()) h += '<h3 class="card-title">빈 메모</h3>';
@@ -2237,7 +2294,7 @@
     var opt3 = it.cat === 'video' && kindOf(it) !== '기타자료' && !!thumbOf(it);
     var cls = 'card card--' + it.cat + (it.cat === 'book' && it.shelf === 'bought' ? ' card--ledger' : '')
       + (opt3 ? ' card--vcompact' : '');
-    var h = '<article class="' + cls + '" data-id="' + esc(it.id) + '">';
+    var h = '<article class="' + cls + (lemonOn(it.id) ? ' is-lemon' : '') + '" data-id="' + esc(it.id) + '">';
 
     if (!opt3) h += '<div class="card-head"><div class="card-main">';
     var badge = m.label, badgeCls = 'tag--' + it.cat;
@@ -2278,6 +2335,7 @@
       var dl = dayDiff(it.deadline);
       if (dl !== null && dl >= 0) h += '<span class="dead">신청 ~' + shortMD(it.deadline) + (dl <= 7 ? ' (D-' + dl + ')' : '') + '</span>';
     }
+    h += lemonDot(it);
     h += '</div>';
 
     if (opt3) h += videoRowHTML(it);
@@ -3999,7 +4057,8 @@
     var id = card.getAttribute('data-id');
     var it = byId(id);
     if (!it) return;
-    if (act === 'state') { if (menuEl && menuAnchor === actEl) { closeMenu(); } else { openMenu(actEl, it); } }
+    if (act === 'lemon') { toggleLemon(it, card); }
+    else if (act === 'state') { if (menuEl && menuAnchor === actEl) { closeMenu(); } else { openMenu(actEl, it); } }
     else if (act === 'send') { sendMemo(it); }
     else if (act === 'edit') { if (it.cat === 'memo') openMemoForm(id); else openForm(id); }
     else if (act === 'del') { removeItem(id); }
@@ -4261,13 +4320,14 @@
       }
     }
     return { app: APP_ID, v: 1, updatedAt: new Date().toISOString(),
-      device: syncCfg.device, items: items, ov: ov, deleted: state.deleted.slice(), brief: state.brief };
+      device: syncCfg.device, items: items, ov: ov, deleted: state.deleted.slice(), brief: state.brief,
+      lemon: state.lemon };
   }
 
   /* Gist 내용을 이 기기에 병합 — 항목은 updatedAt 이 큰 쪽, 삭제 목록은 합집합 */
   function applySyncPayload(remote){
     if (!remote || remote.app !== APP_ID) return false;
-    if (!remote.items && !remote.ov && !remote.deleted && !remote.brief) return false;
+    if (!remote.items && !remote.ov && !remote.deleted && !remote.brief && !remote.lemon) return false;
     var changed = false, k, idx, f, id, local, r, stamp;
     var del = remote.deleted || [];
     for (k = 0; k < del.length; k++) {
@@ -4350,6 +4410,14 @@
         if (mine[q].id === dk2) { mine.splice(q, 1); changed = true; }
       }
       if (state.brief['todo:' + dk2] != null) { delete state.brief['todo:' + dk2]; changed = true; }
+    }
+    /* 카드 하이라이트 — id 별로 마지막으로 켜고 끈 시각(절댓값)이 큰 쪽을 따른다 (음수 = 꺼짐) */
+    var rlemon = (remote.lemon && typeof remote.lemon === 'object') ? remote.lemon : {}, lk, lv2, rv2;
+    for (lk in rlemon) {
+      if (!Object.prototype.hasOwnProperty.call(rlemon, lk)) continue;
+      rv2 = Number(rlemon[lk]) || 0;
+      lv2 = Number(state.lemon[lk]) || 0;
+      if (Math.abs(rv2) > Math.abs(lv2)) { state.lemon[lk] = rv2; changed = true; }
     }
     /* 끌어서 바꾼 할 일 순서 — 마지막으로 바꾼 시각(at)이 더 큰 쪽을 따른다 */
     var ro = rbrief.order;
@@ -4567,7 +4635,8 @@
       exportedAt: d.toISOString(),
       items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
       deleted: state.deleted,
-      brief: state.brief
+      brief: state.brief,
+      lemon: state.lemon
     };
     var text = JSON.stringify(payload, null, 1);
     var blob = new Blob([text], { type: 'application/json' });
@@ -4601,6 +4670,7 @@
           state.items = cleaned;
           state.deleted = (parsed && parsed.deleted) || [];
           if (parsed && parsed.brief && typeof parsed.brief === 'object') state.brief = parsed.brief;
+          state.lemon = (parsed && parsed.lemon && typeof parsed.lemon === 'object') ? parsed.lemon : {};
           normBrief();
           persist();
           render();
