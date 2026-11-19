@@ -3685,7 +3685,11 @@
     if (state.deleted.indexOf(it.id) < 0) state.deleted.push(it.id);
     persist();
     render();
-    toast('‘' + (it.title.length > 18 ? it.title.slice(0, 18) + '…' : it.title) + '’ 지움', '되돌리기', function(){
+    /* 제목 없이 적은 메모도 안내가 비지 않도록 */
+    var gone = it.title
+      ? '‘' + (it.title.length > 18 ? it.title.slice(0, 18) + '…' : it.title) + '’'
+      : (it.cat === 'memo' ? '메모' : '제목 없는 항목');
+    toast(gone + ' 지움', '되돌리기', function(){
       state.items.splice(Math.min(idx, state.items.length), 0, it);
       var di = state.deleted.indexOf(it.id);
       if (di >= 0) state.deleted.splice(di, 1);
