@@ -1322,6 +1322,9 @@
     "case2025_2024hunna8": { summary: "• 대상·주문: 대통령(윤석열) 탄핵심판 인용(파면) (재판관 8인 전원일치)\n• 요지: 비상계엄 선포의 실체적·절차적 요건(국무회의 심의·부서·국회 통고) 위반, 국회 군경 투입·포고령·선관위 압수수색·법조인 위치확인 등으로 국민주권·권력분립·국회 권한·기본권을 중대하게 침해.\n• 의의: 국가긴급권 행사의 헌법적 한계와 민주공화국 수호 책무를 재확인한 최신 결정." }
   };
   var caseNotesSynced = false;   /* 판례 요약 1회 동기화를 마쳤는지 */
+  /* 2026-11-19 20시 후속 정리 — 한덕수 판결 메모(m20261119_1) 뒤에 덧붙일 본문. */
+  var HD_MEMO_ADD = "\n\n[11.19 20:00 후속 정리]\n\n[다수의견 9인 vs 반대의견 3인]\n· 다수(9인): '국헌문란 목적'은 미필적 인식만으로는 부족하고 그 실현을 지향하며 최소한 결과를 용인하려는 의사가 있어야 한다고 법리를 새로 명시. 국무회의 심의 건의는 일반적으로 '국헌을 따르게 할 목적'에서 나오는 직무행위여서 달리 볼 목적은 엄격히 증명돼야 한다며 선포 전 행위는 증명 부족으로 봄(선포 후 서명 종용·단전·단수 논의 2건과 허위공문서·위증은 유죄). 일죄·경합범 관계로 2심 유죄 부분 전체를 파기환송했고, 20일 0시 만료 예정이던 구속기간은 선고 후 2개월 연장돼 구속 유지.\n· 반대(3인 · 오경미 주심·신숙희·김성수): 새 법리 기준에는 동의하나, 12·3 비상계엄은 집권자가 국가권력으로 자신에 대한 헌법적 통제를 무력화하려는 '친위 쿠데타' 성격이고 형해화된 국무회의가 내란의 정당성을 뒷받침하게 될 것을 예견하면서 정족수 채우기에 관여했으며 선포 전후 행위가 짧은 시간에 연속된 점을 들어 선포 전 행위에도 국헌문란 목적이 인정된다고 반박.\n\n[파장]\n· 12·3 비상계엄 자체의 위헌·위법·내란 성격이 대법원 첫 판단으로 확정(계엄 716일 만). 윤석열 전 대통령 항소심(서울고법 형사12-1부, 2027.1.26 선고 예정)과 다른 계엄 재판에서는 개별 피고인의 '국헌문란 목적'에 대한 엄격한 증명 기준이 핵심 쟁점이 될 전망.\n\n[특검·정치권 반응]\n· 내란특검: 비상계엄이 내란으로 확정된 점엔 의미를 두면서도 국무회의 건의 무죄 취지 판단과 부작위 불인정에는 아쉬움 표명.\n· 정치권: 민주당 \"사법내란\"이라며 강하게 비판(조희대 대법원장 탄핵론 재점화) / 국민의힘 \"최소한의 사법정의\"라며 특검 비판·사법부 존중 / 개혁신당 \"사법적 판단 존중\".";
+  var hdMemoSynced = false;   /* 한덕수 메모 후속 정리 1회 반영을 마쳤는지 */
 
   var STORE = 'eunyu-archive-v1';
   var UIKEY = 'eunyu-archive-ui-v1';
@@ -1751,6 +1754,23 @@
       caseNotesSynced = true;
     }
 
+    /* 한덕수 판결 메모(m20261119_1): 20시 후속 정리를 이 기기에 저장된 카드에 한 번만 덧붙인다.
+       앞부분(선고 결과 등)은 그대로 두고, 다른 기기의 옛 사본이 되돌리지 않도록 갱신 시각만 남긴다. */
+    if (!(ui && ui.memoHduk20261119)) {
+      var hdIdx;
+      for (hdIdx = 0; hdIdx < state.items.length; hdIdx++) {
+        it = state.items[hdIdx];
+        if (it.id !== 'm20261119_1') continue;
+        if (String(it.summary || '').indexOf('[11.19 20:00 후속 정리]') >= 0) continue;
+        it.summary = String(it.summary || '') + HD_MEMO_ADD;
+        it.body = String(it.body || '') + HD_MEMO_ADD;
+        it.updatedAt = new Date().toISOString();
+        delete it._hay;
+        loadChanged = true;
+      }
+      hdMemoSynced = true;
+    }
+
     /* 2026-11-18 덕소2 대의원회는 TODAY'S BRIEFING 맨 윗줄에 적는다.
        이 기기에 끌어 둔 할 일 순서(brief.order)가 있으면 새 줄이 '순서에 없는 줄'로 뒤로 밀리므로,
        그 줄의 키를 순서 기록의 맨 앞으로 올린다. 같은 회의를 직접 추가해 둔 할 일이 남아 있으면
@@ -1825,7 +1845,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.shelf = 'all';
 
-    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -1845,6 +1865,7 @@
       gradAdm20261117: (gradAdmSynced || prev.gradAdm20261117) ? 1 : 0,
       gradAdm20261117b: (gradAdmSynced || prev.gradAdm20261117b) ? 1 : 0,
       caseNotes20261117: (caseNotesSynced || prev.caseNotes20261117) ? 1 : 0,
+      memoHduk20261119: (hdMemoSynced || prev.memoHduk20261119) ? 1 : 0,
       mediaTabSplit20261118: (mediaSplitSynced || prev.mediaTabSplit20261118) ? 1 : 0,
       forumEwha20261118: (ewhaSynced || prev.forumEwha20261118) ? 1 : 0,
       briefMeet20261118: (briefMeetSynced || prev.briefMeet20261118) ? 1 : 0,
