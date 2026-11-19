@@ -410,8 +410,8 @@
   /* 스크롤바는 감춘다 — 터치·휠로만 위아래(브리핑 할 일 목록도 같다) */
   .up-list::-webkit-scrollbar{display:none;width:0;height:0}
   /* 더 남아 있을 때만 아래를 살짝 흐리게 — 잘린 줄이 튀지 않게.
-     카드 높이가 5줄에 딱 맞춰져 이제 경계가 줄과 줄 사이(테두리)에 떨어지므로,
-     5번째 줄 글자까지 흐려지지 않도록 흐림 폭을 줄의 아래 여백(11px)만큼만 둔다. */
+     흐림 폭은 줄의 아래 여백과 같게 둔다(2026-11-19: 줄 여백 12→6px 로 줄인 휴대폰에서는
+     모바일 블록에서 6px 로 다시 정한다). 좁은 폰에서 5번째 줄 글자까지 흐려지지 않게. */
   .up-list[data-fade="1"]{
     -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
     mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),rgba(0,0,0,0));
@@ -766,15 +766,22 @@
     .topbar:not(.is-open) #tabs,
     .topbar:not(.is-open) #topbarQuick{display:none}
     .search{order:5;flex:1 1 100%;max-width:none}
-    .hero{grid-template-columns:minmax(0,1fr);gap:14px;padding:10px 0 16px}
-    .brief{border-radius:22px;padding:20px 18px 14px}
+    /* 2026-11-19(2): 아이폰 Safari 가시 화면(≈700px)에 브리핑+다가오는 일정 두 카드가
+       한 화면에 딱 들어오도록 히어로 위·아래 여백과 카드 사이를 조금 줄인다(10→6 · 14→10 · 16→14). */
+    .hero{grid-template-columns:minmax(0,1fr);gap:10px;padding:6px 0 14px}
+    .brief{border-radius:22px;padding:16px 18px 8px}
+    /* 브리핑 카드 안쪽도 한 단계 조인다 — 줄인 만큼 할 일 목록이 그대로 3~4줄 보인다 */
+    .brief-top{margin-bottom:11px}
+    .brief-list{margin-top:10px}
+    .brief-list li,.brief-mine li{padding:8px 0}
+    .brief-credit{padding-top:8px}
     .brief-lead{font-size:15px}
     .brief-when{font-size:10px}
     .brief-meta{display:none}
     .brief-check{flex-basis:30px;width:30px;height:30px;margin:-6px -4px -6px 0}
     .brief-check::before{inset:6px}   /* 보이는 원은 18px, 누르는 영역은 30px */
     .brief-del{flex-basis:26px;width:26px;height:26px;margin:-3px -5px -3px 0}
-    .brief-add{margin-top:10px;gap:7px}
+    .brief-add{margin-top:8px;gap:7px}
     /* 시각 pill(30px)에 맞춰 입력창은 28px, + 버튼도 28px — 글씨는 목록과 같은 12.5px */
     .brief-add-inwrap{height:28px}
     .brief-add-in{height:28px;font-size:12.5px;padding:0 12px}
@@ -786,16 +793,22 @@
     .brief-add-timewrap.is-set{padding-right:15px}
     .brief-add-time-face{font-size:11.5px}
     .brief-add-btn{width:28px;height:28px;font-size:16px}
-    .up-box{border-radius:22px;padding:18px 16px 6px}
-    /* 2026-11-19: 브리핑(.brief) 아래에 남던 여백을 한 줄만큼(40px) 줄이고(440 → 400),
-       그 40px을 그대로 '다가오는 일정'(.up-box)에 넘긴다 — 두 카드 합계 758px은 그대로라
-       첫 화면에서 '학회·포럼' 줄은 여전히 아래로 내려가고, 다가오는 일정은 5줄이 다 보인다.
-       줄 높이가 내용에 따라 달라지므로 5번째 줄에서 끊는 것은 fitUpList() 가 맡는다. */
-    .brief{height:400px}
-    .up-box{height:358px}
+    .up-box{border-radius:22px;padding:12px 16px 4px}
+    /* 2026-11-19(2): '다가오는 일정' 카드의 아래 흰 여백이 크던 문제(고정 358px 인데 5줄은 282px라
+       카드 안에 30px가 비었다)를 없앤다 — 높이를 내용에 맞추고(height:auto), 줄 사이 여백을
+       12→6px 로 줄여 카드가 5번째 줄 끝에서 바로 끝나게 한다. 5줄에서 끊는 것은 fitUpList() 가 맡는다.
+       브리핑 카드도 400→348px 로 조여 두 카드가 아이폰 Safari 가시 화면(≈700px)에 함께 들어온다.
+       (348px 이면 접힌 1줄짜리 할 일 네 줄까지 그대로 보이고 다섯 줄째부터 카드 안에서 스크롤된다.) */
+    .brief{height:348px}
+    .up-box{height:auto;min-height:0}
     .up-list{max-height:none;padding-right:2px}
     .brief-scroll{max-height:none}
-    .up-item{padding:12px 0}
+    .up-item{padding:6px 0}
+    /* 줄 아래 여백이 6px 라 흐림도 6px — 5번째 줄 글자는 흐려지지 않는다 */
+    .up-list[data-fade="1"]{
+      -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 6px),rgba(0,0,0,0));
+      mask-image:linear-gradient(to bottom,#000 calc(100% - 6px),rgba(0,0,0,0));
+    }
     .up-body{font-size:12.5px}
     .up-body .up-place{display:none}
     .filters{padding-bottom:12px;gap:6px}
