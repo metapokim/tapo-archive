@@ -11,6 +11,11 @@ index.html 의 SEED·CALENDAR_EVENTS 에서 예정된 일정을 뽑아 upcoming 
 날짜별 D-day 는 기기(위젯)가 자기 오늘 날짜로 다시 계산하므로, 여기서는
 오늘부터 60일 안의 일정을 모두 담아 둔다(자정이 지나도 위젯이 알아서 걸러 낸다).
 
+2026-11-19 저녁: upcoming 의 각 줄에 index.html 카드의 고유 id · 상태(status) · 구분(cat)을
+함께 내보낸다. 위젯이 Gist(기기 간 동기화)에서 웹앱의 삭제·완료 표시를 읽어
+같은 카드를 '다가오는 일정'에서도 빼기 위해 id 로 짝을 맞춘다.
+달력에서 온 일정(CALENDAR_EVENTS)은 index.html 에 카드가 없으므로 id 가 빈 문자열이다.
+
 사용: python3 scripts/build_briefing.py [--check]
   --check : 파일을 쓰지 않고 만들어질 JSON 을 화면에만 보여 준다.
 """
@@ -270,6 +275,9 @@ def build_upcoming(src: str, today: date) -> list:
             continue
         r = add(it.get("date"), it.get("title"), it.get("time"), it.get("place"))
         if r:
+            r["id"] = str(it.get("id") or "")
+            r["status"] = str(it.get("status") or "")
+            r["cat"] = str(it.get("cat") or "")
             rows.append(r)
 
     archived = {(str(it.get("date") or ""), _norm_title(it.get("title"))) for it in items}
@@ -290,6 +298,10 @@ def build_upcoming(src: str, today: date) -> list:
             continue
         r = add(ev.get("date"), ev.get("title"), ev.get("time"), ev.get("place"), True)
         if r:
+            r["id"] = ""                                      # 달력에서 온 일정 — 카드 id 없음
+            r["status"] = ""
+            r["cat"] = ""
+            r["cal"] = True
             rows.append(r)
 
     rows.sort(key=lambda r: (r["date"], 1 if r["_cal"] else 0))
