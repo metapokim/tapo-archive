@@ -20,6 +20,8 @@
 <h2>2) 모바일 390×844 — 두 번 톡(300ms 안)</h2>
 <iframe id="m" src="_dbg.html?t=mob"></iframe>
 <pre id="mr">대기…</pre>
+<h2>3) 직접 추가한 할 일 — 두 번 톡</h2>
+<pre id="tr">대기…</pre>
 <script>
 function frame(id){ return document.getElementById(id); }
 function doc(id){ var f = frame(id); return f.contentDocument || f.contentWindow.document; }
@@ -77,6 +79,23 @@ function runMobile(){
 }
 setTimeout(run, 1600);
 setTimeout(runMobile, 2800);
+/* 직접 추가한 할 일(data-todo) 줄이 생기면 그 줄을 두 번 톡해서 수정이 열리는지 본다 */
+var todoTried = false;
+var todoPoll = setInterval(function(){
+  if (todoTried) return;
+  var d = doc('m'), el = d.querySelector('.brief-list li[data-todo]');
+  if (!el) return;
+  todoTried = true;
+  touchSeq(el, function(ok){
+    setTimeout(function(){
+      var li = d.querySelector('.brief-list li[data-todo]');
+      var inp = li && li.querySelector('.brief-edit-in');
+      report('tr', { input: !!inp, value: inp ? inp.value : null, cls: li ? li.className : null,
+        body: li && li.querySelector('.brief-body') ? li.querySelector('.brief-body').textContent : null,
+        touchSupported: ok });
+    }, 350);
+  });
+}, 800);
 window.__harness = {
   state: function(id){ return status(id, 'read'); },
   save: function(id, text){
