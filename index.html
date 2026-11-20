@@ -2166,6 +2166,33 @@
       });
       return arr;
     }
+    if (cat === 'forum') {
+      /* 학회·포럼 탭: 신청 완료 → 신청 전·관심(날짜순) → 참석 완료 순으로 묶어 보여 준다 */
+      var applied0 = [], pending1 = [], done2 = [];
+      arr.forEach(function(it){
+        if (it.status === '신청 완료') applied0.push(it);
+        else if (it.status === '참석 완료') done2.push(it);
+        else pending1.push(it);
+      });
+      /* 다가오는 일정은 가까운 순으로 먼저, 지난 일정·날짜 없는 항목은 최근 순으로 뒤에 */
+      var byWhen = function(g){
+        var up = [], past = [];
+        g.forEach(function(it){
+          var d = dayDiff(it.date);
+          if (d !== null && d >= 0) up.push(it); else past.push(it);
+        });
+        up.sort(function(a, b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+        past.sort(function(a, b){ return a.date > b.date ? -1 : (a.date < b.date ? 1 : 0); });
+        return up.concat(past);
+      };
+      done2.sort(function(a, b){
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return a.date > b.date ? -1 : (a.date < b.date ? 1 : 0);
+      });
+      return byWhen(applied0).concat(byWhen(pending1), done2);
+    }
     var up = [], past = [];
     arr.forEach(function(it){
       var d = dayDiff(it.date);
