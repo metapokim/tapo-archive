@@ -2646,7 +2646,8 @@
        + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
     h += memoPillHTML(it);
     h += '<span class="sp"></span>';
-    if (it.url) h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
+    /* 책 카드에는 '열기' 버튼을 두지 않는다 — 데이터(url)는 그대로 두고 화면에서만 숨긴다 */
+    if (it.url && it.cat !== 'book') h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
     /* 판결문·원문처럼 카드에 딸린 두 번째 링크 — 열기 옆에 나란히 */
     if (it.extraUrl) h += '<a class="mini mini--open mini--doc" href="' + esc(it.extraUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(it.extraLabel || '자료') + '</a>';
     h += '<button class="mini" type="button" data-act="edit">편집</button>';
