@@ -455,6 +455,10 @@
   .up-cal-meta{display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px;font-size:11px;font-weight:600;color:#A1A1AA}
   .up-cal-when{min-width:0;word-break:keep-all}
   .up-item--cal .up-dday{margin-top:1px}
+  /* 아카이브 카드에 시각이 있으면(연극 〈전락〉 등) 달력 일정과 같은 두 줄·같은 회색 */
+  .up-item--when{align-items:flex-start}
+  .up-item--when .up-body .up-cal-meta{white-space:normal;line-height:1.35}
+  .up-item--when .up-dday{margin-top:1px}
   /* 줄을 누르면 그 카드로 이동 — 누를 수 있는 줄 표시 */
   .up-item--go{cursor:pointer;border-radius:12px;transition:background .15s}
   .up-item--go:hover{background:#FAFAFB}
@@ -3005,8 +3009,19 @@
         var dl = dayDiff(it.deadline);
         if (dl !== null && dl >= 0 && dl <= 14) deadTxt = '<span class="up-dead">신청 ~' + shortMD(it.deadline) + '</span>';
       }
-      return '<li class="up-item up-item--go" role="button" tabindex="0" data-id="' + esc(it.id) + '" aria-label="' + esc(it.title) + ' 카드로 이동">' + dateCell
-        + '<span class="up-body">' + esc(it.title) + (it.place ? '<span class="up-place">' + esc(it.place) + '</span>' : '') + '</span>'
+      /* 2026-11-21: 시각이 있는 아카이브 카드(연극 〈전락〉 등)도 달력 일정과 똑같이
+         '14:00 · 대학로 TOM(티오엠) 2관' 을 회색 보조 줄에 둔다.
+         시각이 없으면 예전처럼 장소만 제목 옆에 붙이고, 장소도 없으면 그대로. */
+      var meta = '';
+      if (it.time) {
+        var when = [esc(it.time)];
+        if (it.place) when.push(esc(it.place));
+        meta = '<span class="up-cal-meta"><span class="up-cal-when">' + when.join(' · ') + '</span></span>';
+      } else if (it.place) {
+        meta = '<span class="up-place">' + esc(it.place) + '</span>';
+      }
+      return '<li class="up-item up-item--go' + (it.time ? ' up-item--when' : '') + '" role="button" tabindex="0" data-id="' + esc(it.id) + '" aria-label="' + esc(it.title) + ' 카드로 이동">' + dateCell
+        + '<span class="up-body">' + esc(it.title) + meta + '</span>'
         + deadTxt + dday + '</li>';
     }).join('');
   }
