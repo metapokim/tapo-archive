@@ -2220,8 +2220,9 @@
 
   function upcomingDD(it){
     if (!it.date) return null;
-    /* 기사·논문·메모·영상은 일정이 아니다 — 날짜는 '올린 날'일 뿐 */
-    if (it.cat === 'news' || it.cat === 'grad' || it.cat === 'memo' || it.cat === 'video') return null;
+    /* 기사·논문·메모·영상은 일정이 아니다 — 날짜는 '올린 날'일 뿐
+       책도 일정이 아니다 — 날짜는 '서재에 넣은 날'일 뿐(2026-11-21 책꽂이 17권 등록 때) */
+    if (it.cat === 'news' || it.cat === 'grad' || it.cat === 'memo' || it.cat === 'video' || it.cat === 'book') return null;
     if (DONE[it.status]) return null;
     var d = dayDiff(it.date);
     if (d === null || d < 0 || d > 60) return null;
