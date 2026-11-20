@@ -986,7 +986,7 @@
     <div class="hero">
       <!-- MORNING_BRIEF_START -->
           <!-- 아침 브리핑은 이 두 마커 사이만 통째로 교체합니다. (updated: 2026-11-20 05:26 KST · 오늘 11/20 예보) -->
-          <section class="brief" aria-label="아침 브리핑" data-weather-days='{"2026-11-20": "오늘(금) 서울은 <b>-3~2°C(체감 -6°C), 맑음</b> · 미세먼지 좋음 · 두꺼운 패딩·목도리 추천", "2026-11-21": "오늘(토) 서울은 <b>-5~2°C, 맑음</b> · 미세먼지 좋음 · 내일 아침은 더 추우니 따뜻하게 입으세요"}'>
+          <section class="brief" aria-label="아침 브리핑" data-weather-days='{"2026-11-20": "오늘(금) 서울은 <b>-3~2°C(체감 -6°C), 맑음</b> · 미세먼지 좋음 · 두꺼운 패딩·목도리 추천", "2026-11-21": "오늘(토) 서울은 <b>-5~2°C, 맑음</b> · 미세먼지 좋음 · 내일 아침은 더 추우니 따뜻하게 입으세요"}' data-lead-days='{"2026-11-20": "아침 영하 3도(체감 영하 6도), 낮 최고 2도까지예요. 미세먼지는 좋음. 두꺼운 패딩에 목도리·장갑까지 챙기세요.", "2026-11-21": "최저 영하 5도, 낮 최고 2도까지예요. 미세먼지는 좋음. 어제보다 더 추우니 따뜻하게 챙겨 입으세요."}'>
             <p class="brief-top">
               <span class="brief-label">TODAY'S BRIEFING</span>
               <time class="brief-when" datetime="2026-11-20">11월 20일 금요일</time>
@@ -2156,13 +2156,26 @@
     for (k in WEATHER_FALLBACK) if (!map[k]) map[k] = WEATHER_FALLBACK[k];   /* 루틴이 아직 못 넣은 날의 안전망 */
     return map;
   }
+  /* 리드 문구(날씨 아래 한 줄)의 날짜별 표 — .brief[data-lead-days]
+     위젯은 이 표를 읽어 자정에 오늘 리드로 바꾸고, 웹은 오늘 날씨 문구가
+     비어 있을 때만 이 표를 쓴다(평소 화면의 첫 줄은 날씨 줄 그대로). */
+  function briefLeadDays(sec){
+    var map = {}, raw = '', src = null, k;
+    if (sec) raw = String(sec.getAttribute('data-lead-days') || '');
+    if (raw) { try { src = JSON.parse(raw); } catch (e) { src = null; } }
+    if (src && typeof src === 'object') {
+      for (k in src) if (Object.prototype.hasOwnProperty.call(src, k) && typeof src[k] === 'string') map[k] = src[k];
+    }
+    return map;
+  }
   function syncBriefWeather(){
     var sec = document.querySelector('.brief');
     if (!sec) return;
     var lead = sec.querySelector('.brief-lead');
     if (!lead) return;
-    var d = new Date(), today = ymdLocal(d), map = briefWeatherDays(sec), html;
+    var d = new Date(), today = ymdLocal(d), map = briefWeatherDays(sec), leadMap = briefLeadDays(sec), html;
     if (map[today]) html = map[today];
+    else if (leadMap[today]) html = leadMap[today];   /* 오늘 날씨 문구가 없으면 그 날 리드 문구로 — 어제 문구가 남지 않게 */
     else html = String(lead.innerHTML).replace(/오늘\s*\([월화수목금토일]\)/, '오늘(' + WEEK[d.getDay()] + ')');
     if (html !== lead.innerHTML) lead.innerHTML = html;
     lead.setAttribute('data-date', today);
@@ -5033,9 +5046,10 @@
     /* 날씨 자동 전환 확인용 — 그 날짜에 적용될 문구와 지금 화면의 첫 줄을 읽기만 한다 */
     weather: function(ymd){
       var sec = document.querySelector('.brief');
-      var map = briefWeatherDays(sec), key = ymd || ymdLocal(new Date());
+      var map = briefWeatherDays(sec), leadMap = briefLeadDays(sec), key = ymd || ymdLocal(new Date());
       var lead = sec ? sec.querySelector('.brief-lead') : null;
       return { ask: key, text: map[key] || null, days: Object.keys(map),
+        leadText: leadMap[key] || null, leadDays: Object.keys(leadMap),
         lead: lead ? String(lead.textContent).replace(/\s+/g, ' ').trim() : '',
         applied: lead ? String(lead.getAttribute('data-date') || '') : '' };
     },

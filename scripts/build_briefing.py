@@ -16,6 +16,10 @@ index.html 의 SEED·CALENDAR_EVENTS 에서 예정된 일정을 뽑아 upcoming 
 같은 카드를 '다가오는 일정'에서도 빼기 위해 id 로 짝을 맞춘다.
 달력에서 온 일정(CALENDAR_EVENTS)은 index.html 에 카드가 없으므로 id 가 빈 문자열이다.
 
+2026-11-21: .brief 의 data-lead-days(오늘·내일 2일치 리드 문구)를 leadDays 로 내보낸다.
+위젯은 자정이 지나 leadDays[오늘] 로 리드 문구를 바꾸고, lead 필드도 그 날 리드로 채운다
+(예전에는 어제 리드가 그대로 남았다).
+
 사용: python3 scripts/build_briefing.py [--check]
   --check : 파일을 쓰지 않고 만들어질 JSON 을 화면에만 보여 준다.
 """
@@ -45,8 +49,9 @@ SHOW_FROM_DEFAULT = "2026-01-01"
 UPCOMING_HIDE_DEFAULT = r"덕소2"
 MEETING_DEFAULT = r"덕소2|대치미도"
 
-# '다가오는 일정'이 아닌 카테고리 (기사·논문·메모·영상은 날짜가 '올린 날'일 뿐)
-UPCOMING_SKIP_CATS = {"news", "grad", "memo", "video"}
+# '다가오는 일정'이 아닌 카테고리 (기사·논문·메모·영상은 날짜가 '올린 날'일 뿐,
+# 책도 날짜가 '서재에 넣은 날'일 뿐 — index.html upcomingDD 와 같은 규칙)
+UPCOMING_SKIP_CATS = {"news", "grad", "memo", "video", "book"}
 UPCOMING_DAYS = 60
 
 
@@ -100,6 +105,18 @@ def parse_brief(src: str) -> dict:
         except json.JSONDecodeError:
             weather_days = {}
 
+    # 리드 문구 2일치 — .brief[data-lead-days] (자정이 지나 위젯이 오늘 리드를 고르는 데 쓴다)
+    raw_leads = attr(section_tag, "data-lead-days", "") or attr(block, "data-lead-days", "")
+    lead_days = {}
+    if raw_leads:
+        try:
+            parsed = json.loads(raw_leads)
+            for k, v in parsed.items():
+                if re.match(r"^\d{4}-\d{2}-\d{2}$", str(k)):
+                    lead_days[str(k)] = strip_tags(str(v))
+        except json.JSONDecodeError:
+            lead_days = {}
+
     # 오늘 날씨 문구 — data-weather-days 의 오늘(없으면 가장 이른 날) 것을 쓴다
     weather_text = weather_days.get(date, "")
     if not weather_text and weather_days:
@@ -147,7 +164,8 @@ def parse_brief(src: str) -> dict:
         "weatherText": weather_text,
         "weatherHighlights": highlights[:4],
         "weatherDays": weather_days,
-        "lead": lead,
+        "leadDays": lead_days,
+        "lead": lead_days.get(date) or lead,
         "items": items,
         "count": len(items),
     }
