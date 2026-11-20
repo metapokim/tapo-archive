@@ -2155,14 +2155,21 @@
       return arr;
     }
     if (cat === 'book') {
-      var ord = { reading: 0, read: 1, bought: 2, hold: 3 };
+      /* 읽는 중은 서가(shelf)가 무엇이든 늘 맨 위, 그 뒤로 완독 → 서재 → 보류 → 나머지 */
+      var ord = { read: 1, bought: 2, hold: 3 };
+      var isReading = function(it){ return it.status === '읽는 중' || it.shelf === 'reading'; };
+      var rankOf = function(it){
+        if (isReading(it)) return 0;
+        return ord[it.shelf] !== undefined ? ord[it.shelf] : 4;
+      };
       arr.sort(function(a, b){
-        var d = (ord[a.shelf] || 0) - (ord[b.shelf] || 0);
+        var d = rankOf(a) - rankOf(b);
         if (d) return d;
-        if (a.shelf === b.shelf && (a.shelf === 'bought' || a.shelf === 'read')) {
-          return (a.date || '') < (b.date || '') ? 1 : -1;
-        }
-        return 0;
+        /* 같은 묶음 안에서는 최근 날짜가 위로, 날짜 없는 책은 뒤로 */
+        if (a.date === b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return a.date < b.date ? 1 : -1;
       });
       return arr;
     }
