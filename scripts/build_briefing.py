@@ -47,7 +47,6 @@ NOT_WANTED_DEFAULT = (r"KBO|야구|트윈스|잠실야구장|한부모가족 권
                       r"|사회적재난과 보건안전법|미디어 접근권")
 SHOW_FROM_DEFAULT = "2026-01-01"
 UPCOMING_HIDE_DEFAULT = r"덕소2"
-MEETING_DEFAULT = r"덕소2|대치미도"
 
 # '다가오는 일정'이 아닌 카테고리 (기사·논문·메모·영상은 날짜가 '올린 날'일 뿐,
 # 책도 날짜가 '서재에 넣은 날'일 뿐 — index.html upcomingDD 와 같은 규칙)
@@ -237,7 +236,7 @@ def build_upcoming(src: str, today: date) -> list:
     """index.html 의 '다가오는 일정'과 같은 규칙으로 예정된 일정을 뽑는다.
 
     - SEED 카드: 날짜가 있고, 기사·대학원·메모·영상이 아니고, 끝난 상태가 아니며,
-      오늘부터 60일 안. '덕소2'는 브리핑 상단에만. 당일이 된 회의는 뺀다.
+      오늘부터 60일 안. '덕소2'는 브리핑 상단에만.
     - CALENDAR_EVENTS: 같은 규칙 + 아카이브에 같은 날 같은 이름이 있으면 건너뛴다.
     - 정렬: 날짜 오름차순, 같은 날은 아카이브 카드가 먼저.
     """
@@ -245,7 +244,6 @@ def build_upcoming(src: str, today: date) -> list:
     not_wanted = _js_regex(src, "NOT_WANTED", NOT_WANTED_DEFAULT)
     show_from = _js_string(src, "SHOW_FROM", SHOW_FROM_DEFAULT)
     hide = _js_regex(src, "UPCOMING_HIDE", UPCOMING_HIDE_DEFAULT)
-    meeting = _js_regex(src, "MEETING", MEETING_DEFAULT)
     done = _js_done_set(src, DONE_DEFAULT)
 
     seed = [it for it in parse_seed(src) if isinstance(it, dict)]
@@ -277,8 +275,6 @@ def build_upcoming(src: str, today: date) -> list:
             return None
         flat = re.sub(r"\s+", "", str(title or ""))
         if hide.search(flat):                     # 덕소2 는 브리핑 상단에만
-            return None
-        if dd == 0 and meeting.search(flat):      # 당일이 된 회의는 브리핑 상단에만
             return None
         return {"date": str(date_s), "title": str(title).strip(),
                 "time": str(time_s or "").strip(), "place": str(place or "").strip(),

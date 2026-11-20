@@ -1290,18 +1290,15 @@
     { date: '2026-12-08', title: '[최종 마감] 한국현대문학특강 기말 논문 업로드 (18:00)', time: '17:00~18:00', place: '' }
   ];
 
-  /* 2026-11-18 은유 님 요청(수정) — 회의 일정은 당일이 아니면 '다가오는 일정'에만 두고,
-     당일이 되면 '다가오는 일정'에서 빼 TODAY'S BRIEFING 맨 윗줄에만 적는다.
+  /* 2026-11-18 은유 님 요청(수정) — 회의 일정은 당일이 아닌 날에는 '다가오는 일정'에만 두고,
+     당일이 되면 TODAY'S BRIEFING 맨 윗줄에도 적는다.
      덕소2 대의원회(11/18)는 브리핑에 늘 있어 왔으므로 지금도 '다가오는 일정'에서는 늘 뺀다.
-     캘린더·카드 어느 쪽으로 들어와도 여기서 걸러 낸다. */
+     캘린더·카드 어느 쪽으로 들어와도 여기서 걸러 낸다.
+     2026-11-21 은유 님 결정(수정) — 당일이 된 회의도 '다가오는 일정'에 그대로 남긴다(D-DAY).
+     회의는 당일 아침 브리핑 맨 윗줄과 '다가오는 일정' 두 곳에 함께 보인다. */
   var UPCOMING_HIDE = /덕소2/;
-  var MEETING = /덕소2|대치미도/;
   function hiddenInUpcoming(title){
     return UPCOMING_HIDE.test(String(title == null ? '' : title).replace(/\s+/g, ''));
-  }
-  /* 그날이 된 회의는 '다가오는 일정'에서 뺀다 — 그날 아침 브리핑 맨 윗줄에만 적힌다 */
-  function meetingToday(title, d){
-    return Number(d) === 0 && MEETING.test(String(title == null ? '' : title).replace(/\s+/g, ''));
   }
 
   var META = {
@@ -2937,7 +2934,6 @@
       d = dayDiff(ev.date);
       if (d === null || d < 0 || d > 60) continue;
       if (hiddenInUpcoming(ev.title)) continue;      /* 덕소2는 브리핑 상단에만 */
-      if (meetingToday(ev.title, d)) continue;       /* 당일이 된 회의는 브리핑 상단에만 */
       if (inArchive(ev)) continue;
       out.push({ date: ev.date, title: ev.title, time: ev.time || '', place: ev.place || '', d: d, cal: true });
     }
@@ -2950,7 +2946,6 @@
       if (hiddenInUpcoming(it.title)) continue;      /* 덕소2는 브리핑 상단에만 */
       d = upcomingDD(it);
       if (d === null) continue;
-      if (meetingToday(it.title, d)) continue;       /* 당일이 된 회의는 브리핑 상단에만 */
       rows.push({ date: it.date, title: it.title, place: it.place || '', d: d, item: it });
     }
     rows = rows.concat(calendarUpcoming());
