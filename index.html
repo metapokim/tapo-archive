@@ -688,6 +688,57 @@
     transition:background .15s,border-color .15s;
   }
   .mini--send:hover{color:var(--ink);background:#EAEAEC;border-color:#D4D4D8}
+  /* 메모 — 카드 하단 상태 칩 바로 오른쪽의 작은 알약.
+     붙은 메모가 있으면 초록빛으로 또렷하게('메모'), 없으면 차분한 회색('+ 메모').
+     오른쪽 열기·편집·지우기는 그대로 두고 왼쪽 빈자리만 채운다(사이 여백은 .sp 가 맡는다). */
+  .mini-memo{
+    display:inline-flex;align-items:center;gap:4px;white-space:nowrap;
+    font:inherit;font-size:10.5px;font-weight:700;letter-spacing:.01em;line-height:1.5;
+    color:#71717A;background:#fff;border:1px solid var(--line-2);border-radius:999px;
+    padding:3px 9px;cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .mini-memo:hover{color:var(--ink);background:#F7F7F8;border-color:#D4D4D8}
+  .mini-memo.is-on{color:#065F46;background:var(--green-w);border-color:#A7F3D0}
+  .mini-memo.is-on:hover{background:#D1FAE5;border-color:#6EE7B7}
+  .mini-memo-dot{width:5px;height:5px;flex:0 0 5px;border-radius:999px;background:currentColor;opacity:.55}
+  /* 카드 메모 팝업 — 읽기 좋은 글자 크기와 줄바꿈 그대로 */
+  .cm-tabs{display:flex;gap:6px;margin:0 0 14px}
+  .cm-tab{
+    flex:1 1 0;font:inherit;font-size:12px;font-weight:700;color:var(--ink-2);
+    background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:7px 10px;cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .cm-tab:hover{border-color:#D4D4D8;color:var(--ink)}
+  .cm-tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .cm-meta{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:11px;font-weight:700;color:#A1A1AA}
+  .cm-title-in{
+    width:100%;font:inherit;font-size:17px;font-weight:800;letter-spacing:-.025em;color:var(--ink);
+    background:none;border:0;border-radius:9px;padding:2px 3px 5px;line-height:1.35;
+  }
+  .cm-title-in::placeholder{color:#C4C4C9;font-weight:700}
+  .cm-title-in:focus{outline:none;background:#F7F7F8;box-shadow:0 0 0 3px rgba(255,230,0,.20)}
+  .cm-body{
+    display:block;width:100%;font:inherit;font-size:14.5px;line-height:1.68;color:var(--ink-2);
+    background:none;border:0;border-radius:10px;padding:3px;margin:2px 0 0;
+    white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
+    resize:none;overflow-y:auto;max-height:44vh;min-height:120px;
+  }
+  .cm-body:focus{outline:none;background:#FAFAFA;box-shadow:0 0 0 3px rgba(255,230,0,.20)}
+  .cm-list{list-style:none;margin:0;padding:0;max-height:42vh;overflow-y:auto;border-top:1px solid var(--line)}
+  .cm-list li{border-bottom:1px solid var(--line)}
+  .cm-item{
+    display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;
+    font:inherit;background:none;border:0;padding:11px 5px;cursor:pointer;
+  }
+  .cm-item:hover{background:#FAFAFA}
+  .cm-item[aria-pressed="true"]{background:var(--lemon-w)}
+  .cm-item b{font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.4}
+  .cm-item span{
+    font-size:11.5px;color:#8A8A93;line-height:1.45;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .cm-item em{font-style:normal;font-size:10.5px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
   /* 메모 카드 — 본문은 줄바꿈 그대로, 길면 카드 안에서만 스크롤 */
   .memo-body{
     margin:3px 0 0;font-size:13px;line-height:1.62;color:var(--ink-2);
@@ -800,6 +851,8 @@
     /* 아이폰은 입력칸을 16px 로 그린 뒤 0.78125배로 줄이므로(자동 확대 방지) 안쪽 여백도 그만큼 키워 12px 로 보이게 */
     @supports (-webkit-touch-callout:none){
       .brief-add-inwrap > .brief-add-in{padding:0 15.36px}
+      /* 아이폰은 16px 미만 입력칸을 초점 때 확대하므로, 메모 팝업의 제목·본문도 16px로 둔다 */
+      .cm-title-in,.cm-body{font-size:16px}
     }
     .brief-add-timewrap{width:72px;height:30px;padding:0 6px}
     .brief-add-timewrap.is-set{padding-right:15px}
@@ -1020,7 +1073,7 @@
           <option value="grad">대학원·논문</option>
           <option value="news">기사·뉴스레터</option>
           <option value="video">영상·기타자료</option>
-          <option value="show">공연·전시</option>
+          <option value="show">공연·전시·영화</option>
           <option value="book">책</option>
           <option value="memo">메모</option>
         </select>
@@ -1137,6 +1190,55 @@
   </form>
 </div>
 
+<div class="modal" id="cardMemoModal" hidden>
+  <div class="sheet" id="cardMemoSheet" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+    <h2 id="cmTitle">메모</h2>
+    <p class="hint" id="cmHint"></p>
+
+    <!-- 붙은 메모가 있을 때 — 제목·날짜·본문을 그대로 읽고, 고쳐 저장하거나 연결을 풀 수 있다 -->
+    <div id="cmView" hidden>
+      <div class="cm-meta"><span id="cmWhen"></span></div>
+      <input id="cmTitleIn" class="cm-title-in" type="text" aria-label="메모 제목" placeholder="제목 없이 적은 메모">
+      <textarea id="cmBody" class="cm-body" rows="8" aria-label="메모 본문"></textarea>
+      <div class="sheet-foot">
+        <button class="btn btn--ghost" type="button" id="cmDetach">연결 해제</button>
+        <button class="btn btn--ghost" type="button" id="cmClose">닫기</button>
+        <button class="btn btn--dark" type="button" id="cmSave">수정 저장</button>
+      </div>
+    </div>
+
+    <!-- 붙은 메모가 없을 때 — 새로 쓰거나, 메모 탭의 메모를 골라 붙인다 -->
+    <div id="cmNone">
+      <div class="cm-tabs" role="tablist" aria-label="메모 붙이기">
+        <button class="cm-tab" type="button" data-cm-tab="new" aria-pressed="true" role="tab">새 메모 쓰기</button>
+        <button class="cm-tab" type="button" data-cm-tab="pick" aria-pressed="false" role="tab">기존 메모 연결</button>
+      </div>
+      <div id="cmNew">
+        <div class="field full">
+          <label for="cmNewTitle">제목 (선택)</label>
+          <input id="cmNewTitle" type="text" placeholder="예: 가족구성권 포럼에서 들은 말">
+        </div>
+        <div class="field full">
+          <label for="cmNewBody">본문</label>
+          <textarea id="cmNewBody" rows="7" placeholder="생각나는 대로 적어 두세요. 줄바꿈은 그대로 저장됩니다."></textarea>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn btn--ghost" type="button" id="cmCancel">취소</button>
+          <button class="btn btn--dark" type="button" id="cmCreate">저장하고 붙이기</button>
+        </div>
+      </div>
+      <div id="cmPick" hidden>
+        <ul class="cm-list" id="cmList"></ul>
+        <p class="hint" id="cmPickHint" hidden>아직 메모가 없습니다. ‘새 메모 쓰기’로 적어 주세요.</p>
+        <div class="sheet-foot">
+          <button class="btn btn--ghost" type="button" id="cmPickCancel">취소</button>
+          <button class="btn btn--dark" type="button" id="cmLink" disabled>붙이기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="syncModal" hidden>
   <form class="sheet" id="syncForm" novalidate>
     <h2>기기 간 동기화</h2>
@@ -1206,7 +1308,7 @@
     grad:  { num:'02', label:'대학원·논문', statuses:['관심','읽기 전','읽는 중','정리 완료'] },
     news:  { num:'03', label:'기사·뉴스레터', statuses:['읽기 전','읽는 중','읽음'] },
     video: { num:'04', label:'영상·기타자료', statuses:['시청 전','시청 중','시청 완료'] },
-    show:  { num:'05', label:'공연·전시', statuses:['관심','예매 완료','관람 완료'] },
+    show:  { num:'05', label:'공연·전시·영화', statuses:['관심','예매 완료','관람 완료'] },
     book:  { num:'06', label:'책',       statuses:['읽고 싶은 책','읽는 중','완독','서재'] },
     memo:  { num:'07', label:'메모',     statuses:['메모'] }
   };
@@ -2344,6 +2446,23 @@
     return h;
   }
 
+  /* ── 카드에 붙는 메모 (2026-11-21) ──
+     학회·포럼 / 공연·전시·영화 / 책 카드의 memoId 가 메모 탭(cat:'memo') 카드 id 를 가리킨다.
+     붙은 메모가 지워졌으면 없는 것으로 보고 '+ 메모'로 돌아간다. */
+  var MEMO_CATS = { forum:1, show:1, book:1 };
+  function linkedMemo(it){
+    if (!it || !MEMO_CATS[it.cat] || !it.memoId) return null;
+    var m = byId(it.memoId);
+    return (m && m.cat === 'memo') ? m : null;
+  }
+  function memoPillHTML(it){
+    if (!MEMO_CATS[it.cat]) return '';
+    var m = linkedMemo(it);
+    return '<button class="mini-memo' + (m ? ' is-on' : '') + '" type="button" data-act="memo"'
+      + ' aria-haspopup="dialog" title="' + (m ? '붙은 메모 보기 · 고치기' : '이 카드에 메모 붙이기') + '">'
+      + (m ? '<span class="mini-memo-dot" aria-hidden="true"></span>메모' : '+ 메모') + '</button>';
+  }
+
   function cardHTML(it){
     if (it.cat === 'memo') return memoCardHTML(it);
     var m = META[it.cat];
@@ -2458,6 +2577,7 @@
     h += '<div class="card-foot">';
     h += '<button class="state ' + (ST_CLASS[it.status] || 'st--watch') + '" type="button" data-act="state" aria-haspopup="true" aria-expanded="false">'
        + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
+    h += memoPillHTML(it);
     h += '<span class="sp"></span>';
     if (it.url) h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
     /* 판결문·원문처럼 카드에 딸린 두 번째 링크 — 열기 옆에 나란히 */
@@ -2712,7 +2832,7 @@
     var html = '';
     html += '<div class="stat stat--key"><b>' + upcoming + '</b><span>다가오는 일정</span></div>';
     html += '<div class="stat"><b>' + totals.forum + '</b><span>학회·포럼</span></div>';
-    html += '<div class="stat"><b>' + totals.show + '</b><span>공연·전시</span></div>';
+    html += '<div class="stat"><b>' + totals.show + '</b><span>공연·전시·영화</span></div>';
     html += '<div class="stat"><b>' + totals.book + '</b><span>책 (서가)</span></div>';
     html += '<div class="stat"><b>' + totals.news + '</b><span>기사·뉴스레터</span></div>';
     html += '<div class="stat"><b>' + totals.grad + '</b><span>대학원·논문</span></div>';
@@ -4119,6 +4239,7 @@
     var it = byId(id);
     if (!it) return;
     if (act === 'lemon') { toggleLemon(it, card); }
+    else if (act === 'memo') { openCardMemo(id); }
     else if (act === 'state') { if (menuEl && menuAnchor === actEl) { closeMenu(); } else { openMenu(actEl, it); } }
     else if (act === 'send') { sendMemo(it); }
     else if (act === 'edit') { if (it.cat === 'memo') openMemoForm(id); else openForm(id); }
@@ -4353,10 +4474,205 @@
     });
   }
 
+  /* ────────────────────────── 카드 메모 팝업 ──────────────────────────
+     카드 하단의 '메모' · '+ 메모' 를 누르면 이 팝업이 열린다.
+     붙은 메모는 제목·날짜·본문을 그대로 보여 주고(줄바꿈 유지), 그 자리에서 고쳐 저장·연결 해제할 수 있다.
+     없는 카드에서는 새 메모를 만들어 바로 붙이거나, 메모 탭에 있는 메모를 골라 붙인다. */
+  var cmEl = document.getElementById('cardMemoModal');
+  var cmCard = null;      /* 팝업을 연 카드 id */
+  var cmMemoId = null;    /* 보고 있는 메모 id (없으면 새로 쓰기·골라 붙이기) */
+  var cmPickId = null;    /* '기존 메모 연결'에서 고른 메모 id */
+
+  function cmAutoSize(){
+    var b = document.getElementById('cmBody');
+    if (!b || cmViewHidden()) return;
+    b.style.height = 'auto';
+    var cap = Math.round((window.innerHeight || 700) * 0.44);
+    b.style.height = Math.min(b.scrollHeight, cap) + 'px';
+  }
+  function cmViewHidden(){ return !!(document.getElementById('cmView') || {}).hidden; }
+
+  function cmSetTab(which){
+    var tabs = cmEl.querySelectorAll('.cm-tab'), k;
+    for (k = 0; k < tabs.length; k++) {
+      tabs[k].setAttribute('aria-pressed', tabs[k].getAttribute('data-cm-tab') === which ? 'true' : 'false');
+    }
+    document.getElementById('cmNew').hidden = which !== 'new';
+    document.getElementById('cmPick').hidden = which !== 'pick';
+    if (which === 'pick') cmFillList();
+  }
+
+  /* 메모 탭의 메모들을 고칠 날짜가 최근인 순서로 — 제목·첫 줄·날짜만 보여 준다 */
+  function cmFillList(){
+    var list = document.getElementById('cmList');
+    var hint = document.getElementById('cmPickHint');
+    var memos = state.items.filter(function(x){ return x.cat === 'memo'; });
+    memos.sort(function(a, b){
+      var av = Date.parse(a.updated || a.created || '') || 0;
+      var bv = Date.parse(b.updated || b.created || '') || 0;
+      return bv - av;
+    });
+    var h = '', k;
+    for (k = 0; k < memos.length && k < 80; k++) {
+      var m = memos[k];
+      var when = memoWhen(m.updated || m.created);
+      var first = String(m.body || '').replace(/\s+/g, ' ').trim();
+      h += '<li><button class="cm-item" type="button" data-mid="' + esc(m.id) + '" aria-pressed="'
+        + (cmPickId === m.id ? 'true' : 'false') + '">'
+        + '<b>' + esc(String(m.title || '').trim() || first.slice(0, 24) || '제목 없는 메모') + '</b>'
+        + '<span>' + (first ? esc(first.slice(0, 90)) : '본문이 비어 있습니다') + '</span>'
+        + (when ? '<em>' + when + '</em>' : '')
+        + '</button></li>';
+    }
+    list.innerHTML = h;
+    list.hidden = !memos.length;
+    hint.hidden = !!memos.length;
+    document.getElementById('cmLink').disabled = !(cmPickId && byId(cmPickId));
+  }
+
+  function openCardMemo(id){
+    var it = byId(id);
+    if (!it || !MEMO_CATS[it.cat]) return;
+    cmCard = id;
+    var m = linkedMemo(it);
+    cmMemoId = m ? m.id : null;
+    cmPickId = null;
+    var name = String(it.title || '').trim();
+    cmEl.hidden = false;
+    if (m) {
+      document.getElementById('cmView').hidden = false;
+      document.getElementById('cmNone').hidden = true;
+      document.getElementById('cmHint').textContent = (name ? '‘' + name + '’ 카드에 붙은 메모입니다.' : '이 카드에 붙은 메모입니다.');
+      document.getElementById('cmTitleIn').value = m.title || '';
+      document.getElementById('cmBody').value = m.body || '';
+      var when = memoWhen(m.updated || m.created);
+      var edited = !!(m.updated && m.created && String(m.updated) !== String(m.created));
+      document.getElementById('cmWhen').textContent = when ? (edited ? '고침 ' + when : '작성 ' + when) : '';
+      document.getElementById('cmWhen').hidden = !when;
+      cmAutoSize();
+    } else {
+      document.getElementById('cmView').hidden = true;
+      document.getElementById('cmNone').hidden = false;
+      document.getElementById('cmHint').textContent = name
+        ? '‘' + name + '’ 카드에 붙일 메모를 새로 적거나, 메모 탭에 있는 메모를 골라 붙일 수 있어요.'
+        : '이 카드에 붙일 메모를 새로 적거나, 메모 탭에 있는 메모를 골라 붙일 수 있어요.';
+      document.getElementById('cmNewTitle').value = '';
+      document.getElementById('cmNewTitle').placeholder = name ? '예: ' + name : '예: 포럼에서 들은 말';
+      document.getElementById('cmNewBody').value = '';
+      cmSetTab('new');
+    }
+    var sheet = document.getElementById('cardMemoSheet');
+    if (sheet && sheet.scrollTop) sheet.scrollTop = 0;
+  }
+
+  function closeCardMemo(){
+    cmEl.hidden = true;
+    cmCard = null;
+    cmMemoId = null;
+    cmPickId = null;
+  }
+
+  /* 붙은 메모 고쳐 저장 — 제목·본문을 그대로 메모 카드에 되쓰고, 메모 탭도 함께 새로 그린다 */
+  function cmSaveEdit(){
+    var it = byId(cmCard);
+    var m = cmMemoId ? byId(cmMemoId) : null;
+    if (!it || !m) { closeCardMemo(); return; }
+    var title = document.getElementById('cmTitleIn').value.trim();
+    var body = document.getElementById('cmBody').value.replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    if (!title && !body.trim()) { toast('내용이 비어 있어 저장하지 않았습니다'); return; }
+    if (title === String(m.title || '') && body === String(m.body || '')) { closeCardMemo(); return; }
+    var now = new Date().toISOString();
+    m.title = title;
+    m.body = body;
+    m.updated = now;
+    m.updatedAt = now;
+    delete m._hay;
+    persist();
+    closeCardMemo();
+    render();
+    toast('메모를 고쳐 저장했습니다');
+  }
+
+  /* 연결만 풀고 메모는 메모 탭에 그대로 둔다 */
+  function cmDetach(){
+    var it = byId(cmCard);
+    if (!it) { closeCardMemo(); return; }
+    it.memoId = '';
+    touch(it);
+    persist();
+    closeCardMemo();
+    render();
+    toast('메모 연결을 풀었습니다 · 메모는 메모 탭에 남아 있어요');
+  }
+
+  /* 새 메모를 만들어 지금 카드에 붙인다 — 카테고리는 옮기지 않고 그 자리에서 끝낸다 */
+  function cmCreate(){
+    var it = byId(cmCard);
+    if (!it) { closeCardMemo(); return; }
+    var title = document.getElementById('cmNewTitle').value.trim();
+    var body = document.getElementById('cmNewBody').value.replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    if (!title && !body.trim()) {
+      window.alert('제목이나 본문 중 하나는 적어 주세요.');
+      document.getElementById('cmNewBody').focus();
+      return;
+    }
+    var now = new Date().toISOString();
+    var memo = norm({ id: 'm' + Date.now().toString(36), cat: 'memo', title: title, body: body,
+      created: now, updated: now, updatedAt: now, status: '메모' });
+    state.items.unshift(memo);
+    it.memoId = memo.id;
+    touch(it);
+    persist();
+    closeCardMemo();
+    render();
+    toast('메모를 만들어 카드에 붙였습니다');
+  }
+
+  function cmLinkPick(){
+    var it = byId(cmCard);
+    var m = cmPickId ? byId(cmPickId) : null;
+    if (!it || !m) return;
+    it.memoId = m.id;
+    touch(it);
+    persist();
+    closeCardMemo();
+    render();
+    toast('메모를 카드에 붙였습니다');
+  }
+
+  if (cmEl) {
+    cmEl.addEventListener('click', function(e){
+      if (e.target === cmEl) { closeCardMemo(); return; }
+      var tab = e.target.closest ? e.target.closest('.cm-tab') : null;
+      if (tab) { cmSetTab(tab.getAttribute('data-cm-tab')); return; }
+      var item = e.target.closest ? e.target.closest('.cm-item') : null;
+      if (item) {
+        cmPickId = item.getAttribute('data-mid');
+        var all = cmEl.querySelectorAll('.cm-item'), k;
+        for (k = 0; k < all.length; k++) all[k].setAttribute('aria-pressed', all[k] === item ? 'true' : 'false');
+        document.getElementById('cmLink').disabled = false;
+        return;
+      }
+      var b = e.target.closest ? e.target.closest('button') : null;
+      if (!b) return;
+      if (b.id === 'cmSave') cmSaveEdit();
+      else if (b.id === 'cmDetach') cmDetach();
+      else if (b.id === 'cmClose') closeCardMemo();
+      else if (b.id === 'cmCreate') cmCreate();
+      else if (b.id === 'cmLink') cmLinkPick();
+      else if (b.id === 'cmCancel' || b.id === 'cmPickCancel') closeCardMemo();
+    });
+    document.getElementById('cmBody').addEventListener('input', cmAutoSize);
+    window.addEventListener('resize', cmAutoSize);
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !cmEl.hidden) closeCardMemo();
+    });
+  }
+
   /* ────────────────────────── 기기 간 동기화 ────────────────────────── */
   var SYNC_FIELDS = ['status','memo','title','date','time','place','url','deadline','genre','price',
     'author','publisher','summary','image','imgpos','body','pick','shelf','kind','created','extra',
-    'rating','qty','form','seller','seat','sub','group','savedAt','extraUrl','extraLabel'];
+    'rating','qty','form','seller','seat','sub','group','savedAt','extraUrl','extraLabel','memoId'];
 
   function sameVal(a, b){ return String(a == null ? '' : a) === String(b == null ? '' : b); }
   function slim(it){ var c = clone(it); delete c._hay; return c; }
@@ -4378,6 +4694,11 @@
       if (patch) {
         patch.updatedAt = String(it.updatedAt || '');
         ov[it.id] = patch;
+      } else if (Object.prototype.hasOwnProperty.call(it, 'memoId')
+                 && !Object.prototype.hasOwnProperty.call(s, 'memoId')) {
+        /* 2026-11-21 메모 연결 — 기본 데이터(SEED)에는 memoId 가 없다.
+           연결을 풀어 빈 값('')으로 남은 카드도 다른 기기에 알려야 그쪽에서 메모가 다시 붙지 않는다. */
+        ov[it.id] = { memoId: String(it.memoId == null ? '' : it.memoId), updatedAt: String(it.updatedAt || '') };
       }
     }
     return { app: APP_ID, v: 1, updatedAt: new Date().toISOString(),
