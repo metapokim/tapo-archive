@@ -713,8 +713,9 @@
   .cm-tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
   .cm-meta{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:11px;font-weight:700;color:#A1A1AA}
   .cm-title-in{
-    width:100%;font:inherit;font-size:17px;font-weight:800;letter-spacing:-.025em;color:var(--ink);
+    display:block;width:100%;font:inherit;font-size:17px;font-weight:800;letter-spacing:-.025em;color:var(--ink);
     background:none;border:0;border-radius:9px;padding:2px 3px 5px;line-height:1.35;
+    resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
   }
   .cm-title-in::placeholder{color:#C4C4C9;font-weight:700}
   .cm-title-in:focus{outline:none;background:#F7F7F8;box-shadow:0 0 0 3px rgba(255,230,0,.20)}
@@ -1198,7 +1199,7 @@
     <!-- 붙은 메모가 있을 때 — 제목·날짜·본문을 그대로 읽고, 고쳐 저장하거나 연결을 풀 수 있다 -->
     <div id="cmView" hidden>
       <div class="cm-meta"><span id="cmWhen"></span></div>
-      <input id="cmTitleIn" class="cm-title-in" type="text" aria-label="메모 제목" placeholder="제목 없이 적은 메모">
+      <textarea id="cmTitleIn" class="cm-title-in" rows="1" aria-label="메모 제목" placeholder="제목 없이 적은 메모"></textarea>
       <textarea id="cmBody" class="cm-body" rows="8" aria-label="메모 본문"></textarea>
       <div class="sheet-foot">
         <button class="btn btn--ghost" type="button" id="cmDetach">연결 해제</button>
@@ -4484,6 +4485,11 @@
   var cmPickId = null;    /* '기존 메모 연결'에서 고른 메모 id */
 
   function cmAutoSize(){
+    var t = document.getElementById('cmTitleIn');
+    if (t && !cmViewHidden()) {
+      t.style.height = 'auto';
+      t.style.height = t.scrollHeight + 'px';
+    }
     var b = document.getElementById('cmBody');
     if (!b || cmViewHidden()) return;
     b.style.height = 'auto';
@@ -4663,6 +4669,11 @@
       else if (b.id === 'cmCancel' || b.id === 'cmPickCancel') closeCardMemo();
     });
     document.getElementById('cmBody').addEventListener('input', cmAutoSize);
+    document.getElementById('cmTitleIn').addEventListener('input', cmAutoSize);
+    document.getElementById('cmTitleIn').addEventListener('keydown', function(e){
+      /* 제목은 한 줄 — Enter 로는 줄을 바꾸지 않고 저장으로 넘어가지도 않게 둔다 */
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('cmBody').focus(); }
+    });
     window.addEventListener('resize', cmAutoSize);
     document.addEventListener('keydown', function(e){
       if (e.key === 'Escape' && !cmEl.hidden) closeCardMemo();
