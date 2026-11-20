@@ -66,15 +66,17 @@ function run(){
   var el = rowOf(doc('d'), 1);
   if (!el) { report('dr', {error:'row not found'}); return; }
   mouseDbl(el);
-  setTimeout(function(){ report('dr', status('d', 'desktop dblclick')); }, 250);
-
+  setTimeout(function(){ report('dr', status('d', 'desktop dblclick')); }, 400);
+}
+function runMobile(){
   var el2 = rowOf(doc('m'), 1);
   if (!el2) { report('mr', {error:'row not found'}); return; }
   touchSeq(el2, function(ok){
-    setTimeout(function(){ var s = status('m', 'mobile double tap'); s.touchSupported = ok; report('mr', s); }, 250);
+    setTimeout(function(){ var s = status('m', 'mobile double tap'); s.touchSupported = ok; report('mr', s); }, 400);
   });
 }
 setTimeout(run, 1600);
+setTimeout(runMobile, 2800);
 window.__harness = {
   state: function(id){ return status(id, 'read'); },
   save: function(id, text){
