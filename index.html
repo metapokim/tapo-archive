@@ -4698,6 +4698,14 @@
       patch = null;
       for (j = 0; j < SYNC_FIELDS.length; j++) {
         f = SYNC_FIELDS[j];
+        /* 메모 연결(2026-11-21)은 기본 데이터(SEED)에 없는 값이다.
+           붙인 것뿐 아니라 '연결 해제'로 빈 값이 된 것도 다른 기기에 알려야 그쪽에서 메모가 다시 붙지 않는다. */
+        if (f === 'memoId') {
+          if (!Object.prototype.hasOwnProperty.call(it, 'memoId')) continue;
+          if (!patch) patch = {};
+          patch.memoId = String(it.memoId == null ? '' : it.memoId);
+          continue;
+        }
         if (sameVal(it[f], s[f])) continue;
         if (!patch) patch = {};
         patch[f] = it[f] == null ? '' : it[f];
@@ -4705,11 +4713,6 @@
       if (patch) {
         patch.updatedAt = String(it.updatedAt || '');
         ov[it.id] = patch;
-      } else if (Object.prototype.hasOwnProperty.call(it, 'memoId')
-                 && !Object.prototype.hasOwnProperty.call(s, 'memoId')) {
-        /* 2026-11-21 메모 연결 — 기본 데이터(SEED)에는 memoId 가 없다.
-           연결을 풀어 빈 값('')으로 남은 카드도 다른 기기에 알려야 그쪽에서 메모가 다시 붙지 않는다. */
-        ov[it.id] = { memoId: String(it.memoId == null ? '' : it.memoId), updatedAt: String(it.updatedAt || '') };
       }
     }
     return { app: APP_ID, v: 1, updatedAt: new Date().toISOString(),
