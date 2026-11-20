@@ -314,6 +314,27 @@
   }
   .brief-del svg{display:block;width:11px;height:11px}
   .brief-del:hover,.brief-del:focus-visible{color:#FB7185;background:rgba(251,113,133,.14);outline:none}
+  /* 할 일 문구 고치기 — 두 번 클릭·두 번 톡하면 그 줄 본문만 입력칸이 된다.
+     시각 배지·체크·지우기 버튼은 그대로 두고, 글씨 크기(12.5px)와 줄 높이는 목록과 똑같이 맞춘다. */
+  .brief-list li.is-editing{-webkit-user-select:text;user-select:text}
+  .brief-list li.is-editing .brief-body{flex:1 1 auto}
+  .brief-edit{position:relative;display:flex;flex:1 1 auto;min-width:0;height:19px}
+  .brief-edit-in{
+    flex:1 1 auto;min-width:0;width:100%;height:19px;border-radius:7px;font:inherit;
+    font-size:12.5px;font-weight:600;line-height:1.2;letter-spacing:-.01em;color:#FAFAFA;
+    background:rgba(255,230,0,.10);border:1px solid rgba(255,230,0,.55);padding:0 7px;
+    -webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;
+  }
+  .brief-edit-in:focus{outline:none;background:rgba(255,230,0,.14);box-shadow:0 0 0 3px rgba(255,230,0,.14)}
+  /* 아이폰·아이패드는 16px 미만 입력칸을 누르면 화면을 저절로 확대한다 —
+     입력창(.brief-add)과 같은 방식으로 16px 로 그린 뒤 0.78125배로 줄여 12.5px 로 보이게 한다. */
+  @supports (-webkit-touch-callout:none){
+    .brief-edit > .brief-edit-in{
+      position:absolute;left:0;top:0;flex:none;width:128%;height:128%;
+      transform:scale(.78125);transform-origin:0 0;font-size:16px;border-width:1.28px;padding:0 8.96px;
+    }
+    .brief-edit > .brief-edit-in:focus{box-shadow:0 0 0 3.84px rgba(255,230,0,.14)}
+  }
   .brief-add{display:flex;align-items:center;gap:8px;margin:12px 0 0;padding:0}
   /* 시각(선택) — 비워 두면 예전과 똑같이 시간 없는 '할 일'로 들어가고, 고르면 왼쪽 노란 시각으로 보인다.
      아이폰 사파리는 type=time 을 '오후 / 4:08' 두 줄로 크게 그려 pill 을 넘겼다(2026-11-18 사진).
@@ -3087,7 +3108,7 @@
     var now = new Date().getTime(), cut = now - 8 * 864e5, k, ts;
     for (k in state.brief) {
       if (!Object.prototype.hasOwnProperty.call(state.brief, k)) continue;
-      if (k === 'todos' || k === 'todoDel' || k === 'order') continue;    /* 직접 추가한 할 일·순서 기록 */
+      if (k === 'todos' || k === 'todoDel' || k === 'order' || k === 'edits') continue;    /* 직접 추가한 할 일·순서·문구 수정 기록 */
       if (k.slice(0, 5) === 'todo:') continue;                 /* 그 할 일의 완료 표시 — 날짜와 무관 */
       ts = Date.parse(k.slice(0, 10) + 'T00:00:00');
       if (ts && ts < cut) delete state.brief[k];
@@ -3382,6 +3403,144 @@
       }
     }, true);
   }
+  /* ────────────────────────── 할 일 문구 고치기 ──────────────────────────
+     브리핑 줄을 두 번 클릭(PC)하거나 300ms 안에 두 번 톡(아이폰·아이패드)하면 그 줄의
+     본문(.brief-body)만 입력칸이 된다. 시각 배지·체크·지우기 버튼은 건드리지 않는다.
+     Enter·포커스 아웃 = 저장, Esc = 취소, 빈 값 = 취소(원래 문구 유지).
+     · 직접 추가한 할 일(state.brief.todos): 그 항목의 text·updatedAt 을 고친다.
+     · 루틴이 넣은 기본 줄: state.brief.edits[원래 문구 키] = { text, updatedAt } 에 남겨
+       새로고침·Gist 동기화 뒤에도 수정본으로 보인다. 그날 브리핑의 원래 문구 키와
+       맞을 때만 얹히므로, 다음 날 새 항목으로 갈아끼워지면 옛 기록은 그냥 남는다. */
+  var briefEdit = null;
+  var BRIEF_DBL_MS = 300;
+
+  function briefEdits(){
+    var e = state.brief.edits;
+    if (!e || typeof e !== 'object' || Array.isArray(e)) { e = {}; state.brief.edits = e; }
+    return e;
+  }
+  /* 기본 줄의 '바뀌지 않는 키' — 루틴이 넣은 원래 문구로 한 번만 만들고 줄에 외워 둔다.
+     본문을 고쳐도 완료 표시(data-key)와 수정 기록(edits)의 열쇠가 흔들리지 않게. */
+  function briefBaseKey(li){
+    if (!li || !li.getAttribute || li.hasAttribute('data-todo')) return '';
+    if (li.__briefBase) return li.__briefBase;
+    li.__briefBase = briefStamp() + '|' + briefText(li);
+    return li.__briefBase;
+  }
+  /* 고쳐 둔 문구를 줄 본문 위에 다시 얹는다(수정 중인 줄은 건드리지 않는다) */
+  function briefPaintEdit(li, key){
+    if (!li || li.__editing) return;
+    var body = li.querySelector('.brief-body');
+    if (!body) return;
+    var ed = briefEdits()[key];
+    var txt = (ed && typeof ed === 'object') ? String(ed.text == null ? '' : ed.text) : '';
+    if (!txt) return;
+    if (String(body.textContent || '') !== txt) body.textContent = txt;
+  }
+  function briefStartEdit(li){
+    if (!li || briefEdit) return false;
+    var body = li.querySelector('.brief-body');
+    if (!body) return false;
+    var todoId = li.getAttribute('data-todo') || '';
+    if (todoId) {                       /* 지워진 항목이면 열지 않는다 */
+      var todos = briefTodos(), k, hit = null;
+      for (k = 0; k < todos.length; k++) if (todos[k] && todos[k].id === todoId) { hit = todos[k]; break; }
+      if (!hit) return false;
+    }
+    var orig = briefItemText(li);       /* '11.21 추가' 같은 꼬리표·버튼은 뺀 본문 */
+    if (!orig) return false;
+    var st = { li: li, body: body, todoId: todoId,
+      key: li.getAttribute('data-key') || briefBaseKey(li),
+      orig: orig, origHTML: body.innerHTML };
+    var wrap = document.createElement('span');
+    wrap.className = 'brief-edit';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'brief-edit-in';
+    inp.value = orig;
+    inp.setAttribute('maxlength', todoId ? '80' : '120');
+    inp.setAttribute('autocomplete', 'off');
+    inp.setAttribute('autocapitalize', 'off');
+    inp.setAttribute('spellcheck', 'false');
+    inp.setAttribute('enterkeyhint', 'done');
+    inp.setAttribute('aria-label', '할 일 문구 수정');
+    wrap.appendChild(inp);
+    st.inp = inp;
+    briefEdit = st;
+    li.__editing = 1;
+    li.classList.add('is-editing');
+    body.innerHTML = '';
+    body.appendChild(wrap);
+    inp.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); briefFinishEdit(true); }
+      else if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); e.stopPropagation(); briefFinishEdit(false); }
+    });
+    inp.addEventListener('blur', function(){ if (briefEdit && briefEdit.inp === inp) briefFinishEdit(true); });
+    try { inp.focus(); inp.select(); } catch (err) {}
+    return true;
+  }
+  function briefFinishEdit(save, quiet){
+    var st = briefEdit;
+    if (!st) return false;
+    briefEdit = null;                    /* 먼저 놓아 blur·렌더가 겹쳐 불리지 않게 */
+    var raw = String(st.inp && st.inp.value != null ? st.inp.value : '').replace(/\s+/g, ' ').trim();
+    if (st.li) { st.li.__editing = 0; st.li.classList.remove('is-editing'); }
+    if (st.body) st.body.innerHTML = st.origHTML;   /* 입력칸을 걷고 원래 모습으로 */
+    if (!save || !raw || raw === st.orig) return false;
+    var now = new Date().toISOString(), changed = false, k, todos;
+    if (st.todoId) {
+      todos = briefTodos();
+      for (k = 0; k < todos.length; k++) {
+        if (!todos[k] || todos[k].id !== st.todoId) continue;
+        todos[k].text = raw.slice(0, 80);
+        todos[k].updatedAt = now;
+        changed = true;
+        break;
+      }
+    } else if (st.key) {
+      briefEdits()[st.key] = { text: raw.slice(0, 120), updatedAt: now };
+      changed = true;
+    }
+    if (!changed) return false;
+    persist();
+    if (!quiet) { renderBrief(); upFade(); toast('수정 · ' + briefClip(raw)); }
+    return true;
+  }
+  /* 두 번 클릭·더블탭 판정 — 체크·지우기 버튼, 입력칸 위에서는 열지 않는다(기존 동작 그대로) */
+  function bindBriefEdit(box){
+    if (!box || box.__briefEdit) return;
+    box.__briefEdit = 1;
+    var tapAt = 0, tapX = 0, tapY = 0, tapLi = null;
+
+    /* PC — 마우스로 두 번 클릭 */
+    box.addEventListener('dblclick', function(e){
+      if (!dragSafeTarget(e.target)) return;
+      var li = briefDragItem(e.target);
+      if (!li) return;
+      if (briefDragLock && new Date().getTime() - briefDragLock < 450) return;   /* 끌고 난 직후 */
+      if (e.cancelable) e.preventDefault();
+      briefStartEdit(li);
+    });
+
+    /* 아이폰·아이패드 — 300ms 안에 같은 줄을 두 번 톡(첫 톡은 아무것도 하지 않으므로 토글이 튀지 않는다) */
+    box.addEventListener('touchend', function(e){
+      if (dragState) { tapLi = null; tapAt = 0; return; }
+      if (!dragSafeTarget(e.target) || e.changedTouches.length !== 1) return;
+      var li = briefDragItem(e.target);
+      if (!li) return;
+      var t = e.changedTouches[0], now = new Date().getTime();
+      if (tapLi === li && (now - tapAt) <= BRIEF_DBL_MS &&
+          Math.abs(t.clientX - tapX) < 32 && Math.abs(t.clientY - tapY) < 32) {
+        tapLi = null; tapAt = 0;
+        if (briefDragLock && now - briefDragLock < 450) return;
+        if (e.cancelable) e.preventDefault();     /* 따라오는 클릭으로 체크가 눌리지 않게 */
+        briefStartEdit(li);
+        return;
+      }
+      tapLi = li; tapAt = now; tapX = t.clientX; tapY = t.clientY;
+    }, { passive: false });
+  }
+
   /* 할 일이 사는 스크롤 상자 — 루틴이 브리핑 HTML을 통째로 갈아끼우며 상자를 빠뜨려도
      목록·직접 추가한 할 일·빈 안내를 여기로 모아 다시 만든다. */
   function briefScroll(sec){
@@ -3502,7 +3661,7 @@
   /* 저장본·Gist 에서 온 값 정리 — 모양이 어긋난 기록은 버린다 */
   function normBrief(){
     var t = Array.isArray(state.brief.todos) ? state.brief.todos : [];
-    var out = [], seen = {}, k, it, d, dd, id;
+    var out = [], seen = {}, k, it, d, dd, id, now = new Date().getTime();
     for (k = 0; k < t.length; k++) {
       it = t[k];
       if (!it || typeof it !== 'object') continue;
@@ -3538,6 +3697,23 @@
       oat = Number(ord0.at) > 0 ? Number(ord0.at) : 0;
     }
     state.brief.order = { list: olist, at: oat };
+    /* 두 번 클릭·더블탭으로 고친 기본 브리핑 문구 — 모양이 어긋난 기록은 버리고,
+       8일 지난 날의 브리핑 문구 키는 정리한다(그날 브리핑과 맞을 때만 얹히므로) */
+    var ed0 = state.brief.edits, ed1 = {}, ek, ev, etxt, ecut = now - 8 * 864e5, ets;
+    if (ed0 && typeof ed0 === 'object' && !Array.isArray(ed0)) {
+      for (ek in ed0) {
+        if (!Object.prototype.hasOwnProperty.call(ed0, ek)) continue;
+        if (!/^\d{4}-\d{2}-\d{2}\|/.test(ek)) continue;
+        ets = Date.parse(ek.slice(0, 10) + 'T00:00:00');
+        if (ets && ets < ecut) continue;
+        ev = ed0[ek];
+        if (!ev || typeof ev !== 'object' || Array.isArray(ev)) continue;
+        etxt = String(ev.text == null ? '' : ev.text).replace(/\s+/g, ' ').trim().slice(0, 120);
+        if (!etxt) continue;
+        ed1[ek] = { text: etxt, updatedAt: String(ev.updatedAt == null ? '' : ev.updatedAt) };
+      }
+    }
+    state.brief.edits = ed1;
   }
   /* 목록·입력창이 없으면 만든다 — 루틴이 브리핑 HTML을 갈아끼운 뒤에도 여기서 되살아난다 */
   function briefMine(sec){
@@ -3776,6 +3952,7 @@
   function renderBrief(){
     var sec = document.querySelector('.brief');
     if (!sec) return;
+    if (briefEdit) briefFinishEdit(true, true);   /* 열려 있던 수정을 먼저 마무리하고 그린다 */
     var mine = renderBriefTodos(sec);
     var list = sec.querySelector('.brief-list');
     if (!list) return;
@@ -3784,8 +3961,9 @@
       li = rows[k];
       if (li.tagName !== 'LI') continue;
       if (li.hasAttribute('data-todo')) continue;   /* 자기 완료 키(todo:아이디)·체크 버튼을 이미 갖고 있다 */
-      key = date + '|' + briefText(li);
+      key = briefBaseKey(li);   /* 고친 문구와 무관한 '원래 문구' 키 — 완료 표시·수정 기록의 열쇠 */
       li.setAttribute('data-key', key);
+      briefPaintEdit(li, key);  /* 고쳐 둔 문구가 있으면 다시 그 위에 얹는다 */
       if (briefIsDone(key)) {
         li.hidden = true;
         li.classList.remove('is-going');
@@ -4830,7 +5008,7 @@
     var rbrief = remote.brief || {}, bk, rv, lv;
     for (bk in rbrief) {
       if (!Object.prototype.hasOwnProperty.call(rbrief, bk)) continue;
-      if (bk === 'todos' || bk === 'todoDel' || bk === 'order') continue;   /* 직접 추가한 할 일·순서는 아래에서 따로 합친다 */
+      if (bk === 'todos' || bk === 'todoDel' || bk === 'order' || bk === 'edits') continue;   /* 직접 추가한 할 일·순서·문구 수정은 아래에서 따로 합친다 */
       rv = Number(rbrief[bk]) || 0;
       lv = Number(state.brief[bk]) || 0;
       if (Math.abs(rv) > Math.abs(lv)) { state.brief[bk] = rv; changed = true; }
@@ -4888,6 +5066,21 @@
         if (typeof ro.list[ri] === 'string' && ro.list[ri] && rl.indexOf(ro.list[ri]) < 0) rl.push(ro.list[ri]);
       }
       if (Number(ro.at) > Number(lo.at)) { lo.list = rl; lo.at = Number(ro.at) || 0; changed = true; }
+    }
+    /* 두 번 클릭·더블탭으로 고친 기본 브리핑 문구 — 키마다 마지막으로 고친(updatedAt) 쪽을 따른다 */
+    var red = (rbrief.edits && typeof rbrief.edits === 'object' && !Array.isArray(rbrief.edits)) ? rbrief.edits : {};
+    var led = briefEdits(), edk, rev, retxt, lestamp;
+    for (edk in red) {
+      if (!Object.prototype.hasOwnProperty.call(red, edk)) continue;
+      if (!/^\d{4}-\d{2}-\d{2}\|/.test(edk)) continue;
+      rev = red[edk];
+      if (!rev || typeof rev !== 'object' || Array.isArray(rev)) continue;
+      retxt = String(rev.text == null ? '' : rev.text).replace(/\s+/g, ' ').trim().slice(0, 120);
+      if (!retxt) continue;
+      lestamp = String((led[edk] && led[edk].text != null) ? led[edk].updatedAt || '' : '');
+      if (led[edk] && !(String(rev.updatedAt || '') > lestamp)) continue;
+      led[edk] = { text: retxt, updatedAt: String(rev.updatedAt == null ? '' : rev.updatedAt) };
+      changed = true;
     }
     return changed;
   }
@@ -5173,6 +5366,7 @@
   if (briefScrollBoot) {
     briefScrollBoot.addEventListener('scroll', upFade);
     bindBriefDrag(briefScrollBoot);   /* 할 일을 길게 눌러 끌어 순서 바꾸기 */
+    bindBriefEdit(briefScrollBoot);   /* 두 번 클릭·더블탭으로 할 일 문구 고치기 */
   }
   render();
   syncToday();
