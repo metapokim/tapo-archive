@@ -6,11 +6,12 @@
 iframe{border:0;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:14px}
 </style></head><body>
 <div class="wrap">
-<iframe id="f390" src="./index.html" width="390" height="1500"></iframe>
+<iframe id="f390" width="390" height="1500"></iframe>
 </div>
 <script>
   var p = new URLSearchParams(location.search);
   var f = document.getElementById('f390');
+  f.src = './index.html?v=' + Date.now();
   if (p.get('book')) {
     f.onload = function(){ setTimeout(function(){ try { f.contentDocument.querySelector('[data-cat="book"]').click(); } catch(e){} }, 400); };
   }
