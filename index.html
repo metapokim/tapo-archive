@@ -568,26 +568,23 @@
   .sh-tip.is-on{opacity:1;transform:translateY(0)}
   .sh-tip b{display:block;font-size:11.5px;font-weight:800;line-height:1.32;word-break:keep-all}
   .sh-tip span{display:block;font-size:10.5px;font-weight:600;color:#C7C7CD;margin-top:3px;line-height:1.35;word-break:keep-all}
-  /* 모바일 — 뽑아 든 책등의 정보와 '카드로 이동'이 뜨는 아래 띠 */
-  .sh-bar{
-    position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:92;
-    display:flex;align-items:center;gap:9px;background:#18181B;color:#fff;
-    border-radius:16px;padding:10px 11px 10px 14px;
-    box-shadow:0 20px 44px -20px rgba(0,0,0,.65);
-    animation:shBarIn .18s ease-out;
+  /* 책등을 누르면 그 책 카드가 바로 뜨는 팝업 (2026-11-21) */
+  .modal .sheet--bcard{
+    max-width:432px;padding:12px 12px 12px;border-radius:24px;
+    animation:bcardIn .17s ease-out;
   }
-  @keyframes shBarIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  .sh-bar-t{flex:1 1 auto;min-width:0}
-  .sh-bar-t b{display:block;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sh-bar-t span{display:block;font-size:10.5px;font-weight:600;color:#C7C7CD;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sh-bar-go{
-    flex:0 0 auto;font:inherit;font-size:11.5px;font-weight:800;color:#18181B;background:var(--lemon);
-    border:0;border-radius:999px;padding:8px 13px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  @keyframes bcardIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .bcard-top{display:flex;justify-content:flex-end;margin:-2px -2px 2px}
+  .bcard-x{
+    flex:0 0 auto;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;
+    font:inherit;font-size:12px;color:#8A8A93;background:#F4F4F5;border:0;border-radius:999px;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;
   }
-  .sh-bar-x{
-    flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;
-    font:inherit;font-size:13px;color:#C7C7CD;background:none;border:0;cursor:pointer;
-  }
+  .bcard-x:hover,.bcard-x:focus-visible{background:#E9E9EC;color:var(--ink)}
+  .bcard-x:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  /* 팝업 안의 카드 — 카드가 창 안에 놓이므로 테두리만 남기고 그림자·떠오름은 뺀다 */
+  #bcardHost .card{box-shadow:none}
+  #bcardHost .card:hover{transform:none;box-shadow:none;border-color:var(--line)}
 
   /* ───────────── sections & cards ───────────── */
   main{max-width:1240px;width:100%;margin:0 auto;padding:0 0 28px;flex:1 1 auto}
@@ -933,7 +930,7 @@
 
   /* ───────────── menu, modal, toast ───────────── */
   .menu{
-    position:fixed;z-index:90;min-width:160px;background:#fff;border:1px solid var(--line);
+    position:fixed;z-index:110;min-width:160px;background:#fff;border:1px solid var(--line);
     border-radius:16px;padding:5px;box-shadow:0 24px 60px -20px rgba(16,24,40,.35);
   }
   .menu button{
@@ -1262,6 +1259,14 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- 책등을 눌렀을 때 그 책 카드가 뜨는 팝업 — 편집·메모 창보다 앞에 두어 그 창들이 이 위로 뜬다 -->
+<div class="modal" id="bcardModal" hidden>
+  <div class="sheet sheet--bcard" id="bcardSheet" role="dialog" aria-modal="true" aria-label="책 카드" tabindex="-1">
+    <div class="bcard-top"><button class="bcard-x" type="button" id="bcardX" aria-label="닫기" title="닫기">&#10005;</button></div>
+    <div id="bcardHost"></div>
+  </div>
+</div>
 
 <div class="modal" id="modal" hidden>
   <form class="sheet" id="form" novalidate>
@@ -3648,13 +3653,47 @@
   shTipEl.setAttribute('aria-hidden', 'true');
   document.body.appendChild(shTipEl);
 
-  var shBarEl = document.createElement('div');
-  shBarEl.className = 'sh-bar';
-  shBarEl.hidden = true;
-  shBarEl.innerHTML = '<div class="sh-bar-t"><b></b><span></span></div>'
-    + '<button class="sh-bar-go" type="button">카드로 이동</button>'
-    + '<button class="sh-bar-x" type="button" aria-label="닫기">&#10005;</button>';
-  document.body.appendChild(shBarEl);
+  /* ────────────────────────── 책 카드 팝업 (2026-11-21) ──────────────────────────
+     책등을 누르면 아래 검은 띠 대신 그 책의 카드가 모달로 바로 뜬다. 카드는 아카이브의 실제
+     cardHTML(it)을 그대로 그려서 상태·소장/대여·+메모·편집·지우기·하이라이트가 팝업 안에서도
+     똑같이 동작하고, 값을 바꾸면 뒤의 책꽂이도 함께 갱신된다. */
+  var bcardEl = document.getElementById('bcardModal');
+  var bcardSheet = document.getElementById('bcardSheet');
+  var bcardHost = document.getElementById('bcardHost');
+  var bcardId = '';
+
+  /* 팝업 안 카드를 지금 상태로 다시 그린다 — 뒤 카드·책꽂이와 같은 값을 보여 주기 위해 */
+  function syncBCard(){
+    if (!bcardEl || bcardEl.hidden || !bcardId) return;
+    var it = byId(bcardId);
+    if (!it) { closeBCard(); return; }   /* 팝업 안에서 지운 책은 팝업도 닫는다 */
+    if (!bcardHost) return;
+    var top = bcardSheet ? bcardSheet.scrollTop : 0;
+    bcardHost.innerHTML = cardHTML(it);
+    if (bcardSheet) bcardSheet.scrollTop = top;
+  }
+  function openBCard(id){
+    var it = byId(id);
+    if (!it || !bcardEl) return;
+    hideShelfTip();
+    closeMenu();
+    bcardId = it.id;
+    if (bcardHost) bcardHost.innerHTML = cardHTML(it);
+    bcardEl.hidden = false;
+    if (bcardSheet) {
+      bcardSheet.scrollTop = 0;
+      try { bcardSheet.focus({ preventScroll: true }); } catch (e) { try { bcardSheet.focus(); } catch (e2) {} }
+    }
+    /* 팝업이 떠 있는 동안 그 책등은 뽑혀 나온 채로 — 닫으면 선반에 다시 꽂힌다 */
+    pickSpine(sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]'));
+  }
+  function closeBCard(){
+    if (!bcardEl) return;
+    bcardEl.hidden = true;
+    bcardId = '';
+    if (bcardHost) bcardHost.innerHTML = '';
+    unpickSpine();
+  }
 
   function viewSegHTML(){
     var shelf = state.bookView === 'shelf';
@@ -3743,6 +3782,11 @@
       return '<div class="sh-row"><div class="sh-books">' + r.map(spineHTML).join('') + '</div>'
         + '<div class="sh-plank"></div></div>';
     }).join('');
+    /* 카드 팝업이 떠 있는 책등은 다시 그린 뒤에도 뽑힌 채로 둔다 */
+    if (bcardId) {
+      var picked = box.querySelector('.sh-spine[data-id="' + bcardId + '"]');
+      if (picked) picked.classList.add('is-picked');
+    }
   }
 
   function hideShelfTip(){ shTipEl.classList.remove('is-on'); }
@@ -3769,58 +3813,31 @@
     var el = sectionsEl.querySelector('.sh-spine.is-picked');
     if (el) el.classList.remove('is-picked');
     pickedSpineId = '';
-    shBarEl.hidden = true;
   }
   function pickSpine(el){
+    unpickSpine();
+    if (!el) return;
     var it = byId(el.getAttribute('data-id'));
     if (!it) return;
-    unpickSpine();
     el.classList.add('is-picked');
     pickedSpineId = it.id;
-    shBarEl.querySelector('.sh-bar-t b').textContent = it.title;
-    var bits = [];
-    if (it.author) bits.push(String(it.author).replace(/\s*지음$/, ''));
-    if (it.publisher) bits.push(it.publisher);
-    if (it.status) bits.push(it.status);
-    shBarEl.querySelector('.sh-bar-t span').textContent = bits.join(' · ');
-    shBarEl.hidden = false;
   }
-  /* 책등 → 카드 보기로 전환해 그 카드로 (탭·필터 풀고 스크롤 + 레몬 강조) */
-  function openCardFromShelf(id){
-    if (!id) return;
-    hideShelfTip();
-    unpickSpine();
-    state.bookView = 'card';
-    saveUIPrefs();
-    goToCard(id);
-    var el = cardEl(id);
-    if (el) {
-      el.classList.add('is-new');
-      setTimeout(function(){ el.classList.remove('is-new'); }, 2400);
-    }
-  }
+  /* 책등을 누르면(PC 클릭·폰 탭 모두) 그 책 카드가 팝업으로 바로 뜬다 */
   function onSpineTap(el){
     var id = el.getAttribute('data-id');
     if (!id) return;
-    /* 폰(터치): 첫 탭은 뽑아 들기만, 같은 책등을 한 번 더 탭하면 카드로 */
-    if (!hoverCapable() && pickedSpineId !== id) { pickSpine(el); return; }
-    openCardFromShelf(id);
+    openBCard(id);
   }
   function setBookView(v){
     if (v !== 'card' && v !== 'shelf') return;
     if (state.bookView === v) return;
     state.bookView = v;
     hideShelfTip();
-    unpickSpine();
+    closeBCard();
     saveUIPrefs();
     render();
     toResults();
   }
-  shBarEl.addEventListener('click', function(e){
-    var t = e.target;
-    if (t.closest && t.closest('.sh-bar-go')) { openCardFromShelf(pickedSpineId); return; }
-    if (t.closest && t.closest('.sh-bar-x')) { unpickSpine(); }
-  });
   sectionsEl.addEventListener('mouseover', function(e){
     if (state.bookView !== 'shelf') return;
     var sp = e.target.closest ? e.target.closest('.sh-spine') : null;
@@ -3838,13 +3855,38 @@
   });
   sectionsEl.addEventListener('focusout', hideShelfTip);
   window.addEventListener('scroll', hideShelfTip, true);
-  /* 책등 바깥을 누르면 뽑아 둔 책등을 놓는다 */
-  document.addEventListener('click', function(e){
-    if (!pickedSpineId) return;
-    var t = e.target;
-    if (t && t.closest && (t.closest('.sh-spine') || t.closest('.sh-bar'))) return;
-    unpickSpine();
-  }, true);
+  /* 팝업 안 카드의 단추들 — 페이지 카드와 같은 동작을 하도록 같은 처리로 넘긴다 */
+  if (bcardEl) {
+    var bcardXEl = document.getElementById('bcardX');
+    if (bcardXEl) bcardXEl.addEventListener('click', closeBCard);
+    bcardEl.addEventListener('click', function(e){
+      if (e.target === bcardEl) { closeBCard(); return; }   /* 배경을 누르면 닫는다 */
+      var actEl = e.target.closest ? e.target.closest('[data-act]') : null;
+      if (actEl) runCardAct(actEl);
+    });
+    /* 팝업 안 카드의 '한 줄 메모' — 페이지 카드와 같은 곳에 저장한다 */
+    bcardEl.addEventListener('input', function(e){
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('memo')) return;
+      var card = t.closest('.card');
+      var it = card ? byId(card.getAttribute('data-id')) : null;
+      if (!it) return;
+      it.memo = t.value;
+      touch(it);
+      persistSoon();
+    });
+    bcardEl.addEventListener('change', function(e){
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('memo')) return;
+      var card = t.closest('.card');
+      var it = card ? byId(card.getAttribute('data-id')) : null;
+      if (!it) return;
+      it.memo = t.value;
+      touch(it);
+      persist();
+      refreshCard(it);   /* 책꽂이 뒤 카드의 한 줄 메모도 같은 값으로 */
+    });
+  }
   var shelfRT = null;
   window.addEventListener('resize', function(){
     if (state.bookView !== 'shelf' || state.cat !== 'book') return;
@@ -4848,6 +4890,7 @@
       emptyEl.innerHTML = '<b>조건에 맞는 스크랩이 없습니다</b>검색어나 필터를 지우면 다시 보입니다.';
     }
     emptyEl.hidden = totalShown > 0;
+    syncBCard();   /* 카드 팝업이 떠 있으면 지금 상태로 다시 그린다 */
   }
 
   function toResults(){
@@ -4869,10 +4912,12 @@
   }
   function refreshCard(it){
     var el = cardEl(it.id);
-    if (!el) { render(); return; }
+    if (!el) { render(); syncBCard(); return false; }
     var tmp = document.createElement('div');
     tmp.innerHTML = cardHTML(it);
     el.parentNode.replaceChild(tmp.firstChild, el);
+    syncBCard();
+    return true;
   }
   function showStorageNotice(){
     document.getElementById('storageNotice').hidden = false;
@@ -4948,7 +4993,15 @@
     closeMenu();
   }, true);
   document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') { closeMenu(); closeModal(); closeMemoForm(); if (!isTypingInSearch()) setMore(false); }
+    if (e.key === 'Escape') {
+      /* 팝업 위에 편집·메모 창이 떠 있으면 그 창만 닫고, 책 카드 팝업은 다음 ESC 에 닫는다 */
+      var over = (typeof modalEl !== 'undefined' && modalEl && !modalEl.hidden)
+        || (typeof memoModalEl !== 'undefined' && memoModalEl && !memoModalEl.hidden)
+        || (typeof cmEl !== 'undefined' && cmEl && !cmEl.hidden);
+      closeMenu(); closeModal(); closeMemoForm();
+      if (!over) closeBCard();
+      if (!isTypingInSearch()) setMore(false);
+    }
     if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
       e.preventDefault();
       setMore(true);          /* 접혀 있으면 먼저 펼쳐야 검색창에 글을 쓸 수 있다 */
@@ -5266,19 +5319,9 @@
   }
 
   /* ────────────────────────── 이벤트 ────────────────────────── */
-  mainEl.addEventListener('click', function(e){
-    var target = e.target;
-    /* 책 탭의 카드 / 책꽂이 전환 */
-    var vbtn = (target && target.closest) ? target.closest('.viewseg button') : null;
-    if (vbtn) { setBookView(vbtn.getAttribute('data-view')); return; }
-    /* 섭션 머리글(제목·건수·꺽쇠)을 누르면 그 섭션을 접고 편다 — 전체 보기에서만 */
-    var head = (target && target.closest) ? target.closest('.sec-head') : null;
-    if (head) {
-      var secEl = head.parentNode;
-      if (secEl && secEl.getAttribute) foldSection(secEl.getAttribute('data-cat'), secEl);
-      return;
-    }
-    var actEl = target.closest ? target.closest('[data-act]') : null;
+  /* 카드(책등·카드 단추) 한 번 누르기를 처리한다 — 페이지 카드와 팝업 안 카드가 이 길을 함께 쓴다.
+     팝업 안에서 값을 바꾸면 syncBCard() 로 팝업을, render()·refreshCard() 로 뒤 목록을 맞춘다. */
+  function runCardAct(actEl){
     if (!actEl) return;
     var act = actEl.getAttribute('data-act');
     if (act === 'spine') { onSpineTap(actEl); return; }
@@ -5287,12 +5330,13 @@
       state.q = sub;
       state.status = 'all';
       document.getElementById('q').value = sub;
+      closeBCard();
       render();
       return;
     }
     if (act === 'more') {
-      var cat = actEl.getAttribute('data-cat');
-      state.limits[cat] = (state.limits[cat] || 24) + 30;
+      var mcat = actEl.getAttribute('data-cat');
+      state.limits[mcat] = (state.limits[mcat] || 24) + 30;
       renderSections(filtered());
       return;
     }
@@ -5301,7 +5345,13 @@
     var id = card.getAttribute('data-id');
     var it = byId(id);
     if (!it) return;
-    if (act === 'lemon') { toggleLemon(it, card); }
+    var inPopup = !!(bcardEl && bcardEl.contains(card));
+    if (act === 'lemon') {
+      toggleLemon(it, card);
+      /* 누른 쪽이 팝업이면 뒤 목록의 카드도, 페이지 카드면 팝업도 같은 상태로 맞춘다 */
+      if (inPopup) { if (!refreshCard(it)) syncBCard(); }
+      else syncBCard();
+    }
     else if (act === 'memo') { openCardMemo(id); }
     else if (act === 'state') { if (menuEl && menuAnchor === actEl) { closeMenu(); } else { openMenu(actEl, it); } }
     else if (act === 'own') {
@@ -5316,6 +5366,23 @@
     else if (act === 'linkcards') { openLinkCards(id); }
     else if (act === 'edit') { if (it.cat === 'memo') openMemoForm(id); else openForm(id); }
     else if (act === 'del') { removeItem(id); }
+  }
+
+  mainEl.addEventListener('click', function(e){
+    var target = e.target;
+    /* 책 탭의 카드 / 책꽂이 전환 */
+    var vbtn = (target && target.closest) ? target.closest('.viewseg button') : null;
+    if (vbtn) { setBookView(vbtn.getAttribute('data-view')); return; }
+    /* 섭션 머리글(제목·건수·꺽쇠)을 누르면 그 섭션을 접고 편다 — 전체 보기에서만 */
+    var head = (target && target.closest) ? target.closest('.sec-head') : null;
+    if (head) {
+      var secEl = head.parentNode;
+      if (secEl && secEl.getAttribute) foldSection(secEl.getAttribute('data-cat'), secEl);
+      return;
+    }
+    var actEl = target.closest ? target.closest('[data-act]') : null;
+    if (!actEl) return;
+    runCardAct(actEl);
   });
 
   /* 사진이 단추 노릇을 하는 책·학회포럼 카드 — 키보드 Enter·Space 로도 하이라이트를 켜고 끈다 */
