@@ -1298,7 +1298,7 @@
 <div class="modal" id="memoModal" hidden>
   <form class="sheet" id="memoForm" novalidate>
     <h2 id="memoFormTitle">새 메모</h2>
-    <p class="hint">제목은 비워도 됩니다. 줄바꿈은 그대로 저장되고, ‘메모 앱으로 보내기’로 아이폰 메모에 넘길 수 있습니다.</p>
+    <p class="hint">제목은 비워도 됩니다. 줄바꿈은 그대로 저장되고, ‘공유’로 아이폰 메모에 넘길 수 있습니다.</p>
     <div class="field full">
       <label for="mTitle">제목 (선택)</label>
       <input id="mTitle" type="text" placeholder="예: 가족구성권 포럼에서 들은 말">
@@ -2920,7 +2920,7 @@
     if (body.trim()) h += '<p class="memo-body">' + esc(body) + '</p>';
     h += '</div></div>';
     h += '<div class="card-foot">';
-    h += '<button class="mini mini--send" type="button" data-act="send" title="아이폰 공유 시트로 메모 앱에 보냅니다">메모 앱으로 보내기</button>';
+    h += '<button class="mini mini--send" type="button" data-act="send" title="아이폰 공유 시트로 메모 앱에 보냅니다">공유</button>';
     /* 이 메모를 memoId 로 가리키는 카드(학회·포럼 / 공연·전시·영화 / 책)가 있으면
        '메모 앱으로 보내기' 바로 오른쪽에 12px 초록 동그라미를 둔다 — 누르면 그 카드가 팝업으로 열린다. */
     h += memoLinkDot(it);
