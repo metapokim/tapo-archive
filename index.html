@@ -493,6 +493,8 @@
   .ownbtn:hover{color:var(--ink)}
   .ownbtn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:-2px}
   select.sel--genre{max-width:116px}
+  /* 정렬·장르 드롭다운은 한 묶음으로 오른쪽 끝에 — 창 폭이 좁아도 칩 뒤로 밀려 사라지지 않는다 */
+  .sels{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto}
   /* 카드 상단 배지 줄에 들어가는 작은 서재/대여 칩 — 줄 높이·여백을 그대로 두려고 배지와 같은 크기로 */
   .ownsel--top{border-radius:999px;height:18px;margin-left:1px}
   .ownsel--top .ownbtn{font-size:9.5px;font-weight:700;padding:1px 6px;line-height:1.1}
@@ -925,7 +927,7 @@
     #statusChips{gap:5px}
     #statusChips .chip{font-size:11px;padding:5px 9px}
     .filter-bar > .chips{flex:1 1 100%}
-    .filter-bar > select.sel--sm:first-of-type{margin-left:auto}
+    .sels{width:100%;justify-content:flex-end;margin-left:0}
     .chips .lbl{display:none}
     .tab,.chip{font-size:12px;padding:6px 11px}
     select.sel--sm{flex:0 0 auto;height:32px}
@@ -1064,12 +1066,14 @@
     <div class="filters" id="filters">
       <div class="filter-bar">
         <div class="chips" id="statusChips" role="group" aria-label="상태 필터"></div>
-        <select class="sel sel--sm" id="sort" aria-label="정렬">
-          <option value="default">기본 순서</option>
-          <option value="date-desc">날짜 늦은 순</option>
-          <option value="title">가나다순</option>
-        </select>
-        <select class="sel sel--sm sel--genre" id="genreSel" aria-label="장르" hidden></select>
+        <div class="sels">
+          <select class="sel sel--sm" id="sort" aria-label="정렬">
+            <option value="default">기본 순서</option>
+            <option value="date-desc">날짜 늦은 순</option>
+            <option value="title">가나다순</option>
+          </select>
+          <select class="sel sel--sm sel--genre" id="genreSel" aria-label="장르" hidden></select>
+        </div>
       </div>
       <div class="chips chips--sub" id="kindChips" role="group" aria-label="구분 필터" hidden></div>
       <div class="chips chips--sub" id="shelfChips" role="group" aria-label="소장·대여 필터"></div>
@@ -2217,8 +2221,8 @@
 
     if (ui) {
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
-      if (ui.own === '서재' || ui.own === '대여' || ui.own === '미분류') state.own = ui.own;
-      if (ui.genre && GENRES.indexOf(ui.genre) >= 0) state.genre = ui.genre;
+      /* 2026-11-21 — 소장/대여·장르 필터는 저장본에서 되살리지 않는다. 탭(카테고리)처럼 새로고침하면 '전체'로.
+         (되살리면 화면에 안 보이는 필터가 걸려 '책 584'인데 '전체 215'로 보이는 일이 생긴다) */
       if (ui.sort && ['default','date-desc','title'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
         state.collapsed = {};
@@ -2455,6 +2459,8 @@
 
   function filtered(){
     var out = {}, k, c, it;
+    if (state.own !== 'all' && state.own !== '서재' && state.own !== '대여' && state.own !== '미분류') state.own = 'all';
+    if (state.genre !== 'all' && GENRES.indexOf(state.genre) < 0) state.genre = 'all';
     for (c = 0; c < CAT_ORDER.length; c++) out[CAT_ORDER[c]] = [];
     for (k = 0; k < state.items.length; k++) {
       it = state.items[k];
