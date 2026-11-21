@@ -43,6 +43,8 @@
     'bj_187 장르: ' + b18.genre,
     'm20261116_2 본문 길이: ' + String(sm.body || '').length + ' (김은유 언급: ' + (String(sm.body||'').indexOf('김은유') >= 0) + ')',
     '새로 담긴 카드: ' + JSON.stringify(nb),
+    '직접 담은 u카드(책): ' + JSON.stringify(items.filter(function(x){ return x.cat === 'book' && String(x.id).charAt(0) === 'u'; }).map(function(x){ return x.id + ' · ' + x.title + ' · own=' + (x.own || '(빈값)'); })),
+    '소장·대여가 빈 책: ' + JSON.stringify(books.filter(function(x){ return x.own !== '서재' && x.own !== '대여'; }).map(function(x){ return x.title; })),
     '레몬 하이라이트: ' + Object.keys(d.lemon || {}).length + '개 (켜짐 ' + Object.keys(d.lemon||{}).filter(function(k){ return Number(d.lemon[k]) > 0; }).length + ')',
     '1회 동기화 표시 notebookSync20261121: ' + u.notebookSync20261121,
     '1회 동기화 표시 전체: ' + JSON.stringify(u)
