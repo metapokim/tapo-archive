@@ -521,9 +521,11 @@
   /* 카드|책꽂이 · 통계 · 오늘 뭐 읽지? 세 단추는 한 묶음(.sec-tools) — PC 에서는 display:contents 로 예전처럼 흘어 놓고,
      폰에서는 한 줄을 통째로 써서 셋이 절대 갈라지지 않게 한다(2026-11-22). */
   .sec-tools{display:contents}
-  .sec-head.has-view > .sec-tools > .viewseg{margin-left:auto}
+  /* 2026-11-22 은유 님 요청 — 순서가 [🎲 오늘 뭐 읽지?] [통계] [카드|책꽂이] 로 바뀌어, 오른쪽으로 밀어 주는
+     margin-left:auto 는 묶음의 첫 단추(.dicebtn)가 맡는다. */
+  .sec-head.has-view > .sec-tools > .dicebtn{margin-left:auto}
   .sec-head.has-view > .sec-tools > .statbtn,
-  .sec-head.has-view > .sec-tools > .dicebtn{margin-left:6px}
+  .sec-head.has-view > .sec-tools > .viewseg{margin-left:6px}
 
   /* 책 탭 섹션 헤더의 작은 '통계' 단추 (2026-11-22) — 카드|책꽂이 토글 옆 */
   .statbtn{
@@ -1099,7 +1101,7 @@
        높이와 여백을 조금씩 줄여 책꽂이/카드가 더 시원하게 보이게 한다(PC 레이아웃은 그대로). */
     .topbar{margin:0 -16px;padding:10px 16px 8px;border-bottom:1px solid var(--line)}
     .topbar-in{flex-wrap:wrap;gap:7px}
-    .brand-sm{display:block;flex:0 1 auto;min-width:0;font-size:16px;line-height:1.2}
+    .brand-sm{display:block;flex:0 1 auto;min-width:0}
     .btn--more{display:inline-flex}
     .topbar .btn--dark{flex:0 0 auto;padding:8px 13px;font-size:12px}
     /* 기본은 접힌 1줄 — ▾를 눌러야 검색·카테고리·바로가기가 펼쳐진다 */
@@ -3833,7 +3835,7 @@
       html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
-           + (cat === 'book' && state.cat === 'book' ? '<div class="sec-tools">' + viewSegHTML() + statsBtnHTML() + diceBtnHTML() + '</div>' : '')
+           + (cat === 'book' && state.cat === 'book' ? '<div class="sec-tools">' + diceBtnHTML() + statsBtnHTML() + viewSegHTML() + '</div>' : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
