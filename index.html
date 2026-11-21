@@ -1465,7 +1465,6 @@
     }
   };
   var gradAdmSynced = false;   /* 대학원 입시 정보 1회 동기화를 마쳤는지 */
-  var aladinSplitSynced = false;   /* [중고] 세계문학전집(bp68) 외 묶음 구매 카드를 낱권으로 푼 기록을 이 기기에 한 번 반영했는지 */
   var bp68SplitSynced = false;   /* [중고] 세계문학전집(bp68) 묶음 카드를 낱권 5개로 나눈 기록을 이 기기에 한 번 반영했는지 */
 
   /* 2026-11-17 판례 11건 요약 보강 — 기기에 저장된 판례 카드도 한 번만 맞춘다(메모·상태는 그대로). */
@@ -2080,10 +2079,11 @@
 
     /* 2026-11-21 은유 님 요청 — 알라딘 구매내역(OrderList 2026-11-21, 425개 상품)을 참고해
        여러 권이 대표 1권으로 묶여 있던 구매 카드 81장을 낱권 263장으로 풀었다.
-       이 기기의 localStorage·Gist 저장본에 남은 묶음 카드만 지우고 '지운 표시'를 남겨 다른 기기의
-       옛 사본이 되살리지 못하게 한다. 낱권 카드는 기본 데이터(SEED)에 함께 들어갔으므로 저장본에
-       없으면 위에서 더해진다. (기본 데이터를 다시 더하는 병합과 부딪히지 않도록 묶음 카드만 건드린다.) */
-    if (!(ui && ui.aladinSplit20261121)) {
+       이 기기의 localStorage·Gist 저장본·백업 가져오기로 묶음 카드가 다시 들어와도 되살아나지 않도록
+       불러올 때마다 한 번 걷어 내고 '지운 표시'를 남긴다. 낱권 카드는 기본 데이터(SEED)에 함께
+       들어갔으므로 저장본에 없으면 위에서 더해진다. (기본 데이터를 다시 더하는 병합과 부딪히지
+       않도록 묶음 카드만 건드린다.) */
+    {
       var alDel = ['bp143', 'bp142', 'bp140', 'bp139', 'bp136', 'bp135', 'bp133', 'bp130', 'bp129', 'bp127', 'bp122', 'bp123', 'bp120', 'bp117', 'bp115', 'bp113', 'bp110', 'bp109', 'bp107', 'bp105', 'bp104', 'bp102', 'bp100', 'bp99', 'bp96', 'bp95', 'bp92', 'bp91', 'bp89', 'bp87', 'bp86', 'bp85', 'bp84', 'bp83', 'bp82', 'bp81', 'bp79', 'bp75', 'bp76', 'bp74', 'bp72', 'bp70', 'bp71', 'bp69', 'bp67', 'bp66', 'bp65', 'bp64', 'bp63', 'bp62', 'bp60', 'bp59', 'bp58', 'bp57', 'bp56', 'bp53', 'bp54', 'bp52', 'bp51', 'bp50', 'bp41', 'bp39', 'bp37', 'bp36', 'bp33', 'bp31', 'bp30', 'bp29', 'bp26', 'bp25', 'bp24', 'bp21', 'bp19', 'bp17', 'bp16', 'bp13', 'bp10', 'bp8', 'bp4', 'bp3', 'bp1'];
       var ali;
       for (ali = state.items.length - 1; ali >= 0; ali--) {
@@ -2092,7 +2092,6 @@
       for (ali = 0; ali < alDel.length; ali++) {
         if (state.deleted.indexOf(alDel[ali]) < 0) { state.deleted.push(alDel[ali]); loadChanged = true; }
       }
-      aladinSplitSynced = true;
     }
 
     if (ui) {
@@ -2109,7 +2108,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.shelf = 'all';
 
-    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || aladinSplitSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (bjSynced || forumSynced || posterSynced || booksShelfSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -2130,7 +2129,6 @@
       gradAdm20261117: (gradAdmSynced || prev.gradAdm20261117) ? 1 : 0,
       gradAdm20261117b: (gradAdmSynced || prev.gradAdm20261117b) ? 1 : 0,
       bp68Split20261121: (bp68SplitSynced || prev.bp68Split20261121) ? 1 : 0,
-      aladinSplit20261121: (aladinSplitSynced || prev.aladinSplit20261121) ? 1 : 0,
       caseNotes20261117: (caseNotesSynced || prev.caseNotes20261117) ? 1 : 0,
       memoHduk20261119: (hdMemoSynced || prev.memoHduk20261119) ? 1 : 0,
       memoHduk20261120: (hdMemoSynced2 || prev.memoHduk20261120) ? 1 : 0,
