@@ -1379,6 +1379,9 @@
   /* 2026-11-17 '장바구니' 서가를 없애고 '읽는 중'(성곡도서관 대출)을 넣었다 */
   var SHELF = { hold:'주문 보류', reading:'읽는 중', bought:'구매 기록', read:'읽은 책' };
   var SHELF_ORDER = ['all','reading','read','bought','hold'];
+  /* '읽고 싶은 책'은 저장된 서가가 읽는 중으로 잡혀 있어도 읽는 중으로 세지 않는다(배지·필터·정렬 공통) */
+  function wantToRead(it){ return !!it && it.cat === 'book' && it.status === '읽고 싶은 책'; }
+  function shelfOf(it){ return wantToRead(it) && it.shelf === 'reading' ? '' : it.shelf; }
   var ST_CLASS = {
     '관심':'st--watch','신청 전':'st--ready','신청 완료':'st--go','참석 완료':'st--done',
     '예매 완료':'st--go','관람 완료':'st--done',
@@ -2062,24 +2065,15 @@
     }
 
     /* 2026-11-21 [중고] 세계문학전집(bp68) 5권 묶음 카드를 낱권 5개(bp68a~bp68e)로 나눈 기록으로 교체한다.
-       이 기기의 localStorage·Gist 저장본에 남은 묶음 카드는 지우고 '지운 표시'를 남겨 다른 기기의 옛 사본이
-       되살리지 못하게 한다. 낱권 5개는 기본 데이터(SEED)에 함께 들어갔으므로 묶음 카드가 있던 자리에 나란히 둔다. */
+       이 기기의 localStorage·Gist 저장본에 남은 묶음 카드만 지우고 '지운 표시'를 남겨 다른 기기의 옛 사본이
+       되살리지 못하게 한다. 낱권 5개는 기본 데이터(SEED)에 함께 들어갔으므로 저장본에 없으면 위에서 더해진다.
+       (기본 데이터를 다시 더하는 병합과 부딪히지 않도록, 이 패치는 묶음 카드만 건드린다.) */
     if (!(ui && ui.bp68Split20261121)) {
-      var splitIds = ['bp68a', 'bp68b', 'bp68c', 'bp68d', 'bp68e'];
-      var spi, spk, spAt = -1, spCards = [];
-      for (spi = state.items.length - 1; spi >= 0; spi--) {
-        if (state.items[spi].id === 'bp68') { spAt = spi; state.items.splice(spi, 1); loadChanged = true; }
+      var b68i;
+      for (b68i = state.items.length - 1; b68i >= 0; b68i--) {
+        if (state.items[b68i].id === 'bp68') { state.items.splice(b68i, 1); loadChanged = true; }
       }
       if (state.deleted.indexOf('bp68') < 0) { state.deleted.push('bp68'); loadChanged = true; }
-      for (spk = 0; spk < splitIds.length; spk++) {
-        for (spi = state.items.length - 1; spi >= 0; spi--) {
-          if (state.items[spi].id === splitIds[spk]) { spCards.push(state.items.splice(spi, 1)[0]); break; }
-        }
-      }
-      if (spAt >= 0 && spCards.length === splitIds.length) {
-        for (spk = 0; spk < spCards.length; spk++) state.items.splice(spAt + spk, 0, spCards[spk]);
-        loadChanged = true;
-      }
       bp68SplitSynced = true;
     }
 
@@ -2326,7 +2320,7 @@
       it = state.items[k];
       if (state.cat !== 'all' && it.cat !== state.cat) continue;
       if (state.status !== 'all' && it.status !== state.status) continue;
-      if (state.shelf !== 'all' && it.cat === 'book' && it.shelf !== state.shelf) continue;
+      if (state.shelf !== 'all' && it.cat === 'book' && shelfOf(it) !== state.shelf) continue;
       if (state.shelf !== 'all' && it.cat !== 'book' && it.cat !== 'memo') continue;
       if (!matchQuery(it, state.q)) continue;
       if (state.kind !== 'all' && state.cat !== 'all'
@@ -2380,7 +2374,7 @@
     if (cat === 'book') {
       /* 읽는 중은 서가(shelf)가 무엇이든 늘 맨 위, 그 뒤로 완독 → 서재 → 보류 → 나머지 */
       var ord = { read: 1, bought: 2, hold: 3 };
-      var isReading = function(it){ return it.status === '읽는 중' || it.shelf === 'reading'; };
+      var isReading = function(it){ return it.status === '읽는 중' || (it.shelf === 'reading' && it.status !== '읽고 싶은 책'); };
       var rankOf = function(it){
         if (isReading(it)) return 0;
         return ord[it.shelf] !== undefined ? ord[it.shelf] : 4;
@@ -2631,7 +2625,8 @@
     }
     h += '<div class="card-top"><span class="tag ' + badgeCls + '">' + esc(badge) + '</span>';
     if (it.pick) h += '<span class="pick">고른 일정</span>';
-    if (it.cat === 'book' && SHELF[it.shelf]) h += '<span class="shelf">' + SHELF[it.shelf] + '</span>';
+    /* '읽고 싶은 책'은 서가(shelf)가 읽는 중으로 잡혀 있어도 읽는 중 배지를 달지 않는다 */
+    if (it.cat === 'book' && SHELF[it.shelf] && it.status !== '읽고 싶은 책') h += '<span class="shelf">' + SHELF[it.shelf] + '</span>';
     if (it.cat === 'grad') {
       /* 대학원 후보 카드에는 날짜(넣은 날)를 적지 않고 배지만 두고, 논문은 발표 연도까지 적는다 */
       if (it.date && kindOf(it) === '논문') {
@@ -2656,7 +2651,9 @@
 
     if (opt3) h += videoRowHTML(it);
 
-    var accentKind = DONE[it.status] ? 'green' : (dd !== null || it.pick ? 'lemon' : 'soft');
+    /* 읽는 중인 책은 제목 아래 줄을 노란색으로(완독의 초록 줄과 짝) */
+    var accentKind = DONE[it.status] ? 'green'
+      : ((it.cat === 'book' && it.status === '읽는 중') || dd !== null || it.pick ? 'lemon' : 'soft');
     if (!opt3) {
       h += '<h3 class="card-title">' + esc(it.title) + (it.extra ? ' ' + esc(it.extra) : '') + '</h3>';
       h += '<span class="accent accent--' + accentKind + '" aria-hidden="true"></span>';
@@ -2855,7 +2852,7 @@
       it = state.items[k];
       if (state.cat !== 'all' && it.cat !== state.cat) continue;
       if (state.shelf !== 'all' && it.cat !== 'book') continue;
-      if (state.shelf !== 'all' && it.cat === 'book' && it.shelf !== state.shelf) continue;
+      if (state.shelf !== 'all' && it.cat === 'book' && shelfOf(it) !== state.shelf) continue;
       if (!matchQuery(it, state.q)) continue;
       counts[it.status] = (counts[it.status] || 0) + 1;
     }
@@ -2906,7 +2903,7 @@
       if (it.cat !== 'book') continue;
       if (state.status !== 'all' && it.status !== state.status) continue;
       if (!matchQuery(it, state.q)) continue;
-      counts[it.shelf] = (counts[it.shelf] || 0) + 1;
+      counts[shelfOf(it)] = (counts[shelfOf(it)] || 0) + 1;
     }
     var html = '<button class="chip chip--shelf" type="button" data-shelf="all" aria-pressed="' + (state.shelf === 'all') + '">서가 전체</button>';
     ['reading','read','bought','hold'].forEach(function(s){
