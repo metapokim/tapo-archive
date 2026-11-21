@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>sync error test</title>
+<meta name="robots" content="noindex">
+<style>body{font:13px/1.6 -apple-system,sans-serif;padding:16px}pre{white-space:pre-wrap}</style>
+</head><body>
+<h1>동기화 오류 메시지 검증 (임시)</h1>
+<pre id="out">running…</pre>
+<script>
+(function(){
+  var GIST_FILE = 'tapo-archive-sync.json';
+  var syncCfg = { token: 'bogus_token_for_test_only', gistId: '0123456789abcdef' };
+  function ghFail(res){
+    var e = new Error('http-' + res.status);
+    e.status = res.status;
+    /* GitHub이 내려주는 실제 에러 message 를 함께 담는다 (403 원인 판별용) */
+    return res.text().then(function(txt){
+      var obj = null;
+      try { obj = JSON.parse(txt); } catch (errJson) { obj = null; }
+      if (obj && typeof obj.message === 'string' && obj.message) {
+        e.ghMsg = obj.message.replace(/\s+/g, ' ').trim().slice(0, 200);
+      }
+      throw e;
+    }, function(){ throw e; });
+  }
+  function ghJson(res){
+    if (!res.ok) return ghFail(res);
+    return res.json();
+  }
+  /* 어느 단계(조회·생성·저장·원본조회)에서 실패했는지 에러에 표시 */
+  function ghTag(p, step){
+    return p.catch(function(e){ if (e && !e.step) e.step = step; throw e; });
+  }
+  function gistText(json){
+    var f = json && json.files && json.files[GIST_FILE];
+    if (!f) return '';
+    if (f.truncated && f.raw_url) {
+      return fetch(f.raw_url, { headers: { 'Authorization': 'Bearer ' + syncCfg.token }, cache: 'no-store' })
+        .then(function(r){ if (!r.ok) return ghFail(r); return r.text(); })
+        .catch(function(e){ if (e && !e.step) e.step = '원본조회'; throw e; });
+    }
+    return f.content || '';
+  }
+  function syncErrMsg(err){
+    var st = err && err.status, msg;
+    if (st === 401) msg = '토큰이 올바르지 않습니다 (gist 권한 확인)';
+    else if (st === 403) msg = '권한이 없습니다 (토큰에 gist 권한이 있는지 확인)';
+    else if (st === 404) msg = 'Gist ID를 찾을 수 없습니다';
+    else if (st === 422) msg = 'Gist 형식 오류 (Gist ID를 다시 확인)';
+    else if (st) msg = 'GitHub 오류 (' + st + ')';
+    else msg = '네트워크 오류 — 연결을 확인해 주세요';
+    var extra = '';
+    if (err && err.step) extra += '[' + err.step + '] ';
+    if (err && err.ghMsg) extra += 'GitHub: ' + err.ghMsg;
+    return extra ? msg + ' · ' + extra : msg;
+  }
+
+  var out = [];
+  function log(k, v){ out.push(k + ' => ' + v); document.getElementById('out').textContent = out.join('\n'); }
+  function gist403(){
+    return new Response(JSON.stringify({message:'Resource not accessible by personal access token', documentation_url:'https://docs.github.com/rest'}),
+      {status:403, headers:{'Content-Type':'application/json'}});
+  }
+  function t403(){
+    return ghFail(gist403()).then(function(){ log('A1 403 raw', 'NO-ERROR'); }, function(e){
+      log('A2 403 status', e.status);
+      log('A3 403 ghMsg', e.ghMsg);
+      log('A4 403 plain', syncErrMsg(e));
+      e.step = '저장';
+      log('A5 403 +step', syncErrMsg(e));
+    });
+  }
+  function tNonJson(){
+    return ghFail(new Response('<html>502 bad gateway</html>', {status:502}))
+      .then(function(){ log('B1 non-json', 'NO-ERROR'); }, function(e){
+        log('B2 non-json ghMsg', String(e.ghMsg));
+        log('B3 non-json msg', syncErrMsg(e));
+      });
+  }
+  function tReal401(){
+    return ghTag(fetch('https://api.github.com/gists/0123456789abcdef', {
+      headers: {'Authorization':'Bearer bogus_token_for_test_only','Accept':'application/vnd.github+json'}, cache:'no-store'
+    }).then(ghJson), '조회').then(function(){ log('C1 real', 'NO-ERROR'); }, function(e){
+      log('C2 real status', e.status);
+      log('C3 real ghMsg', e.ghMsg);
+      log('C4 real msg', syncErrMsg(e));
+    });
+  }
+  function tRawFail(){
+    var j = {files:{}}; j.files[GIST_FILE] = {truncated:true, raw_url:'https://api.github.com/gists/0123456789abcdef'};
+    return gistText(j).then(function(t){ log('D1 raw ok?', 'UNEXPECTED ' + t.slice(0,20)); }, function(e){
+      log('D2 raw step', e.step);
+      log('D3 raw status', e.status);
+      log('D4 raw msg', syncErrMsg(e));
+    });
+  }
+  function tRawOk(){
+    var j = {files:{}}; j.files[GIST_FILE] = {truncated:true, raw_url:'https://api.github.com/zen'};
+    return gistText(j).then(function(t){ log('E1 raw200', t.slice(0,40)); }, function(e){ log('E1 raw200', 'ERROR ' + e.message); });
+  }
+  function tNetErr(){
+    log('F1 net err', syncErrMsg(new TypeError('Failed to fetch')));
+    log('F2 no err obj', syncErrMsg(undefined));
+  }
+  Promise.resolve().then(t403).then(tNonJson).then(tReal401).then(tRawFail).then(tRawOk).then(tNetErr).then(function(){
+    log('DONE', 'true');
+    document.title = 'DONE';
+  }).catch(function(e){ log('HARNESS ERROR', e && e.message); document.title = 'DONE'; });
+})();
+</script>
+</body></html>
