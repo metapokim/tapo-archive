@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>390 확인</title>
+<style>html,body{margin:0;background:#E9E9EC;font:12px -apple-system,sans-serif}
+.wrap{display:flex;gap:16px;padding:12px}
+iframe{border:0;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:14px}
+</style></head><body>
+<div class="wrap">
+<iframe id="f390" src="./index.html" width="390" height="1500"></iframe>
+</div>
+<script>
+  var p = new URLSearchParams(location.search);
+  var f = document.getElementById('f390');
+  if (p.get('book')) {
+    f.onload = function(){ setTimeout(function(){ try { f.contentDocument.querySelector('[data-cat="book"]').click(); } catch(e){} }, 400); };
+  }
+</script>
+</body></html>
