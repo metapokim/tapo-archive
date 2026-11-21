@@ -914,6 +914,11 @@
     .up-body .up-place{display:none}
     .filters{padding-bottom:12px;gap:6px}
     .chips{flex:1 1 auto;min-width:0}
+    /* 390px 폰 폭에서는 상태 칩 5개가 다 보이도록 칩 줄을 한 줄 차지하게 하고,
+       정렬·장르 드롭다운은 그 아래 오른쪽에 나란히 둔다 (2026-11-21) */
+    .filter-bar{flex-wrap:wrap;row-gap:6px}
+    .filter-bar > .chips{flex:1 1 100%}
+    .filter-bar > select.sel--sm:first-of-type{margin-left:auto}
     .chips .lbl{display:none}
     .tab,.chip{font-size:12px;padding:6px 11px}
     select.sel--sm{flex:0 0 auto;height:32px}
