@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>임시 확인용 · 표지 되돌리기</title>
+<style>body{font:14px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;padding:24px}pre{white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace}</style></head>
+<body><h3 id="h">임시 확인용 · 표지 되돌리기</h3><pre id="out">…</pre>
+<script>
+var COV = {"bc21": "https://image.aladin.co.kr/product/30042/72/cover200/8931022859_1.jpg", "bc22": "https://image.aladin.co.kr/product/30634/78/cover200/8932040958_1.jpg", "bp12": "https://image.aladin.co.kr/product/39657/24/cover500/8954625762_1.jpg", "bp17a": "https://image.aladin.co.kr/product/596/65/cover150/s542636622_1.jpg", "bj_075": "https://image.aladin.co.kr/product/36589/28/cover200/893102522x_1.jpg", "bj_102": "https://image.aladin.co.kr/product/592/76/cover200/8932909970_1.jpg", "bj_107": "https://image.aladin.co.kr/product/21/88/cover150/8932000220_1.gif", "bj_125": "https://image.aladin.co.kr/product/31080/73/cover200/8932922306_1.jpg", "bj_147": "https://image.aladin.co.kr/product/56/82/cover150/8986609622_1.jpg", "bj_158": "https://image.aladin.co.kr/product/35526/55/cover200/k642036972_1.jpg", "bp10a": "https://image.aladin.co.kr/product/270/62/cover200/8925530643_1.jpg", "bp16b": "https://image.aladin.co.kr/product/39493/3/cover500/k592139413_1.jpg", "bp21a": "https://image.aladin.co.kr/product/11/69/cover150/8970121943_1.gif", "bp21b": "https://image.aladin.co.kr/product/39/74/cover150/8989232376_1.gif", "bp21c": "https://image.aladin.co.kr/product/7/30/cover150/8932008132_1.gif", "bp25b": "https://image.aladin.co.kr/product/38793/21/cover500/k902137265_1.jpg", "bp29a": "https://image.aladin.co.kr/product/38490/79/cover500/k062135115_1.jpg", "bp31b": "https://image.aladin.co.kr/product/38354/11/cover500/k402135262_1.jpg", "s07": "https://ticketimage.interpark.com/Play/image/large/26/26000026_p.gif"};
+var PREV = { bjSynced20261115:1, forumSynced20261116:1, forumPoster20261116:1, booksShelfMigrate20261117:1,
+  bookRework20261121:1, libSubToMemo20261121:1, ynaSynced20261116:1, ynaSub20261116:1, gradAdm20261117:1,
+  gradAdm20261117b:1, bp68Split20261121:1, caseNotes20261117:1, memoHduk20261119:1, memoHduk20261120:1,
+  mediaTabSplit20261118:1, forumEwha20261118:1, settopSplit20261121:1, briefMeet20261118:1, briefMeetMove20261118:1 };
+(function(){
+  var out=document.getElementById('out'), h=document.getElementById('h');
+  var q=location.search;
+  if (q.indexOf('set') >= 0) {
+    fetch('tmp-nbcovers-state.json', {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      localStorage.setItem('eunyu-archive-v1', JSON.stringify(d));
+      localStorage.setItem('eunyu-archive-ui-v1', JSON.stringify(PREV));
+      localStorage.removeItem('eunyu-archive-sync-v1');
+      var blank = d.items.filter(function(x){ return COV[x.id] && !x.image; }).length;
+      out.textContent = '표지를 비운 저장본을 넣었습니다 — 카드 ' + d.items.length + '건, 표지 비움 ' + blank + '건';
+      setTimeout(function(){ location.replace('./index.html?covercheck=1'); }, 900);
+    });
+    return;
+  }
+  var raw=localStorage.getItem('eunyu-archive-v1');
+  if (!raw) { out.textContent='저장본 없음'; return; }
+  var d=JSON.parse(raw), ui=localStorage.getItem('eunyu-archive-ui-v1');
+  var u=ui?JSON.parse(ui):{};
+  var ok=[], bad=[];
+  Object.keys(COV).forEach(function(id){
+    var it=d.items.filter(function(x){return x.id===id;})[0];
+    if (!it) { bad.push(id+' · 카드 없음'); return; }
+    if (String(it.image||'')===COV[id]) ok.push(id); else bad.push(id+' · '+(it.image||'(빈값)'));
+  });
+  var books=d.items.filter(function(x){return x.cat==='book';});
+  var own={'서재':0,'대여':0,'미분류':0};
+  books.forEach(function(x){ own[(x.own==='서재'||x.own==='대여')?x.own:'미분류']+=1; });
+  h.textContent='임시 확인용 · 표지 되돌리기 결과';
+  out.textContent = [
+    '표지 되돌아온 카드: ' + ok.length + ' / ' + Object.keys(COV).length,
+    '맞음: ' + JSON.stringify(ok),
+    '안 맞음: ' + JSON.stringify(bad),
+    '책: ' + books.length + '권 — 서재 ' + own['서재'] + ' · 대여 ' + own['대여'] + ' · 미분류 ' + own['미분류'],
+    'notebookSync20261121: ' + u.notebookSync20261121 + ' / notebookCovers20261121: ' + u.notebookCovers20261121
+  ].join('\n');
+})();
+</script></body></html>
