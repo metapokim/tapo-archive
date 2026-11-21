@@ -20,6 +20,13 @@
   function toast(m){ log('  toast', m); }
   function setSyncState(s){ log('  state', s); }
   function setSyncStatus(m, c){ log('  status' + (c ? '(' + c + ')' : ''), m); }
+  function ghHeaders(){
+    return {
+      'Authorization': 'Bearer ' + syncCfg.token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    };
+  }
   function ghFail(res){
     var e = new Error('http-' + res.status);
     e.status = res.status;
