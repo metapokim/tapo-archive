@@ -505,6 +505,90 @@
   .ownsel--top .ownbtn{font-size:9.5px;font-weight:700;padding:1px 6px;line-height:1.1}
   .ownsel--top .ownbtn.is-on{background:var(--green);color:#fff}
 
+  /* ───────────── 책꽂이 보기 (2026-11-21) ───────────── */
+  /* 책 탭에서만 보이는 카드/책꽂이 전환 — 섹션 헤더 오른쪽, 정렬 드롭다운 앞 */
+  .viewseg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line-2);border-radius:999px;background:#fff}
+  .viewseg button{
+    font:inherit;font-size:11.5px;font-weight:700;color:#71717A;background:none;border:0;border-radius:999px;
+    padding:5px 11px;cursor:pointer;letter-spacing:-.01em;-webkit-tap-highlight-color:transparent;
+    transition:background .15s,color .15s;
+  }
+  .viewseg button:hover{color:var(--ink)}
+  .viewseg button[aria-pressed="true"]{background:var(--lemon);color:#18181B;font-weight:800}
+  .viewseg button:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  .sec-head.has-view > .viewseg{margin-left:auto}
+  .sec-head.has-view > .sels{margin-left:6px}
+
+  /* 화이트 선반 — 밝은 프레임, 단마다 얇은 널판과 은은한 그림자 */
+  .shelf{
+    --sh-pad:18px;background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:15px var(--sh-pad) 5px;   /* 위 여백은 책등이 떠오를 자리 */
+    box-shadow:0 1px 1px rgba(24,24,27,.03),0 14px 30px -24px rgba(24,24,27,.34);
+  }
+  .sh-row{position:relative;padding:0 0 9px}
+  .sh-books{display:flex;align-items:flex-end;justify-content:flex-start}
+  .sh-plank{
+    height:9px;border-top:1px solid #E8E8EC;border-bottom:1px solid #EDEDF1;
+    background:linear-gradient(#FDFDFE 0%,#F3F3F6 58%,#E9E9EE 100%);
+    box-shadow:0 7px 10px -7px rgba(24,24,27,.22);
+  }
+  .sh-spine{
+    position:relative;display:block;flex:0 0 auto;padding:0;border:0;background:none;
+    line-height:0;cursor:pointer;border-radius:2px 2px 0 0;transform-origin:bottom center;
+    transition:transform .19s cubic-bezier(.22,.68,.3,1),box-shadow .19s ease,filter .19s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .sh-spine img{display:block;width:100%;height:100%;border-radius:2px 2px 0 0}
+  /* 마우스가 스치는 책등이 살짝 떠오르며 그림자가 진해진다 */
+  .sh-spine:hover,.sh-spine:focus-visible{transform:translateY(-10px);box-shadow:0 12px 16px -10px rgba(24,24,27,.5);z-index:6}
+  .sh-spine:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  /* 모바일 — 한 번 탭하면 뽑아 든 듯 위로 떠오른다 */
+  .sh-spine.is-picked{transform:translateY(-12px);box-shadow:0 14px 18px -10px rgba(24,24,27,.55);z-index:6}
+  /* 표지 대표색으로 만든 가상 책등 — 제목·저자가 세로로 */
+  .sh-vt{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;overflow:hidden;padding:8px 0 6px;
+    border-radius:2px 2px 0 0;box-shadow:inset 1px 0 0 rgba(255,255,255,.22),inset -1px 0 0 rgba(0,0,0,.14);
+  }
+  .sh-vt b{
+    writing-mode:vertical-rl;text-orientation:mixed;font-size:9.5px;font-weight:800;line-height:1.12;
+    letter-spacing:.005em;white-space:nowrap;overflow:hidden;max-height:calc(100% - 26px);
+  }
+  .sh-vt i{
+    writing-mode:vertical-rl;font-style:normal;font-size:7.5px;font-weight:600;opacity:.74;
+    white-space:nowrap;overflow:hidden;margin-top:auto;max-height:34%;
+  }
+  /* 데스크톱 — 커서가 닿은 책등 위에 뜨는 제목·저자 말풍선 */
+  .sh-tip{
+    position:fixed;z-index:90;max-width:240px;pointer-events:none;
+    background:#18181B;color:#fff;border-radius:10px;padding:7px 10px 8px;
+    box-shadow:0 12px 26px -12px rgba(0,0,0,.55);
+    opacity:0;transform:translateY(3px);transition:opacity .12s ease,transform .12s ease;
+  }
+  .sh-tip.is-on{opacity:1;transform:translateY(0)}
+  .sh-tip b{display:block;font-size:11.5px;font-weight:800;line-height:1.32;word-break:keep-all}
+  .sh-tip span{display:block;font-size:10.5px;font-weight:600;color:#C7C7CD;margin-top:3px;line-height:1.35;word-break:keep-all}
+  /* 모바일 — 뽑아 든 책등의 정보와 '카드로 이동'이 뜨는 아래 띠 */
+  .sh-bar{
+    position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:92;
+    display:flex;align-items:center;gap:9px;background:#18181B;color:#fff;
+    border-radius:16px;padding:10px 11px 10px 14px;
+    box-shadow:0 20px 44px -20px rgba(0,0,0,.65);
+    animation:shBarIn .18s ease-out;
+  }
+  @keyframes shBarIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .sh-bar-t{flex:1 1 auto;min-width:0}
+  .sh-bar-t b{display:block;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh-bar-t span{display:block;font-size:10.5px;font-weight:600;color:#C7C7CD;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh-bar-go{
+    flex:0 0 auto;font:inherit;font-size:11.5px;font-weight:800;color:#18181B;background:var(--lemon);
+    border:0;border-radius:999px;padding:8px 13px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .sh-bar-x{
+    flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;
+    font:inherit;font-size:13px;color:#C7C7CD;background:none;border:0;cursor:pointer;
+  }
+
   /* ───────────── sections & cards ───────────── */
   main{max-width:1240px;width:100%;margin:0 auto;padding:0 0 28px;flex:1 1 auto}
   .notice{
@@ -994,6 +1078,13 @@
     }
     .tabs::-webkit-scrollbar{display:none}
     main{padding:0 0 22px}
+    .sec-head.has-view{flex-wrap:wrap}
+    .sec-head.has-view > .sels{margin-left:auto}
+    .sec-head.has-view > .viewseg{order:3;flex:1 1 100%;justify-content:flex-end;margin:8px 0 0}
+    .viewseg button{padding:4px 10px;font-size:11px}
+    .shelf{--sh-pad:10px;border-radius:16px;padding:13px var(--sh-pad) 2px}
+    .sh-row{padding-bottom:7px}
+    .sh-plank{height:8px}
     .grid{grid-template-columns:1fr;gap:12px}
     .card{padding:14px;border-radius:18px}
     .card-title{font-size:15.5px}
@@ -1413,6 +1504,11 @@
 
   /* 2026-11-16 ~ 12-31 아이폰 '내 캘린더'(네이버 캘린더)에서 확인한 일정 중
      아카이브(SEED)에 없는 것만 — '다가오는 일정' 카드에서만 쓴다. 탭·개수에는 넣지 않는다. */
+  /* 책등 이미지 실측 폭(높이 400px 기준, spines/ 폴더와 같은 파일) — 실제 두께 비율 */
+  var SPINE = {"bc103":33,"bc21":30,"bc22":21,"bc33":21,"bc47":11,"bc5":30,"bc58":66,"bc62":18,"bc93":29,"bc94":33,"bj_001":38,"bj_002":24,"bj_003":48,"bj_004":34,"bj_005":44,"bj_006":17,"bj_007":18,"bj_008":12,"bj_009":12,"bj_010":33,"bj_011":17,"bj_012":23,"bj_013":12,"bj_014":12,"bj_015":19,"bj_016":29,"bj_017":14,"bj_018":41,"bj_019":34,"bj_020":32,"bj_021":20,"bj_022":32,"bj_023":24,"bj_024":50,"bj_025":27,"bj_026":22,"bj_027":36,"bj_028":49,"bj_029":22,"bj_030":27,"bj_031":37,"bj_032":38,"bj_033":8,"bj_034":18,"bj_035":27,"bj_036":28,"bj_037":16,"bj_038":26,"bj_039":22,"bj_040":24,"bj_042":31,"bj_043":16,"bj_044":27,"bj_045":17,"bj_046":22,"bj_047":28,"bj_048":54,"bj_049":30,"bj_051":57,"bj_052":31,"bj_053":23,"bj_054":14,"bj_055":12,"bj_056":20,"bj_057":30,"bj_058":32,"bj_059":32,"bj_060":34,"bj_061":20,"bj_062":34,"bj_063":31,"bj_064":27,"bj_065":44,"bj_066":24,"bj_067":25,"bj_068":35,"bj_069":33,"bj_070":11,"bj_071":14,"bj_072":10,"bj_073":33,"bj_074":12,"bj_075":29,"bj_077":32,"bj_078":100,"bj_079":34,"bj_080":79,"bj_081":22,"bj_082":8,"bj_083":22,"bj_084":12,"bj_085":34,"bj_086":34,"bj_087":33,"bj_088":51,"bj_089":18,"bj_090":66,"bj_091":58,"bj_092":55,"bj_093":54,"bj_094":16,"bj_095":34,"bj_097":18,"bj_098":37,"bj_099":14,"bj_100":22,"bj_101":43,"bj_102":64,"bj_103":37,"bj_104":36,"bj_105":24,"bj_106":37,"bj_107":38,"bj_109":31,"bj_111":33,"bj_112":13,"bj_113":16,"bj_114":14,"bj_115":31,"bj_116":33,"bj_117":34,"bj_118":19,"bj_119":43,"bj_120":12,"bj_121":30,"bj_122":32,"bj_123":14,"bj_124":14,"bj_125":22,"bj_126":14,"bj_127":46,"bj_128":34,"bj_129":35,"bj_130":38,"bj_131":36,"bj_132":51,"bj_134":24,"bj_135":34,"bj_136":32,"bj_137":26,"bj_139":21,"bj_140":26,"bj_142":32,"bj_143":43,"bj_144":24,"bj_145":35,"bj_146":30,"bj_147":32,"bj_148":24,"bj_149":52,"bj_150":38,"bj_151":18,"bj_152":46,"bj_153":21,"bj_154":10,"bj_155":22,"bj_156":24,"bj_157":37,"bj_158":15,"bj_159":24,"bj_160":33,"bj_161":37,"bj_162":24,"bj_163":20,"bj_164":24,"bj_165":24,"bj_166":23,"bj_167":17,"bj_168":18,"bj_169":31,"bj_170":41,"bj_171":29,"bj_172":44,"bj_173":23,"bj_174":73,"bj_175":10,"bj_176":17,"bj_177":12,"bj_178":23,"bj_179":62,"bj_180":21,"bj_181":36,"bj_182":16,"bj_184":22,"bj_186":13,"bj_187":32,"bj_188":34,"bj_189":30,"bj_190":31,"bj_191":23,"bj_192":22,"bj_193":21,"bk20261117_1":25,"bk20261117_2":34,"bk20261117_3":42,"bk20261117_4":20,"bp100a":13,"bp100b":20,"bp100c":32,"bp101":106,"bp102a":21,"bp102b":24,"bp103":29,"bp104a":24,"bp104b":19,"bp105a":12,"bp105b":12,"bp105c":18,"bp106":42,"bp107a":12,"bp107b":33,"bp107c":21,"bp107d":32,"bp107e":12,"bp108":29,"bp109b":34,"bp10a":32,"bp10b":10,"bp10c":53,"bp11":67,"bp110a":16,"bp110b":18,"bp111":37,"bp112":47,"bp113a":38,"bp113b":26,"bp114":47,"bp115a":31,"bp115b":10,"bp115c":10,"bp115d":37,"bp116":25,"bp117a":18,"bp117b":20,"bp117c":14,"bp119":13,"bp12":38,"bp120a":13,"bp120b":20,"bp120c":19,"bp122a":11,"bp122b":12,"bp123a":25,"bp123b":14,"bp124":26,"bp125":16,"bp126":25,"bp127a":24,"bp127b":33,"bp127c":30,"bp128":17,"bp129a":23,"bp129b":28,"bp129c":21,"bp130a":16,"bp131":40,"bp132":10,"bp133a":32,"bp133b":45,"bp133c":10,"bp133d":20,"bp133e":17,"bp133f":17,"bp133g":20,"bp135a":10,"bp135b":12,"bp135c":23,"bp135d":25,"bp136a":16,"bp136b":12,"bp136c":16,"bp137":72,"bp138":17,"bp139b":44,"bp13a":30,"bp13b":11,"bp14":36,"bp140b":15,"bp142a":14,"bp142b":16,"bp143a":32,"bp143b":20,"bp143c":12,"bp143d":12,"bp143e":10,"bp143f":9,"bp15":35,"bp16a":12,"bp16b":15,"bp17a":23,"bp17b":18,"bp17c":22,"bp18":16,"bp19a":53,"bp19b":26,"bp19c":28,"bp1a":22,"bp1b":22,"bp2":19,"bp20":33,"bp21a":40,"bp21b":14,"bp21c":21,"bp21d":30,"bp21e":17,"bp22":65,"bp23":43,"bp24b":41,"bp24c":18,"bp25a":31,"bp25b":20,"bp26a":46,"bp26b":29,"bp27":13,"bp29a":44,"bp29b":10,"bp30a":32,"bp30b":48,"bp30c":32,"bp31a":34,"bp31b":20,"bp31c":20,"bp32":40,"bp33a":21,"bp33b":34,"bp34":45,"bp36a":18,"bp36b":37,"bp37a":17,"bp37b":16,"bp39a":22,"bp39b":16,"bp3a":18,"bp3b":15,"bp3c":12,"bp3d":14,"bp3e":10,"bp3f":12,"bp3g":15,"bp40":32,"bp41a":51,"bp41b":55,"bp41c":66,"bp41d":79,"bp43":40,"bp44":46,"bp45":33,"bp46":39,"bp47":32,"bp48":42,"bp49":80,"bp4a":31,"bp4b":84,"bp5":31,"bp50a":43,"bp50b":41,"bp50c":12,"bp50d":23,"bp50e":8,"bp51a":36,"bp51b":21,"bp51c":30,"bp53a":32,"bp53b":47,"bp53c":57,"bp54a":16,"bp54b":14,"bp55":22,"bp56a":24,"bp56b":13,"bp57a":30,"bp58a":18,"bp58c":60,"bp59a":14,"bp59b":34,"bp59c":10,"bp6":30,"bp60a":14,"bp60b":10,"bp60c":15,"bp60d":21,"bp61":18,"bp62a":22,"bp62b":17,"bp63a":14,"bp63b":27,"bp63c":24,"bp64a":31,"bp64b":27,"bp64c":32,"bp64d":22,"bp65a":22,"bp65b":39,"bp66a":16,"bp66b":12,"bp66c":18,"bp67a":20,"bp67b":22,"bp68a":10,"bp68b":8,"bp68d":22,"bp68e":14,"bp69a":32,"bp69b":26,"bp7":40,"bp70a":34,"bp70b":13,"bp70c":12,"bp70d":14,"bp70e":41,"bp71a":40,"bp71b":70,"bp72a":58,"bp72b":60,"bp73":41,"bp74a":41,"bp74b":42,"bp75a":21,"bp75b":24,"bp75c":35,"bp75d":41,"bp75e":39,"bp76a":16,"bp76b":51,"bp78":35,"bp79a":17,"bp79b":48,"bp80":26,"bp81a":19,"bp81b":25,"bp82a":28,"bp82b":9,"bp82c":13,"bp82d":14,"bp82e":39,"bp82f":16,"bp83a":36,"bp83b":28,"bp83c":11,"bp84a":23,"bp84b":20,"bp85a":30,"bp85b":30,"bp85c":20,"bp85d":11,"bp87a":9,"bp87b":21,"bp87c":15,"bp88":58,"bp89a":16,"bp89b":12,"bp89c":16,"bp89d":15,"bp89e":14,"bp8a":12,"bp8b":22,"bp9":65,"bp90":46,"bp91a":29,"bp91b":26,"bp91c":18,"bp93":62,"bp94":37,"bp95a":33,"bp95b":62,"bp95c":59,"bp96a":31,"bp98":43,"bp99a":22,"bp99aa":20,"bp99ab":20,"bp99ac":17,"bp99ad":17,"bp99ae":12,"bp99af":14,"bp99ag":16,"bp99ah":14,"bp99ai":19,"bp99b":19,"bp99c":22,"bp99d":24,"bp99e":19,"bp99f":22,"bp99g":24,"bp99h":18,"bp99i":24,"bp99j":19,"bp99k":19,"bp99l":17,"bp99m":31,"bp99n":21,"bp99o":12,"bp99p":21,"bp99q":14,"bp99r":22,"bp99s":20,"bp99t":13,"bp99u":18,"bp99v":29,"bp99w":21,"bp99x":20,"bp99y":14,"bp99z":15,"bs20261121_1":18,"bs20261121_10":28,"bs20261121_11":25,"bs20261121_12":30,"bs20261121_13":25,"bs20261121_14":32,"bs20261121_15":40,"bs20261121_16":31,"bs20261121_17":36,"bs20261121_3":14,"bs20261121_4":12,"bs20261121_5":18,"bs20261121_7":26,"bs20261121_8":20,"bs20261121_9":20,"bx20261121_02":38,"bx20261121_04":28,"bx20261121_06":25,"bx20261121_08":50,"bx20261121_09":38,"bx20261121_10":39,"bx20261121_11":43,"bx20261121_12":42,"bx20261121_13":35,"bx20261121_14":34,"bx20261121_15":53,"bx20261121_16":56,"bx20261121_17":15,"bx20261121_19":54,"bx20261121_20":40,"bx20261121_21":24,"bx20261121_22":9,"bx20261121_23":12,"bx20261121_24":28,"bx20261121_25":32,"bx20261121_26":13,"bx20261121_27":30,"bx20261121_28":21,"bx20261121_29":26,"bx20261121_30":46,"bx20261121_31":22,"bx20261121_32":12,"bx20261121_33":6,"bx20261121_35":42,"bx20261121_36":62,"umwnl0lm8":36,"umwprqvjo":37,"umwpv5fh2":39};
+  /* 알라딘이 책등 이미지를 주지 않는 책 — 표지 대표색 */
+  var VSPINE = {"bp24a":"#D68B73","bp28":"#80878A","bp35":"#987A70","bp38":"#A49F9C","bp42":"#A6A69E","bp52a":"#BD8163","bp58b":"#D3C769","bp68c":"#C74073","bp77":"#5A602F","bp109a":"#CDC2A2","bp118":"#25516A","bp134":"#CDC2A2","bp139a":"#DFC38F","bp141":"#CF5860","bj_041":"#DCD493","bj_050":"#DF90BC","bj_076":"#C6BC3C","bj_096":"#CE6555","bj_108":"#20326F","bj_110":"#AEAFA9","bj_133":"#B3ADAD","bj_138":"#C84241","bj_141":"#AAB9C5","bj_183":"#DD928C","bj_185":"#BCB9B3","bx20261121_01":"#95929B","bx20261121_03":"#D87D77","bx20261121_18":"#4D4F40","bx20261121_34":"#D16189","bs20261121_2":"#DF90DB","bs20261121_6":"#D3C769"};
+
   var CALENDAR_EVENTS = [
     { date: '2026-11-21', title: '대치미도상가 임시총회', time: '11:00~12:00', place: '대치동 사랑교회(삼성로 150)' },
     { date: '2026-11-22', title: '현주 졸업전시 방문', time: '11:00~12:00', place: '홍대 미진플로어' },
@@ -1659,6 +1755,7 @@
     own: 'all',
     genre: 'all',
     sort: 'default',
+    bookView: 'card',   /* 책 탭 보기 — card | shelf (2026-11-21) */
     q: '',
     kind: 'all',
     collapsed: {},     /* 전체 보기에서 접어 둔 섭션 (cat → 1) */
@@ -2416,6 +2513,7 @@
       /* 2026-11-21 — 소장/대여·장르 필터는 저장본에서 되살리지 않는다. 탭(카테고리)처럼 새로고침하면 '전체'로.
          (되살리면 화면에 안 보이는 필터가 걸려 '책 584'인데 '전체 215'로 보이는 일이 생긴다) */
       if (ui.sort && ['default','date-desc','title'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
+      if (ui.bookView === 'shelf' || ui.bookView === 'card') state.bookView = ui.bookView;
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
         state.collapsed = {};
         (Array.isArray(ui.collapsed) ? ui.collapsed : Object.keys(ui.collapsed)).forEach(function(c){
@@ -2435,7 +2533,7 @@
     var prev = null, praw = readStore(UIKEY);
     if (praw) { try { prev = JSON.parse(praw); } catch (e) { prev = null; } }
     if (!prev || typeof prev !== 'object') prev = {};
-    writeStore(UIKEY, JSON.stringify({ own: state.own, genre: state.genre, sort: state.sort,
+    writeStore(UIKEY, JSON.stringify({ own: state.own, genre: state.genre, sort: state.sort, bookView: state.bookView,
       collapsed: Object.keys(state.collapsed || {}),
       notebookSync20261121: (notebookSynced || prev.notebookSync20261121) ? 1 : 0,
       notebookCovers20261121: (notebookCoversSynced || prev.notebookCovers20261121) ? 1 : 0,
@@ -3322,29 +3420,41 @@
       var list = sortList(res[cat], cat);
       if (!list.length) return;
       idx++;
+      /* 책 탭의 '책꽂이' 보기 — 필터는 그대로 두고 보여 주는 방식만 바꾼다 (2026-11-21) */
+      var shelfView = (cat === 'book' && state.bookView === 'shelf');
       var lim = state.limits[cat] || 24;
-      var shown = list.slice(0, lim);
+      var shown = shelfView ? list : list.slice(0, lim);
       /* 접기는 전체 보기에서만. 카테고리를 골랐을 때는 늘 카드가 보인다 */
       var foldable = (state.cat === 'all');
       /* 검색 중에는 매칭 카드가 있는 섹션을 자동으로 펼친다 (저장해 둔 접힘 상태는 건드리지 않는다) */
       var collapsed = foldable && (isSearching() ? !!searchFold[cat] : !!state.collapsed[cat]);
       html += '<section class="sec' + (collapsed ? ' is-collapsed' : '') + '" data-cat="' + cat + '">';
-      html += '<div class="sec-head"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
+      html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
+           + (cat === 'book' ? viewSegHTML() : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
              : '')
            + '</div>';
-      html += '<div class="grid">';
-      html += shown.map(cardHTML).join('');
-      if (list.length > shown.length) {
-        html += '<div class="more"><button type="button" data-act="more" data-cat="' + cat + '">더 보기 · 남은 ' + (list.length - shown.length) + '건</button></div>';
+      if (shelfView) {
+        /* 선반은 폭을 재서 단을 나눠야 하므로 뼈대만 두고 그린 뒤에 채운다 */
+        html += '<div class="shelf" id="bookShelf" data-cat="book"></div>';
+        shelfPaintList = list;
+        shelfNeedsPaint = true;
+      } else {
+        html += '<div class="grid">';
+        html += shown.map(cardHTML).join('');
+        if (list.length > shown.length) {
+          html += '<div class="more"><button type="button" data-act="more" data-cat="' + cat + '">더 보기 · 남은 ' + (list.length - shown.length) + '건</button></div>';
+        }
+        html += '</div>';
       }
-      html += '</div></section>';
+      html += '</section>';
     });
     sectionsEl.innerHTML = html;
+    if (shelfNeedsPaint) { shelfNeedsPaint = false; paintShelf(shelfPaintList); }
   }
 
   /* 섭션 접기/펼치기 — 화면을 다시 그리지 않고 그 자리만 바꾸어 스크롤이 튀지 않게 한다 */
@@ -3527,6 +3637,220 @@
     setTimeout(function(){ el.classList.remove('card--flash'); }, 1600);
     saveUIPrefs();
   }
+
+  /* ────────────────────────── 책꽂이 보기 (2026-11-21) ──────────────────────────
+     bookshelf: 실제 알라딘 책등(spines/*.jpg)을 실측 두께 비율로 세우고,
+     책등 이미지가 없는 책은 표지 대표색 + 세로 제목의 가상 책등으로 채운다. */
+  var shelfPaintList = [], shelfNeedsPaint = false, pickedSpineId = '';
+
+  var shTipEl = document.createElement('div');
+  shTipEl.className = 'sh-tip';
+  shTipEl.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(shTipEl);
+
+  var shBarEl = document.createElement('div');
+  shBarEl.className = 'sh-bar';
+  shBarEl.hidden = true;
+  shBarEl.innerHTML = '<div class="sh-bar-t"><b></b><span></span></div>'
+    + '<button class="sh-bar-go" type="button">카드로 이동</button>'
+    + '<button class="sh-bar-x" type="button" aria-label="닫기">&#10005;</button>';
+  document.body.appendChild(shBarEl);
+
+  function viewSegHTML(){
+    var shelf = state.bookView === 'shelf';
+    return '<div class="viewseg" role="group" aria-label="보기 방식">'
+      + '<button type="button" data-view="card" aria-pressed="' + (!shelf) + '">카드</button>'
+      + '<button type="button" data-view="shelf" aria-pressed="' + shelf + '">책꽂이</button>'
+      + '</div>';
+  }
+  /* 마우스(호버)가 있는 기기인지 — 폰에서는 한 번 탭 = 책등 뽑기 */
+  function hoverCapable(){
+    return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+  }
+  /* 선반 한 단의 책 키이 — 폰에서도 책등이 읽히도록 폭에 맞춰 줄인다 */
+  function shHeight(){
+    var w = window.innerWidth;
+    if (w <= 400) return 128;
+    if (w <= 560) return 140;
+    if (w <= 900) return 168;
+    return 196;
+  }
+  function shHash(s){
+    var h = 0, i;
+    for (i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973;
+    return h;
+  }
+  var VPAL = ['#8E8A7E', '#A28C77', '#7E8A86', '#94827F', '#6F7A88', '#9A8E7C', '#7B8474', '#8A7C86'];
+  function cleanBookTitle(t){
+    var s = String(t == null ? '' : t).replace(/\[(중고|ebook|e-book|중고품|절판|구판)\]/gi, '').trim();
+    return s || String(t == null ? '' : t);
+  }
+  function vColorOf(it){
+    return VSPINE[it.id] || VPAL[shHash(String(it.id)) % VPAL.length];
+  }
+  function lumOf(hex){
+    var n = parseInt(String(hex).slice(1), 16);
+    return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  }
+  /* 책등 하나의 폭·높이 — 실제 이미지의 가로/세로 비율을 그대로 쓴다 */
+  function spineGeom(it, H){
+    var r = SPINE[it.id];                                   /* 높이 400px 기준 실측 폭 */
+    var j = 0.945 + (shHash(String(it.id) + 'h') % 6) / 100;   /* 책마다 키가 조금씩 다르게 */
+    if (r) {
+      var h = Math.round(H * j);
+      return { id: it.id, it: it, v: false, h: h, w: Math.max(2, Math.round(h * r / 400)) };
+    }
+    var t = cleanBookTitle(it.title);
+    var h2 = Math.round(H * (0.955 + (shHash(String(it.id)) % 3) / 100));
+    var w2 = Math.max(19, Math.round(h2 * (0.082 + Math.min(0.036, t.length * 0.0013))));
+    return { id: it.id, it: it, v: true, h: h2, w: w2, color: vColorOf(it) };
+  }
+  function spineHTML(g){
+    var it = g.it;
+    var au = String(it.author || '').replace(/\s*지음$/, '').split(',')[0].trim();
+    var label = esc(it.title) + (au ? ' — ' + esc(au) : '');
+    var open = '<button class="sh-spine" type="button" data-act="spine" data-id="' + esc(it.id) + '"'
+      + ' style="width:' + g.w + 'px;height:' + g.h + 'px" aria-label="' + label + ' — 카드로 열기">';
+    if (!g.v) {
+      return open + '<img src="spines/' + esc(it.id) + '.jpg" alt="" width="' + g.w + '" height="' + g.h
+        + '" loading="lazy" decoding="async">' + '</button>';
+    }
+    var dark = lumOf(g.color) > 0.62;
+    return open
+      + '<span class="sh-vt" style="background:' + esc(g.color) + ';color:' + (dark ? '#2A2A2E' : '#FFFFFF') + '">'
+      + '<b>' + esc(cleanBookTitle(it.title)) + '</b>'
+      + (au ? '<i>' + esc(au.length > 14 ? au.slice(0, 13) + '…' : au) + '</i>' : '')
+      + '</span></button>';
+  }
+  /* 폭을 재서 한 단에 꽉 차게 책등을 세운다 — 넘치면 다음 단 */
+  function paintShelf(list){
+    var box = document.getElementById('bookShelf');
+    if (!box) return;
+    shelfPaintList = list || [];
+    var H = shHeight();
+    var cs = window.getComputedStyle(box);
+    var padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
+    var W = Math.max(80, box.clientWidth - padL - padR);
+    var rows = [], cur = [], curW = 0, k, g;
+    for (k = 0; k < shelfPaintList.length; k++) {
+      g = spineGeom(shelfPaintList[k], H);
+      if (cur.length && curW + g.w > W) { rows.push(cur); cur = []; curW = 0; }
+      cur.push(g);
+      curW += g.w;
+    }
+    if (cur.length) rows.push(cur);
+    box.innerHTML = rows.map(function(r){
+      return '<div class="sh-row"><div class="sh-books">' + r.map(spineHTML).join('') + '</div>'
+        + '<div class="sh-plank"></div></div>';
+    }).join('');
+  }
+
+  function hideShelfTip(){ shTipEl.classList.remove('is-on'); }
+  function showShelfTip(el){
+    if (!hoverCapable()) return;
+    var it = byId(el.getAttribute('data-id'));
+    if (!it) return;
+    var bits = [];
+    if (it.author) bits.push(String(it.author).replace(/\s*지음$/, ''));
+    if (it.publisher) bits.push(it.publisher);
+    if (it.status) bits.push(it.status);
+    if (it.own) bits.push(it.own);
+    shTipEl.innerHTML = '<b>' + esc(it.title) + '</b>' + (bits.length ? '<span>' + esc(bits.join(' · ')) + '</span>' : '');
+    shTipEl.classList.add('is-on');
+    var r = el.getBoundingClientRect(), tw = shTipEl.offsetWidth, th = shTipEl.offsetHeight;
+    var x = r.left + r.width / 2 - tw / 2;
+    x = Math.max(8, Math.min(x, window.innerWidth - tw - 8));
+    var y = r.top - th - 9;
+    if (y < 8) y = r.bottom + 9;
+    shTipEl.style.left = Math.round(x) + 'px';
+    shTipEl.style.top = Math.round(y) + 'px';
+  }
+  function unpickSpine(){
+    var el = sectionsEl.querySelector('.sh-spine.is-picked');
+    if (el) el.classList.remove('is-picked');
+    pickedSpineId = '';
+    shBarEl.hidden = true;
+  }
+  function pickSpine(el){
+    var it = byId(el.getAttribute('data-id'));
+    if (!it) return;
+    unpickSpine();
+    el.classList.add('is-picked');
+    pickedSpineId = it.id;
+    shBarEl.querySelector('.sh-bar-t b').textContent = it.title;
+    var bits = [];
+    if (it.author) bits.push(String(it.author).replace(/\s*지음$/, ''));
+    if (it.publisher) bits.push(it.publisher);
+    if (it.status) bits.push(it.status);
+    shBarEl.querySelector('.sh-bar-t span').textContent = bits.join(' · ');
+    shBarEl.hidden = false;
+  }
+  /* 책등 → 카드 보기로 전환해 그 카드로 (탭·필터 풀고 스크롤 + 레몬 강조) */
+  function openCardFromShelf(id){
+    if (!id) return;
+    hideShelfTip();
+    unpickSpine();
+    state.bookView = 'card';
+    saveUIPrefs();
+    goToCard(id);
+    var el = cardEl(id);
+    if (el) {
+      el.classList.add('is-new');
+      setTimeout(function(){ el.classList.remove('is-new'); }, 2400);
+    }
+  }
+  function onSpineTap(el){
+    var id = el.getAttribute('data-id');
+    if (!id) return;
+    /* 폰(터치): 첫 탭은 뽑아 들기만, 같은 책등을 한 번 더 탭하면 카드로 */
+    if (!hoverCapable() && pickedSpineId !== id) { pickSpine(el); return; }
+    openCardFromShelf(id);
+  }
+  function setBookView(v){
+    if (v !== 'card' && v !== 'shelf') return;
+    if (state.bookView === v) return;
+    state.bookView = v;
+    hideShelfTip();
+    unpickSpine();
+    saveUIPrefs();
+    render();
+    toResults();
+  }
+  shBarEl.addEventListener('click', function(e){
+    var t = e.target;
+    if (t.closest && t.closest('.sh-bar-go')) { openCardFromShelf(pickedSpineId); return; }
+    if (t.closest && t.closest('.sh-bar-x')) { unpickSpine(); }
+  });
+  sectionsEl.addEventListener('mouseover', function(e){
+    if (state.bookView !== 'shelf') return;
+    var sp = e.target.closest ? e.target.closest('.sh-spine') : null;
+    if (sp) showShelfTip(sp);
+  });
+  sectionsEl.addEventListener('mouseout', function(e){
+    var sp = e.target.closest ? e.target.closest('.sh-spine') : null;
+    if (!sp) return;
+    if (e.relatedTarget && sp.contains(e.relatedTarget)) return;
+    hideShelfTip();
+  });
+  sectionsEl.addEventListener('focusin', function(e){
+    var sp = e.target.closest ? e.target.closest('.sh-spine') : null;
+    if (sp) showShelfTip(sp);
+  });
+  sectionsEl.addEventListener('focusout', hideShelfTip);
+  window.addEventListener('scroll', hideShelfTip, true);
+  /* 책등 바깥을 누르면 뽑아 둔 책등을 놓는다 */
+  document.addEventListener('click', function(e){
+    if (!pickedSpineId) return;
+    var t = e.target;
+    if (t && t.closest && (t.closest('.sh-spine') || t.closest('.sh-bar'))) return;
+    unpickSpine();
+  }, true);
+  var shelfRT = null;
+  window.addEventListener('resize', function(){
+    if (state.bookView !== 'shelf' || state.cat !== 'book') return;
+    clearTimeout(shelfRT);
+    shelfRT = setTimeout(function(){ paintShelf(shelfPaintList); }, 150);
+  });
 
   var upListEl = document.getElementById('upList');
   if (upListEl) {
@@ -4944,6 +5268,9 @@
   /* ────────────────────────── 이벤트 ────────────────────────── */
   mainEl.addEventListener('click', function(e){
     var target = e.target;
+    /* 책 탭의 카드 / 책꽂이 전환 */
+    var vbtn = (target && target.closest) ? target.closest('.viewseg button') : null;
+    if (vbtn) { setBookView(vbtn.getAttribute('data-view')); return; }
     /* 섭션 머리글(제목·건수·꺽쇠)을 누르면 그 섭션을 접고 편다 — 전체 보기에서만 */
     var head = (target && target.closest) ? target.closest('.sec-head') : null;
     if (head) {
@@ -4954,6 +5281,7 @@
     var actEl = target.closest ? target.closest('[data-act]') : null;
     if (!actEl) return;
     var act = actEl.getAttribute('data-act');
+    if (act === 'spine') { onSpineTap(actEl); return; }
     if (act === 'sub') {
       var sub = actEl.getAttribute('data-sub') || '';
       state.q = sub;
