@@ -2998,7 +2998,7 @@
       /* 책 탭은 네 상태(관심·읽는 중·미독·완독)를 늘 보여 준다 — 0권이어도 자리를 지킨다 */
       if (!counts[s] && state.status !== s && state.cat !== 'book') return;
       html += '<button class="chip" type="button" data-status="' + esc(s) + '" aria-pressed="' + (state.status === s) + '">'
-        + esc(s) + ' <span class="n">' + counts[s] + '</span></button>';
+        + esc(s) + ' <span class="n">' + (counts[s] || 0) + '</span></button>';
     });
     var wrap = document.getElementById('statusChips');
     wrap.innerHTML = '<span class="lbl">상태</span>' + html;
