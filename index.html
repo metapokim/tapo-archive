@@ -532,6 +532,38 @@
   .statbtn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
   .sec-head.has-view > .statbtn{margin-left:6px}
 
+  /* 책 탭 섹션 헤더의 '오늘 뭐 읽지?' 단추 (2026-11-22) — 통계 단추 옆, 미독 책 한 권 뽑기 */
+  .dicebtn{
+    display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;height:30px;
+    font:inherit;font-size:11.5px;font-weight:800;letter-spacing:-.02em;color:var(--lemon-ink);
+    background:var(--lemon-w);border:1px solid #F6EFB4;border-radius:999px;padding:0 10px;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,border-color .15s,transform .12s;
+  }
+  .dicebtn svg{width:13px;height:13px;flex:0 0 13px;transform-origin:50% 50%}
+  .dicebtn span{line-height:1}
+  .dicebtn:hover,.dicebtn:focus-visible{background:var(--lemon);border-color:var(--lemon-2);color:#18181B}
+  .dicebtn:hover svg,.dicebtn:focus-visible svg{animation:diceRoll .55s cubic-bezier(.3,.8,.3,1)}
+  .dicebtn:active{transform:scale(.97)}
+  .dicebtn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  .sec-head.has-view > .dicebtn{margin-left:6px}
+  @keyframes diceRoll{0%{transform:rotate(0)}55%{transform:rotate(-26deg) scale(1.14)}100%{transform:rotate(0)}}
+
+  /* 랜덤 뽑기로 연 책 카드 아래의 '다시 뽑기' (2026-11-22) */
+  .bcard-dice{margin:10px 2px 0;display:flex;flex-direction:column;gap:6px}
+  .bcard-dice-btn{
+    display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:42px;
+    font:inherit;font-size:13px;font-weight:800;letter-spacing:-.01em;color:#18181B;
+    background:var(--lemon);border:1px solid var(--lemon-2);border-radius:999px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:filter .15s,transform .12s;
+  }
+  .bcard-dice-btn svg{width:15px;height:15px;flex:0 0 15px}
+  .bcard-dice-btn:hover{filter:brightness(.97)}
+  .bcard-dice-btn:active{transform:scale(.985)}
+  .bcard-dice-btn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  .bcard-dice-note{margin:0;text-align:center;font-size:10.5px;font-weight:600;color:#A1A1AA}
+  #bcardHost.is-rolling .card{animation:diceIn .26s ease-out}
+  @keyframes diceIn{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
+
   /* 화이트 선반 — 밝은 프레임, 단마다 얇은 널판과 은은한 그림자 */
   .bshelf{
     --sh-pad:18px;background:#fff;border:1px solid var(--line);border-radius:20px;
@@ -1144,6 +1176,9 @@
     /* 통계 단추는 카드|책꽂이 토글과 같은 둘째 줄 오른쪽에 나란히 */
     .sec-head.has-view > .statbtn{order:4;height:26px;font-size:11px;padding:0 9px;margin:8px 0 0 5px}
     .statbtn svg{width:12px;height:12px;flex:0 0 12px}
+    /* '오늘 뭐 읽지?'도 통계 옆 둘째 줄에 나란히 (390·360px에서도 한 줄) */
+    .sec-head.has-view > .dicebtn{order:5;height:26px;font-size:11px;padding:0 9px;margin:8px 0 0 5px}
+    .dicebtn svg{width:12px;height:12px;flex:0 0 12px}
     .bstat-row{grid-template-columns:84px minmax(0,1fr) 30px;gap:7px}
     .viewseg button{padding:4px 10px;font-size:11px}
     .bshelf{--sh-pad:10px;border-radius:16px;padding:13px var(--sh-pad) 2px}
@@ -1332,6 +1367,14 @@
   <div class="sheet sheet--bcard" id="bcardSheet" role="dialog" aria-modal="true" aria-label="책 카드" tabindex="-1">
     <div class="bcard-top"><button class="bcard-x" type="button" id="bcardX" aria-label="닫기" title="닫기">&#10005;</button></div>
     <div id="bcardHost"></div>
+    <!-- 랜덤 뽑기로 연 카드에만 붙는 '다시 뽑기' — 팝업을 닫지 않고 다음 미독 책으로 바꾼다 -->
+    <div class="bcard-dice" id="bcardDice" hidden>
+      <button class="bcard-dice-btn" type="button" id="bcardDiceBtn" title="다른 미독 책 뽑기">
+        <svg class="dice-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.6"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/></svg>
+        <span>다시 뽑기</span>
+      </button>
+      <p class="bcard-dice-note" id="bcardDiceNote"></p>
+    </div>
   </div>
 </div>
 
@@ -3732,7 +3775,7 @@
       html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
-           + (cat === 'book' && state.cat === 'book' ? viewSegHTML() + statsBtnHTML() : '')
+           + (cat === 'book' && state.cat === 'book' ? viewSegHTML() + statsBtnHTML() + diceBtnHTML() : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
@@ -3976,6 +4019,74 @@
   var bcardSheet = document.getElementById('bcardSheet');
   var bcardHost = document.getElementById('bcardHost');
   var bcardId = '';
+  /* 랜덤 뽑기로 연 카드 아래의 '다시 뽑기' 줄 (2026-11-22) */
+  var bcardDiceEl = document.getElementById('bcardDice');
+  var bcardDiceNote = document.getElementById('bcardDiceNote');
+  var diceLastId = '';   /* 직전에 뽑은 책 — 바로 같은 책이 또 나오지 않게 */
+
+  function setDiceBar(on, n){
+    if (!bcardDiceEl) return;
+    bcardDiceEl.hidden = !on;
+    if (on && bcardDiceNote) bcardDiceNote.textContent = '미독 ' + n + '권 중 한 권';
+  }
+
+  /* ── '오늘 뭐 읽지?' — 미독 책 한 권 뽑기 (2026-11-22) ──
+     지금 책 탭에 걸린 필터(서재/대여·장르·검색·상태)에 맞는 미독 책에서 뽑는다.
+     걸린 미독이 없으면 서재 전체의 미독에서 뽑고, 직전에 뽑은 책은 되도록 피한다. */
+  function dicePool(){
+    var pool = [], k, res, list;
+    if (state.cat === 'book') {
+      res = filtered();
+      list = res.book || [];
+      for (k = 0; k < list.length; k++) {
+        if (list[k].status === '미독') pool.push(list[k]);
+      }
+    }
+    if (!pool.length) {
+      for (k = 0; k < state.items.length; k++) {
+        if (state.items[k].cat === 'book' && state.items[k].status === '미독') pool.push(state.items[k]);
+      }
+    }
+    return pool;
+  }
+  function dicePick(excludeId){
+    var pool = dicePool();
+    if (!pool.length) return null;
+    if (excludeId) {
+      var rest = pool.filter(function(x){ return x.id !== excludeId; });
+      if (rest.length) pool = rest;
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function openDice(){
+    var it = dicePick(diceLastId);
+    if (!it) { toast('아직 미독 책이 없어요 — 상태를 미독으로 바꾸면 뽑을 수 있어요'); return; }
+    diceLastId = it.id;
+    openBCard(it.id);
+    setDiceBar(true, dicePool().length);
+    /* 책꽂이 보기에서는 뽑힌 책등이 화면 가운데로 — 팝업을 닫으면 그 책이 꽂혀 있다 */
+    var sp = sectionsEl.querySelector('.sh-spine[data-id="' + it.id + '"]');
+    if (sp && sp.scrollIntoView) {
+      try { sp.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+    }
+  }
+  /* 팝업을 닫지 않고 다음 미독 책으로 바꾼다 */
+  function rerollDice(){
+    var it = dicePick(bcardId);
+    if (!it) { toast('아직 미독 책이 없어요'); return; }
+    diceLastId = it.id;
+    bcardId = it.id;
+    if (bcardHost) {
+      bcardHost.innerHTML = cardHTML(it);
+      bcardHost.classList.remove('is-rolling');
+      void bcardHost.offsetWidth;      /* 애니메이션을 다시 시작하려고 한 번 강제로 그린다 */
+      bcardHost.classList.add('is-rolling');
+      setTimeout(function(){ if (bcardHost) bcardHost.classList.remove('is-rolling'); }, 320);
+    }
+    if (bcardSheet) bcardSheet.scrollTop = 0;
+    pickSpine(sectionsEl.querySelector('.sh-spine[data-id="' + it.id + '"]'));
+    setDiceBar(true, dicePool().length);
+  }
 
   /* 팝업 안 카드를 지금 상태로 다시 그린다 — 뒤 카드·책꽂이와 같은 값을 보여 주기 위해 */
   function syncBCard(){
@@ -4001,12 +4112,14 @@
     }
     /* 팝업이 떠 있는 동안 그 책등은 뽑혀 나온 채로 — 닫으면 선반에 다시 꽂힌다 */
     pickSpine(sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]'));
+    setDiceBar(false);   /* 책등·카드에서 그냥 연 카드에는 '다시 뽑기'를 두지 않는다 */
   }
   function closeBCard(){
     if (!bcardEl) return;
     bcardEl.hidden = true;
     bcardId = '';
     if (bcardHost) bcardHost.innerHTML = '';
+    setDiceBar(false);
     unpickSpine();
   }
 
@@ -4022,6 +4135,13 @@
     return '<button class="statbtn" type="button" data-act="bstats" aria-haspopup="dialog" title="독서 통계">'
       + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 19v-6"/><path d="M12 19V5"/><path d="M19 19v-9"/></svg>'
       + '<span>통계</span></button>';
+  }
+  /* 책 탭 섹션 헤더의 '오늘 뭐 읽지?' 단추 (2026-11-22) — 누르면 미독 책을 한 권 뽑아 카드로 보여 준다 */
+  var DICE_SVG = '<svg class="dice-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.6"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/></svg>';
+  function diceBtnHTML(){
+    return '<button class="dicebtn" type="button" data-act="dice" title="미독 책 중 한 권 뽑기">'
+      + DICE_SVG
+      + '<span>오늘 뭐 읽지?</span></button>';
   }
   /* 마우스(호버)가 있는 기기인지 — 폰에서는 한 번 탭 = 책등 뽑기 */
   function hoverCapable(){
@@ -4305,6 +4425,11 @@
     var b = (e.target && e.target.closest) ? e.target.closest('[data-act="bstats"]') : null;
     if (b) openBookStats();
   });
+  /* '오늘 뭐 읽지?' — 섹션 헤더 안이라 main 쪽 클릭 처리(접기)보다 먼저 받는다 */
+  sectionsEl.addEventListener('click', function(e){
+    var d = (e.target && e.target.closest) ? e.target.closest('[data-act="dice"]') : null;
+    if (d) openDice();
+  });
   sectionsEl.addEventListener('mouseover', function(e){
     if (state.bookView !== 'shelf') return;
     var sp = e.target.closest ? e.target.closest('.sh-spine') : null;
@@ -4326,6 +4451,8 @@
   if (bcardEl) {
     var bcardXEl = document.getElementById('bcardX');
     if (bcardXEl) bcardXEl.addEventListener('click', closeBCard);
+    var bcardDiceBtn = document.getElementById('bcardDiceBtn');
+    if (bcardDiceBtn) bcardDiceBtn.addEventListener('click', function(e){ e.preventDefault(); rerollDice(); });
     bcardEl.addEventListener('click', function(e){
       if (e.target === bcardEl) { closeBCard(); return; }   /* 배경을 누르면 닫는다 */
       var actEl = e.target.closest ? e.target.closest('[data-act]') : null;
