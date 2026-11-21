@@ -192,6 +192,17 @@ def _js_done_set(src: str, default) -> set:
     return set(keys) if keys else set(default)
 
 
+def _start_time(v) -> str:
+    """'11:00~12:00' → '11:00' · 시각이 없으면 '' (index.html 의 eventStart 와 같은 규칙)."""
+    m = re.search(r"(\d{1,2})\s*:\s*(\d{2})", str(v or ""))
+    if not m:
+        return ""
+    h, mi = int(m.group(1)), int(m.group(2))
+    if not (0 <= h < 24 and 0 <= mi < 60):
+        return ""
+    return f"{h:02d}:{mi:02d}"
+
+
 def _js_removed_ids(src: str) -> set:
     m = re.search(r"var\s+REMOVED_IDS\s*=\s*\{(.*?)\}\s*;", src, re.S)
     if not m:
@@ -318,7 +329,10 @@ def build_upcoming(src: str, today: date) -> list:
             r["cal"] = True
             rows.append(r)
 
-    rows.sort(key=lambda r: (r["date"], 1 if r["_cal"] else 0))
+    # 같은 날짜면 시작 시각이 이른 순, 시각 없는 일정은 뒤 — index.html upcomingRows 와 같은 규칙
+    # (2026-11-22 은유 님 요청: 11:00 현주 졸업전시 방문이 14:00 연극 〈전락〉보다 위)
+    rows.sort(key=lambda r: (r["date"], 0 if _start_time(r["time"]) else 1,
+                             _start_time(r["time"]), 1 if r["_cal"] else 0))
     for r in rows:
         r.pop("_cal", None)
     return rows

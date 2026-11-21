@@ -2657,6 +2657,16 @@
     if (!d) return '';
     return (d.getMonth() + 1) + '.' + pad(d.getDate());
   }
+  /* 2026-11-22 은유 님 요청 — 일정의 시각 문자열에서 '시작 시각'만 뽑는다.
+     '11:00~12:00' → 11:00 · '19:30~21:30 (12/1·8·15)' → 19:30 · 시각이 없으면 ''.
+     '다가오는 일정'의 같은 날 차례와 오늘 일정 줄의 시각 칸이 이 값을 함께 쓴다. */
+  function eventStart(v){
+    var m = /(\d{1,2})\s*:\s*(\d{2})/.exec(String(v == null ? '' : v));
+    if (!m) return '';
+    var h = Number(m[1]), mi = Number(m[2]);
+    if (!(h >= 0 && h < 24 && mi >= 0 && mi < 60)) return '';
+    return pad(h) + ':' + pad(mi);
+  }
   function dateLine(s, withYear){
     var d = toDate(s);
     if (!d) return '';
@@ -2691,6 +2701,7 @@
     return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + WEEK[d.getDay()];
   }
   /* 날짜 표시(브리핑 날짜·발행 기준 줄)를 오늘로 다시 맞춘다 */
+  var syncDay = '';
   function syncToday(){
     var d = new Date();
     var t = document.querySelector('.brief .brief-when');
@@ -2698,6 +2709,13 @@
     var line = document.getElementById('issueLine');
     if (line) line.textContent = 'VOL. 01 · ' + fullDate(d) + ' 기준';
     syncBriefWeather();
+    /* 자정을 넘겨 날짜가 바뀌었으면 오늘 일정 줄·다가오는 일정 차례를 그 날 기준으로 다시 그린다.
+       (2026-11-22 — 페이지를 켜 둔 채 자정을 넘겨도 어제 일정이 브리핑에 남지 않게) */
+    var ymd = ymdLocal(d);
+    if (syncDay && syncDay !== ymd) {
+      try { renderUpcoming(); renderBrief(); fitUpList(); } catch (e) {}
+    }
+    syncDay = ymd;
   }
   /* ── 브리핑 첫 줄(날씨)도 날짜를 따라간다 ──────────────────────────
      아침 루틴(my-day-preparation)이 오늘·내일 두 날짜의 문구를
@@ -3590,11 +3608,16 @@
       if (hiddenInUpcoming(it.title)) continue;      /* 덕소2는 브리핑 상단에만 */
       d = upcomingDD(it);
       if (d === null) continue;
-      rows.push({ date: it.date, title: it.title, place: it.place || '', d: d, item: it });
+      rows.push({ date: it.date, title: it.title, time: it.time || '', place: it.place || '', d: d, item: it });
     }
     rows = rows.concat(calendarUpcoming());
     rows.sort(function(a, b){
       if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      /* 2026-11-22 은유 님 요청 — 같은 날이면 빠른 시각이 먼저, 시각 없는 일정은 뒤로.
+         (11:00 현주 졸업전시 방문이 14:00 연극 〈전락〉보다 위에 온다) */
+      var at = eventStart(a.time), bt = eventStart(b.time);
+      if (!!at !== !!bt) return at ? -1 : 1;
+      if (at !== bt) return at < bt ? -1 : 1;
       if (!!a.cal !== !!b.cal) return a.cal ? 1 : -1;
       return 0;
     });
@@ -3643,6 +3666,21 @@
         + '<span class="up-body">' + esc(it.title) + meta + '</span>'
         + deadTxt + dday + '</li>';
     }).join('');
+  }
+
+  /* 2026-11-22 은유 님 요청 — 오늘 날짜(D-DAY)가 된 일정은 자정이 지나면 TODAY'S BRIEFING 맨 위에
+     '시간 · 제목 · 장소' 로 저절로 뜬다. '다가오는 일정'과 같은 원본(upcomingRows)을 쓰므로
+     달력 일정(CALENDAR_EVENTS)과 아카이브 카드(SEED·직접 담은 카드)가 모두 대상이고,
+     시각이 있으면 그 줄이 brief-time 을 가져 sortBriefByTime 이 맨 위에서 이른 순으로 세운다.
+     회의처럼 '다가오는 일정'에서 빠지는 줄(덕소2 등)은 여기서도 빠진다 — 그 줄은 아침 루틴이 쓴다. */
+  function todayEventRows(){
+    var rows = upcomingRows(), out = [], ymd = ymdLocal(new Date()), k, r;
+    for (k = 0; k < rows.length; k++) {
+      r = rows[k];
+      if (!r || r.date !== ymd || !r.title) continue;
+      out.push(r);
+    }
+    return out;
   }
 
   /* 모바일에서는 '다가오는 일정'을 다섯 줄까지만 — 줄 높이가 내용에 따라 달라져도
@@ -4080,6 +4118,8 @@
       for (k = 0; k < ul.children.length; k++) arr.push(ul.children[k]);
       for (k = 0; k < arr.length; k++) {
         el = arr[k];
+        /* 오늘 일정 자동 줄은 끌어 둔 순서와 상관없이 늘 맨 위 (2026-11-22) */
+        if (el.hasAttribute && el.hasAttribute('data-auto')) { el._bo = -1; continue; }
         el._bo = (pos[briefItemKey(el)] == null ? 1e6 + k : pos[briefItemKey(el)]);
       }
       arr.sort(function(a, b){ return a._bo - b._bo; });
@@ -4835,6 +4875,48 @@
     var t = String(el.textContent || '').replace(/\s+/g, '');
     if (t === '할일' || t === 'TODO' || t === 'todo') el.classList.add('is-todo');
   }
+  /* ────────────── 오늘 일정 줄을 브리핑 맨 위에 심기 (2026-11-22) ──────────────
+     다시 그릴 때마다 data-auto 줄을 먼저 걷어 내고 지금 날짜로 새로 심는다 — 자정이 지나면
+     어제 일정은 저절로 사라지고 오늘 일정이 올라온다. 아침 루틴이 이미 같은 일정을 적어 둔
+     뒤(같은 제목이 목록에 있음)에는 겹쳐 넣지 않아 두 줄로 보이지 않는다. */
+  function syncTodayEvents(list){
+    var olds = list.querySelectorAll('li[data-auto]'), oi;
+    for (oi = 0; oi < olds.length; oi++) if (olds[oi].parentNode) olds[oi].parentNode.removeChild(olds[oi]);
+    var rows = todayEventRows();
+    if (!rows.length) return;
+    var have = [], k, li, txt;
+    for (k = 0; k < list.children.length; k++) {
+      li = list.children[k];
+      if (li.tagName !== 'LI') continue;
+      txt = normTitle(briefItemText(li));
+      if (txt && txt.length >= 3) have.push(txt);
+    }
+    var made = [], h, dup;
+    for (k = 0; k < rows.length; k++) {
+      var key = normTitle(rows[k].title);
+      if (!key || key.length < 2) continue;
+      dup = false;
+      for (h = 0; h < have.length; h++) {
+        if (have[h].indexOf(key) >= 0 || key.indexOf(have[h]) >= 0) { dup = true; break; }
+      }
+      if (!dup) made.push(rows[k]);
+    }
+    for (k = made.length - 1; k >= 0; k--) list.insertBefore(todayEventLi(made[k]), list.firstChild);
+  }
+  function todayEventLi(r){
+    var li = document.createElement('li');
+    li.setAttribute('data-auto', '1');   /* 다시 그릴 때 걷어 낼 표시 — 완료 키는 data-key 로 따로 붙는다 */
+    var when = document.createElement('span'), t = eventStart(r.time);
+    when.className = t ? 'brief-time' : 'brief-time is-todo';
+    when.textContent = t || '할 일';
+    var body = document.createElement('span');
+    body.className = 'brief-body';
+    body.textContent = r.place ? (r.title + ' · ' + r.place) : r.title;
+    li.appendChild(when);
+    li.appendChild(body);
+    return li;
+  }
+
   function renderBrief(){
     var sec = document.querySelector('.brief');
     if (!sec) return;
@@ -4842,6 +4924,7 @@
     var mine = renderBriefTodos(sec);
     var list = sec.querySelector('.brief-list');
     if (!list) return;
+    syncTodayEvents(list);   /* 오늘 일정은 목록 맨 위에 — 루틴이 적어 둔 줄과 겹치면 넣지 않는다 */
     var date = briefStamp(), rows = list.children, k, li, key, left = 0, done = 0;
     for (k = 0; k < rows.length; k++) {
       li = rows[k];
