@@ -1677,6 +1677,22 @@
 
     if (saved && saved.items && saved.items.length) {
       state.deleted = saved.deleted && saved.deleted.length ? saved.deleted.slice() : [];
+      /* 2026-11-21 은유 님 요청 — 알라딘 구매내역(OrderList 2026-11-21, 425개 상품)을 참고해
+         여러 권이 대표 1권으로 묶여 있던 구매 카드 81장을 낱권 263장으로 풀었다. 묶음 카드는
+         SEED 에서 지웠지만, 이 기기의 저장본·Gist 사본에는 남아 있으므로 아래 기본 데이터를
+         더하기 전에 먼저 걷어 낸다. (제목이 같은 낱권 카드가 먼저 들어오면 저장본의 묶음 카드가
+         그 낱권 id 로 잘못 합쳐지므로 반드시 병합 전에 지운다.) */
+      var alParents = ['bp143', 'bp142', 'bp140', 'bp139', 'bp136', 'bp135', 'bp133', 'bp130', 'bp129', 'bp127', 'bp122', 'bp123', 'bp120', 'bp117', 'bp115', 'bp113', 'bp110', 'bp109', 'bp107', 'bp105', 'bp104', 'bp102', 'bp100', 'bp99', 'bp96', 'bp95', 'bp92', 'bp91', 'bp89', 'bp87', 'bp86', 'bp85', 'bp84', 'bp83', 'bp82', 'bp81', 'bp79', 'bp75', 'bp76', 'bp74', 'bp72', 'bp70', 'bp71', 'bp69', 'bp67', 'bp66', 'bp65', 'bp64', 'bp63', 'bp62', 'bp60', 'bp59', 'bp58', 'bp57', 'bp56', 'bp53', 'bp54', 'bp52', 'bp51', 'bp50', 'bp41', 'bp39', 'bp37', 'bp36', 'bp33', 'bp31', 'bp30', 'bp29', 'bp26', 'bp25', 'bp24', 'bp21', 'bp19', 'bp17', 'bp16', 'bp13', 'bp10', 'bp8', 'bp4', 'bp3', 'bp1'];
+      var alKeep = [], alDrop = 0;
+      for (j = 0; j < saved.items.length; j++) {
+        if (saved.items[j] && alParents.indexOf(String(saved.items[j].id)) >= 0) { alDrop++; continue; }
+        alKeep.push(saved.items[j]);
+      }
+      if (alDrop) { saved.items = alKeep; loadChanged = true; }
+      for (j = 0; j < alParents.length; j++) {
+        if (state.deleted.indexOf(alParents[j]) < 0) state.deleted.push(alParents[j]);
+      }
+
       state.items = [];
       var have = {};
       for (j = 0; j < saved.items.length; j++) {
@@ -2077,20 +2093,44 @@
       bp68SplitSynced = true;
     }
 
-    /* 2026-11-21 은유 님 요청 — 알라딘 구매내역(OrderList 2026-11-21, 425개 상품)을 참고해
-       여러 권이 대표 1권으로 묶여 있던 구매 카드 81장을 낱권 263장으로 풀었다.
-       이 기기의 localStorage·Gist 저장본·백업 가져오기로 묶음 카드가 다시 들어와도 되살아나지 않도록
-       불러올 때마다 한 번 걷어 내고 '지운 표시'를 남긴다. 낱권 카드는 기본 데이터(SEED)에 함께
-       들어갔으므로 저장본에 없으면 위에서 더해진다. (기본 데이터를 다시 더하는 병합과 부딪히지
-       않도록 묶음 카드만 건드린다.) */
+    /* 2026-11-21 위 분리 작업의 안전망 — Gist 병합·백업 가져오기로 묶음 카드가 다시 들어와도
+       되살아나지 않도록 한 번 더 걷어 내고 '지운 표시'를 남긴다.
+       그리고 37e163b 배포본(묶음 카드를 병합 전에 지우지 않던 판)을 한 번 불러 둔 기기에서는
+       묶음 카드가 대표 낱권 카드 id 로 합쳐져 있을 수 있으므로, 그런 카드를 낱권 카드 값으로
+       되돌린다(직접 쓴 메모·서가·상태는 그대로 둔다). */
     {
       var alDel = ['bp143', 'bp142', 'bp140', 'bp139', 'bp136', 'bp135', 'bp133', 'bp130', 'bp129', 'bp127', 'bp122', 'bp123', 'bp120', 'bp117', 'bp115', 'bp113', 'bp110', 'bp109', 'bp107', 'bp105', 'bp104', 'bp102', 'bp100', 'bp99', 'bp96', 'bp95', 'bp92', 'bp91', 'bp89', 'bp87', 'bp86', 'bp85', 'bp84', 'bp83', 'bp82', 'bp81', 'bp79', 'bp75', 'bp76', 'bp74', 'bp72', 'bp70', 'bp71', 'bp69', 'bp67', 'bp66', 'bp65', 'bp64', 'bp63', 'bp62', 'bp60', 'bp59', 'bp58', 'bp57', 'bp56', 'bp53', 'bp54', 'bp52', 'bp51', 'bp50', 'bp41', 'bp39', 'bp37', 'bp36', 'bp33', 'bp31', 'bp30', 'bp29', 'bp26', 'bp25', 'bp24', 'bp21', 'bp19', 'bp17', 'bp16', 'bp13', 'bp10', 'bp8', 'bp4', 'bp3', 'bp1'];
-      var ali;
+      var alKid = ['bp143a', 'bp143b', 'bp143c', 'bp143d', 'bp143e', 'bp143f', 'bp142a', 'bp142b', 'bp140a', 'bp140b', 'bp139a', 'bp139b', 'bp136a', 'bp136b', 'bp136c', 'bp135a', 'bp135b', 'bp135c', 'bp135d', 'bp133a', 'bp133b', 'bp133c', 'bp133d', 'bp133e', 'bp133f', 'bp133g', 'bp130a', 'bp130b', 'bp129a', 'bp129b', 'bp129c', 'bp127a', 'bp127b', 'bp127c', 'bp122a', 'bp122b', 'bp123a', 'bp123b', 'bp120a', 'bp120b', 'bp120c', 'bp117a', 'bp117b', 'bp117c', 'bp115a', 'bp115b', 'bp115c', 'bp115d', 'bp113a', 'bp113b', 'bp110a', 'bp110b', 'bp109a', 'bp109b', 'bp107a', 'bp107b', 'bp107c', 'bp107d', 'bp107e', 'bp105a', 'bp105b', 'bp105c', 'bp104a', 'bp104b', 'bp102a', 'bp102b', 'bp100a', 'bp100b', 'bp100c', 'bp99a', 'bp99b', 'bp99c', 'bp99d', 'bp99e', 'bp99f', 'bp99g', 'bp99h', 'bp99i', 'bp99j', 'bp99k', 'bp99l', 'bp99m', 'bp99n', 'bp99o', 'bp99p', 'bp99q', 'bp99r', 'bp99s', 'bp99t', 'bp99u', 'bp99v', 'bp99w', 'bp99x', 'bp99y', 'bp99z', 'bp99aa', 'bp99ab', 'bp99ac', 'bp99ad', 'bp99ae', 'bp99af', 'bp99ag', 'bp99ah', 'bp99ai', 'bp96a', 'bp95a', 'bp95b', 'bp95c', 'bp92a', 'bp92b', 'bp91a', 'bp91b', 'bp91c', 'bp89a', 'bp89b', 'bp89c', 'bp89d', 'bp89e', 'bp87a', 'bp87b', 'bp87c', 'bp86a', 'bp86b', 'bp85a', 'bp85b', 'bp85c', 'bp85d', 'bp84a', 'bp84b', 'bp83a', 'bp83b', 'bp83c', 'bp82a', 'bp82b', 'bp82c', 'bp82d', 'bp82e', 'bp82f', 'bp81a', 'bp81b', 'bp79a', 'bp79b', 'bp75a', 'bp75b', 'bp75c', 'bp75d', 'bp75e', 'bp76a', 'bp76b', 'bp74a', 'bp74b', 'bp72a', 'bp72b', 'bp70a', 'bp70b', 'bp70c', 'bp70d', 'bp70e', 'bp71a', 'bp71b', 'bp69a', 'bp69b', 'bp67a', 'bp67b', 'bp66a', 'bp66b', 'bp66c', 'bp65a', 'bp65b', 'bp64a', 'bp64b', 'bp64c', 'bp64d', 'bp63a', 'bp63b', 'bp63c', 'bp62a', 'bp62b', 'bp60a', 'bp60b', 'bp60c', 'bp60d', 'bp59a', 'bp59b', 'bp59c', 'bp58a', 'bp58b', 'bp58c', 'bp57a', 'bp56a', 'bp56b', 'bp53a', 'bp53b', 'bp53c', 'bp54a', 'bp54b', 'bp52a', 'bp51a', 'bp51b', 'bp51c', 'bp50a', 'bp50b', 'bp50c', 'bp50d', 'bp50e', 'bp41a', 'bp41b', 'bp41c', 'bp41d', 'bp39a', 'bp39b', 'bp37a', 'bp37b', 'bp36a', 'bp36b', 'bp33a', 'bp33b', 'bp31a', 'bp31b', 'bp31c', 'bp30a', 'bp30b', 'bp30c', 'bp29a', 'bp29b', 'bp26a', 'bp26b', 'bp25a', 'bp25b', 'bp24a', 'bp24b', 'bp24c', 'bp21a', 'bp21b', 'bp21c', 'bp21d', 'bp21e', 'bp19a', 'bp19b', 'bp19c', 'bp17a', 'bp17b', 'bp17c', 'bp16a', 'bp16b', 'bp13a', 'bp13b', 'bp10a', 'bp10b', 'bp10c', 'bp8a', 'bp8b', 'bp4a', 'bp4b', 'bp3a', 'bp3b', 'bp3c', 'bp3d', 'bp3e', 'bp3f', 'bp3g', 'bp1a', 'bp1b'];
+      var ali, alIt, alSd;
       for (ali = state.items.length - 1; ali >= 0; ali--) {
         if (alDel.indexOf(state.items[ali].id) >= 0) { state.items.splice(ali, 1); loadChanged = true; }
       }
       for (ali = 0; ali < alDel.length; ali++) {
         if (state.deleted.indexOf(alDel[ali]) < 0) { state.deleted.push(alDel[ali]); loadChanged = true; }
+      }
+      var alById = {};
+      for (ali = 0; ali < SEED.length; ali++) alById[String(SEED[ali].id)] = SEED[ali];
+      for (ali = 0; ali < state.items.length; ali++) {
+        alIt = state.items[ali];
+        if (alKid.indexOf(String(alIt.id)) < 0) continue;
+        alSd = alById[String(alIt.id)];
+        if (!alSd) continue;
+        if (String(alIt.qty || '') === String(alSd.qty || '') && String(alIt.title || '') === String(alSd.title || '')) continue;
+        alIt.title = alSd.title;
+        alIt.qty = alSd.qty;
+        alIt.extra = alSd.extra || '';
+        alIt.cat = alSd.cat;
+        alIt.shelf = alSd.shelf;
+        alIt.author = alSd.author || '';
+        alIt.publisher = alSd.publisher || '';
+        alIt.price = alSd.price;
+        alIt.form = alSd.form || '';
+        alIt.order = alSd.order || '';
+        alIt.date = alSd.date;
+        alIt.group = alSd.group || '';
+        if (alSd.image) alIt.image = alSd.image;
+        delete alIt._hay;
+        loadChanged = true;
       }
     }
 
