@@ -921,6 +921,9 @@
     /* 390px 폰 폭에서는 상태 칩 5개가 다 보이도록 칩 줄을 한 줄 차지하게 하고,
        정렬·장르 드롭다운은 그 아래 오른쪽에 나란히 둔다 (2026-11-21) */
     .filter-bar{flex-wrap:wrap;row-gap:6px}
+    /* 390px 폰에서 책 상태 칩 다섯 개(전체·관심·읽는 중·미독·완독)가 한 줄에 다 들어가게 조금 줄인다 */
+    #statusChips{gap:5px}
+    #statusChips .chip{font-size:11px;padding:5px 9px}
     .filter-bar > .chips{flex:1 1 100%}
     .filter-bar > select.sel--sm:first-of-type{margin-left:auto}
     .chips .lbl{display:none}
