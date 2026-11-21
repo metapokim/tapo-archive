@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>임시 확인용 · 저장본 덤프</title>
+<style>body{font:14px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;padding:24px}pre{white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace}</style>
+</head><body>
+<h3>저장본(localStorage) 덤프</h3>
+<pre id="out">읽는 중…</pre>
+<script>
+(function(){
+  var out = document.getElementById('out');
+  var raw = localStorage.getItem('eunyu-archive-v1');
+  var ui = localStorage.getItem('eunyu-archive-ui-v1');
+  if (!raw) { out.textContent = '저장본 없음'; return; }
+  var d = JSON.parse(raw), u = ui ? JSON.parse(ui) : {};
+  var items = d.items || [];
+  var by = {};
+  items.forEach(function(x){ by[x.cat] = (by[x.cat]||0)+1; });
+  var books = items.filter(function(x){ return x.cat === 'book'; });
+  var own = { '서재':0, '대여':0, '미분류':0 };
+  books.forEach(function(x){ own[(x.own === '서재' || x.own === '대여') ? x.own : '미분류'] += 1; });
+  var has = {};
+  ['f11','f20261117_1','f20261117_2','f20261118_1','f20261118_2','f20261118_3','f20261119_1',
+   'f20261119_3','f20261120_1','f20261120_2','s04','s20261128_gomyeongjae','bp121','bp130b',
+   'bp140a','bp86a','bp86b','bp92a','bp92b'].forEach(function(id){
+    has[id] = items.some(function(x){ return x.id === id; });
+  });
+  var f01 = items.filter(function(x){ return x.id === 'f01'; })[0] || {};
+  var f02 = items.filter(function(x){ return x.id === 'f02'; })[0] || {};
+  var nb = items.filter(function(x){ return x.id === 'umwnl0lm8' || x.id === 'umwprqvjo' || x.id === 'umwpv5fh2' || x.id === 'mmwn6zhsm' || x.id === 'mmwp6vzku'; })
+    .map(function(x){ return x.id + ' · ' + x.cat + ' · ' + x.title; });
+  var b18 = items.filter(function(x){ return x.id === 'bj_187'; })[0] || {};
+  var sm = items.filter(function(x){ return x.id === 'm20261116_2'; })[0] || {};
+  out.textContent = [
+    '저장 시각: ' + d.savedAt,
+    '전체: ' + items.length + '건',
+    '분류별: ' + JSON.stringify(by),
+    '책: ' + books.length + '권 — 서재 ' + own['서재'] + ' · 대여 ' + own['대여'] + ' · 미분류 ' + own['미분류'],
+    '지운 카드가 남아 있나: ' + JSON.stringify(has, null, 0),
+    '지운 표시 개수: ' + (d.deleted || []).length,
+    'f01 상태: ' + f01.status,
+    'f02 상태·메모 연결: ' + f02.status + ' / ' + (f02.memoId || '없음') + ' / 메모 ' + (f02.memo ? f02.memo.slice(0,30) : '없음'),
+    'bj_187 장르: ' + b18.genre,
+    'm20261116_2 본문 길이: ' + String(sm.body || '').length + ' (김은유 언급: ' + (String(sm.body||'').indexOf('김은유') >= 0) + ')',
+    '새로 담긴 카드: ' + JSON.stringify(nb),
+    '레몬 하이라이트: ' + Object.keys(d.lemon || {}).length + '개 (켜짐 ' + Object.keys(d.lemon||{}).filter(function(k){ return Number(d.lemon[k]) > 0; }).length + ')',
+    '1회 동기화 표시 notebookSync20261121: ' + u.notebookSync20261121,
+    '1회 동기화 표시 전체: ' + JSON.stringify(u)
+  ].join('\n');
+})();
+</script>
+</body></html>
