@@ -520,7 +520,7 @@
   .sec-head.has-view > .sels{margin-left:6px}
 
   /* 화이트 선반 — 밝은 프레임, 단마다 얇은 널판과 은은한 그림자 */
-  .shelf{
+  .bshelf{
     --sh-pad:18px;background:#fff;border:1px solid var(--line);border-radius:20px;
     padding:15px var(--sh-pad) 5px;   /* 위 여백은 책등이 떠오를 자리 */
     box-shadow:0 1px 1px rgba(24,24,27,.03),0 14px 30px -24px rgba(24,24,27,.34);
@@ -1082,7 +1082,7 @@
     .sec-head.has-view > .sels{margin-left:auto}
     .sec-head.has-view > .viewseg{order:3;flex:1 1 100%;justify-content:flex-end;margin:8px 0 0}
     .viewseg button{padding:4px 10px;font-size:11px}
-    .shelf{--sh-pad:10px;border-radius:16px;padding:13px var(--sh-pad) 2px}
+    .bshelf{--sh-pad:10px;border-radius:16px;padding:13px var(--sh-pad) 2px}
     .sh-row{padding-bottom:7px}
     .sh-plank{height:8px}
     .grid{grid-template-columns:1fr;gap:12px}
@@ -3440,7 +3440,7 @@
            + '</div>';
       if (shelfView) {
         /* 선반은 폭을 재서 단을 나눠야 하므로 뼈대만 두고 그린 뒤에 채운다 */
-        html += '<div class="shelf" id="bookShelf" data-cat="book"></div>';
+        html += '<div class="bshelf" id="bookShelf" data-cat="book"></div>';
         shelfPaintList = list;
         shelfNeedsPaint = true;
       } else {
