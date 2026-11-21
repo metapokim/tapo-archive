@@ -495,6 +495,11 @@
   select.sel--genre{max-width:116px}
   /* 정렬·장르 드롭다운은 한 묶음으로 오른쪽 끝에 — 창 폭이 좁아도 칩 뒤로 밀려 사라지지 않는다 */
   .sels{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto}
+  /* 2026-11-21 은유 님 요청 — 카테고리 탭에서는 정렬(·장르)을 필터 줄이 아니라
+     섹션 헤더(`📖 책 5 / 584`)의 오른쪽 빈 자리에 둔다. 폰·PC 모두 같은 자리. */
+  .sec-head > .sels{margin-left:auto;flex:0 0 auto;min-width:0}
+  .sec-head > .sels .sel--sm{height:30px;font-size:12px;padding:0 10px}
+  .sec-head > .sels .sel--genre{max-width:132px}
   /* 카드 상단 배지 줄에 들어가는 작은 서재/대여 칩 — 줄 높이·여백을 그대로 두려고 배지와 같은 크기로 */
   .ownsel--top{border-radius:999px;height:18px;margin-left:1px}
   .ownsel--top .ownbtn{font-size:9.5px;font-weight:700;padding:1px 6px;line-height:1.1}
@@ -929,10 +934,17 @@
     #statusChips{order:1}
     #kindChips{order:2}
     #shelfChips{order:3}
-    .sels{order:4;width:100%;justify-content:flex-end;margin-left:0}
+    #filters .sels{order:4;width:100%;justify-content:flex-end;margin-left:0}
     /* 정렬·장르 셀렉트만 조금 줄여 콤팩트하게 (다른 칩·여백은 그대로) */
-    .sels .sel--sm{height:28px;font-size:11.5px;padding:0 9px}
-    .sels .sel--genre{max-width:104px}
+    #filters .sels .sel--sm{height:28px;font-size:11.5px;padding:0 9px}
+    #filters .sels .sel--genre{max-width:104px}
+    /* 섹션 헤더 오른쪽의 정렬(·장르) — 헤더 한 줄을 넘지 않게 조금 더 줄인다 */
+    .sec-head.has-sels{gap:8px}
+    .sec-head.has-sels > .sec-title{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+    .sec-head.has-sels > .sec-count{flex:0 0 auto;white-space:nowrap}
+    .sec-head > .sels{width:auto;justify-content:flex-end;margin-left:auto;flex:0 0 auto;gap:5px}
+    .sec-head > .sels .sel--sm{height:26px;font-size:11px;padding:0 8px}
+    .sec-head > .sels .sel--genre{max-width:92px}
     .chips .lbl{display:none}
     .tab,.chip{font-size:12px;padding:6px 11px}
     select.sel--sm{flex:0 0 auto;height:32px}
@@ -2611,9 +2623,9 @@
     var id = ytId(it.url) || ytId(it.extraUrl);
     return id ? 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' : '';
   }
-  /* 책·학회포럼 카드는 사진을 눌러 하이라이트를 켜고 끈다 (2026-11-21) —
+  /* 책·학회포럼·공연/전시/영화 카드는 사진을 눌러 하이라이트를 켜고 끈다 (2026-11-21) —
      사진이 있는 카드에는 .lemon-dot 단추를 두지 않고, 사진이 없는 카드에만 단추를 남긴다. */
-  var PHOTO_LEMON = { book:1, forum:1 };
+  var PHOTO_LEMON = { book:1, forum:1, show:1 };
   function photoLemon(it){ return !!PHOTO_LEMON[it.cat]; }
   function thumbHTML(it){
     var src = thumbOf(it);
@@ -3088,6 +3100,25 @@
       el.setAttribute('data-built', '1');
     }
     el.value = state.genre;
+  }
+
+  /* 2026-11-21 은유 님 요청 — 정렬(·장르) 드롭다운을 섹션 헤더 오른쪽(건수 옆 빈 자리)에.
+     카테고리 탭에서는 .filter-bar 가 아니라 그 섹션 헤더에 붙이고,
+     전체 보기이거나 섹션이 없을 때는 원래 자리(.filter-bar)로 되돌린다.
+     요소를 옮기므로 change 연결은 그대로 살아 있다. */
+  var selsBox = document.querySelector('.sels');
+  function placeSels(){
+    if (!selsBox) return;
+    var head = null;
+    if (state.cat !== 'all' && sectionsEl) {
+      var sec = sectionsEl.querySelector('.sec[data-cat="' + state.cat + '"]');
+      if (sec) head = sec.querySelector('.sec-head');
+    }
+    var target = head || document.querySelector('.filter-bar');
+    if (!target) return;
+    if (selsBox.parentNode !== target) target.appendChild(selsBox);
+    if (head) head.classList.add('has-sels');
+    /* 헤더에 있을 때는 헤더 쪽이, 필터 줄에 있을 때는 필터 줄이 보이게 한다 */
   }
 
   function renderSections(res){
@@ -4281,6 +4312,7 @@
     if (!isSearching()) searchFold = {};   /* 검색 중 임시 접힘은 검색어를 지우면 사라진다 */
     applyHero();
     renderSections(res);
+    placeSels();   /* 섹션이 다시 그려진 뒤에 정렬·장르를 그 섹션 헤더 오른쪽으로 옮긴다 */
     renderStats();
     renderUpcoming();
     renderBrief();
