@@ -2253,7 +2253,7 @@
        되돌리지 못하도록 갱신 시각도 지금으로). 파일 '불러오기' 없이 새로고침 한 번이면
        노트북과 같은 '전체 584 · 서재 442 · 대여 133 · 미분류 9' 가 된다. */
     if (saved && saved.items && saved.items.length && !(ui && ui.notebookSync20261121)) {
-      var nbi, nbIt, nbSd, nbFields, nbfi, nbTouched, nbKey;
+      var nbi, nbIt, nbSd, nbFields, nbfi, nbTouched, nbKey, nbOwn;
       for (nbi = 0; nbi < state.items.length; nbi++) {
         nbIt = state.items[nbi];
         nbFields = NOTEBOOK_PATCH[nbIt.id];
@@ -2269,6 +2269,22 @@
           }
         }
         if (nbTouched) { nbIt.updatedAt = new Date().toISOString(); delete nbIt._hay; loadChanged = true; }
+      }
+      /* 책의 소장(서재)·대여도 노트북 기준으로 한 번 맞춘다 — 이 백업에서 바뀌지 않았더라도
+         이 기기 저장본이 옛 값(빈 값)으로 남아 '미분류'로 세어지는 책까지 함께 맞춘다.
+         (읽음 상태·메모는 건드리지 않는다) */
+      for (nbi = 0; nbi < state.items.length; nbi++) {
+        nbIt = state.items[nbi];
+        if (nbIt.cat !== 'book') continue;
+        nbSd = seedById[nbIt.id];
+        if (!nbSd) continue;
+        nbOwn = (nbSd.own === '서재' || nbSd.own === '대여') ? nbSd.own : '';
+        if (String(nbIt.own == null ? '' : nbIt.own) !== nbOwn) {
+          nbIt.own = nbOwn;
+          nbIt.updatedAt = new Date().toISOString();
+          delete nbIt._hay;
+          loadChanged = true;
+        }
       }
       /* 노트북에서 지운 카드는 저장본에 남아 있어도 걷어 내고 '지운 표시'를 남긴다 */
       for (nbi = state.items.length - 1; nbi >= 0; nbi--) {
