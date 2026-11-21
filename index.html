@@ -3421,7 +3421,7 @@
       if (!list.length) return;
       idx++;
       /* 책 탭의 '책꽂이' 보기 — 필터는 그대로 두고 보여 주는 방식만 바꾼다 (2026-11-21) */
-      var shelfView = (cat === 'book' && state.bookView === 'shelf');
+      var shelfView = (cat === 'book' && state.cat === 'book' && state.bookView === 'shelf');
       var lim = state.limits[cat] || 24;
       var shown = shelfView ? list : list.slice(0, lim);
       /* 접기는 전체 보기에서만. 카테고리를 골랐을 때는 늘 카드가 보인다 */
@@ -3432,7 +3432,7 @@
       html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
-           + (cat === 'book' ? viewSegHTML() : '')
+           + (cat === 'book' && state.cat === 'book' ? viewSegHTML() : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
