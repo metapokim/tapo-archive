@@ -519,6 +519,19 @@
   .sec-head.has-view > .viewseg{margin-left:auto}
   .sec-head.has-view > .sels{margin-left:6px}
 
+  /* 책 탭 섹션 헤더의 작은 '통계' 단추 (2026-11-22) — 카드|책꽂이 토글 옆 */
+  .statbtn{
+    display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;height:30px;
+    font:inherit;font-size:11.5px;font-weight:700;color:#71717A;background:#fff;
+    border:1px solid var(--line-2);border-radius:999px;padding:0 10px;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,border-color .15s;
+  }
+  .statbtn svg{width:13px;height:13px;flex:0 0 13px}
+  .statbtn span{line-height:1}
+  .statbtn:hover,.statbtn:focus-visible{background:var(--lemon-w);border-color:var(--lemon-2);color:var(--ink)}
+  .statbtn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  .sec-head.has-view > .statbtn{margin-left:6px}
+
   /* 화이트 선반 — 밝은 프레임, 단마다 얇은 널판과 은은한 그림자 */
   .bshelf{
     --sh-pad:18px;background:#fff;border:1px solid var(--line);border-radius:20px;
@@ -550,12 +563,16 @@
     justify-content:flex-start;overflow:hidden;padding:8px 0 6px;
     border-radius:2px 2px 0 0;box-shadow:inset 1px 0 0 rgba(255,255,255,.22),inset -1px 0 0 rgba(0,0,0,.14);
   }
+  /* 2026-11-22 은유 님 요청 — 가상 책등 글자를 조금 작게(작고 여백 있게) 쓰고,
+     아이폰 기본 글꼴(var(--sans))로. 예전에는 <button> 기본 글꼴(Arial)을 물려받아
+     한글만 다른 글꼴로 떨어지고 긴 제목이 삐져나왔다. */
   .sh-vt b{
-    writing-mode:vertical-rl;text-orientation:mixed;font-size:9.5px;font-weight:800;line-height:1.12;
+    writing-mode:vertical-rl;text-orientation:mixed;
+    font-family:var(--sans);font-size:8.5px;font-weight:800;line-height:1.14;
     letter-spacing:.005em;white-space:nowrap;overflow:hidden;max-height:calc(100% - 26px);
   }
   .sh-vt i{
-    writing-mode:vertical-rl;font-style:normal;font-size:7.5px;font-weight:600;opacity:.74;
+    writing-mode:vertical-rl;font-family:var(--sans);font-style:normal;font-size:6.8px;font-weight:600;opacity:.72;
     white-space:nowrap;overflow:hidden;margin-top:auto;max-height:34%;
   }
   /* 데스크톱 — 커서가 닿은 책등 위에 뜨는 제목·저자 말풍선 */
@@ -585,6 +602,52 @@
   /* 팝업 안의 카드 — 카드가 창 안에 놓이므로 테두리만 남기고 그림자·떠오름은 뺀다 */
   #bcardHost .card{box-shadow:none}
   #bcardHost .card:hover{transform:none;box-shadow:none;border-color:var(--line)}
+
+  /* ── 독서 통계 팝업 (2026-11-22) ── */
+  .modal .sheet--bstat{
+    max-width:440px;padding:18px 18px 14px;border-radius:26px;
+    animation:bcardIn .17s ease-out;
+  }
+  .bstat-top{display:flex;align-items:flex-start;gap:10px;margin:0 0 13px}
+  .bstat-top h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.025em}
+  .bstat-top .sub{margin:2px 0 0;font-size:11.5px;font-weight:600;color:#8A8A93}
+  .bstat-top .bcard-x{margin-left:auto}
+  .bstat-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 12px}
+  .bstat-kpi{background:#F7F7F8;border-radius:13px;padding:8px 4px 7px;text-align:center;min-width:0}
+  .bstat-kpi b{display:block;font-size:16px;font-weight:800;letter-spacing:-.03em;line-height:1.2;font-variant-numeric:tabular-nums}
+  .bstat-kpi span{display:block;font-size:10px;font-weight:700;color:#8A8A93;margin-top:1px;white-space:nowrap}
+  .bstat-kpi--key{background:var(--lemon-w);box-shadow:inset 0 0 0 1px #F6EFB4}
+  .bstat-kpi--key b{color:var(--lemon-ink)}
+  .bstat-kpi--key span{color:#8A7A1A}
+  .bstat-rate{background:var(--green-w);border-radius:14px;padding:10px 12px 9px;margin:0 0 14px}
+  .bstat-rate-top{display:flex;align-items:baseline;gap:6px;font-size:11.5px;font-weight:800;color:var(--green-ink)}
+  .bstat-rate-top b{margin-left:auto;font-size:17px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .bstat-note{margin:5px 0 0;font-size:10.5px;font-weight:600;color:#8A8A93}
+  .bstat-rate .bstat-note{color:#4F8A72}
+  .bstat-block{margin:0 0 13px}
+  .bstat-block:last-child{margin-bottom:2px}
+  .bstat-h{
+    display:flex;align-items:baseline;gap:6px;margin:0 0 7px;
+    font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#A1A1AA;
+  }
+  .bstat-h em{font-style:normal;font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#B4B4BB}
+  .bstat-row{display:grid;grid-template-columns:88px minmax(0,1fr) 34px;gap:8px;align-items:center;margin:0 0 5px}
+  .bstat-lb{font-size:11px;font-weight:700;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bstat-lb i{font-style:normal;color:#B4B4BB;font-weight:700;margin-right:5px;font-variant-numeric:tabular-nums}
+  .bstat-bar{display:block;height:7px;border-radius:999px;background:#F1F1F3;overflow:hidden}
+  .bstat-bar i{display:block;height:100%;border-radius:999px;background:#D4D4D8;transition:width .3s ease}
+  .bstat-bar i.b-green{background:var(--green)}
+  .bstat-bar i.b-lemon{background:var(--lemon)}
+  .bstat-bar i.b-soft{background:#D4D4D8}
+  .bstat-bar i.b-watch{background:#B4B4BB}
+  .bstat-bar i.b-gen{background:#8A8A93}
+  .bstat-bar i.b-pub{background:var(--lemon-2)}
+  .bstat-n{
+    font-size:11.5px;font-weight:800;color:var(--ink);text-align:right;
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .bstat-bar--lg{height:9px}
+  .bstat-bar--lg i{background:var(--green)}
 
   /* ───────────── sections & cards ───────────── */
   main{max-width:1240px;width:100%;margin:0 auto;padding:0 0 28px;flex:1 1 auto}
@@ -1075,9 +1138,13 @@
     }
     .tabs::-webkit-scrollbar{display:none}
     main{padding:0 0 22px}
-    .sec-head.has-view{flex-wrap:wrap}
+    .sec-head.has-view{flex-wrap:wrap;justify-content:flex-end}
     .sec-head.has-view > .sels{margin-left:auto}
-    .sec-head.has-view > .viewseg{order:3;flex:1 1 100%;justify-content:flex-end;margin:8px 0 0}
+    .sec-head.has-view > .viewseg{order:3;flex:0 1 auto;justify-content:flex-end;margin:8px 0 0}
+    /* 통계 단추는 카드|책꽂이 토글과 같은 둘째 줄 오른쪽에 나란히 */
+    .sec-head.has-view > .statbtn{order:4;height:26px;font-size:11px;padding:0 9px;margin:8px 0 0 5px}
+    .statbtn svg{width:12px;height:12px;flex:0 0 12px}
+    .bstat-row{grid-template-columns:84px minmax(0,1fr) 30px;gap:7px}
     .viewseg button{padding:4px 10px;font-size:11px}
     .bshelf{--sh-pad:10px;border-radius:16px;padding:13px var(--sh-pad) 2px}
     .sh-row{padding-bottom:7px}
@@ -1265,6 +1332,20 @@
   <div class="sheet sheet--bcard" id="bcardSheet" role="dialog" aria-modal="true" aria-label="책 카드" tabindex="-1">
     <div class="bcard-top"><button class="bcard-x" type="button" id="bcardX" aria-label="닫기" title="닫기">&#10005;</button></div>
     <div id="bcardHost"></div>
+  </div>
+</div>
+
+<!-- 책 탭 '통계' — 지금 서재의 독서 현황 (2026-11-22) -->
+<div class="modal" id="bstatModal" hidden>
+  <div class="sheet sheet--bstat" id="bstatSheet" role="dialog" aria-modal="true" aria-label="독서 통계" tabindex="-1">
+    <div class="bstat-top">
+      <div>
+        <h2>독서 통계</h2>
+        <p class="sub" id="bstatSub">내 서재 기준</p>
+      </div>
+      <button class="bcard-x" type="button" id="bstatX" aria-label="닫기" title="닫기">&#10005;</button>
+    </div>
+    <div id="bstatBody"></div>
   </div>
 </div>
 
@@ -2589,7 +2670,7 @@
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
       /* 2026-11-21 — 소장/대여·장르 필터는 저장본에서 되살리지 않는다. 탭(카테고리)처럼 새로고침하면 '전체'로.
          (되살리면 화면에 안 보이는 필터가 걸려 '책 584'인데 '전체 215'로 보이는 일이 생긴다) */
-      if (ui.sort && ['default','date-desc','title'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
+      if (ui.sort && ['default','date-desc','title','publisher','genre'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
       if (ui.bookView === 'shelf' || ui.bookView === 'card') state.bookView = ui.bookView;
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
         state.collapsed = {};
@@ -2884,6 +2965,24 @@
 
   function sortList(list, cat){
     var arr = list.slice();
+    /* 2026-11-22 — 책 탭의 출판사별·장르별 정렬.
+       출판사·장르 이름을 가나다순으로 묶고, 같은 묶음 안에서는 제목순.
+       출판사·장르가 비어 있는 책은 맨 뒤로 모은다. */
+    if (cat === 'book' && state.cat === 'book' && isBookSort(state.sort)) {
+      var keyOf = (state.sort === 'publisher')
+        ? function(it){ return String(it.publisher == null ? '' : it.publisher).trim(); }
+        : function(it){ return String(it.genre == null ? '' : it.genre).trim(); };
+      var byTitle = function(a, b){ return String(a.title).localeCompare(String(b.title), 'ko'); };
+      arr.sort(function(a, b){
+        var x = keyOf(a), y = keyOf(b);
+        if (!x && !y) return byTitle(a, b);
+        if (!x) return 1;
+        if (!y) return -1;
+        var d = x.localeCompare(y, 'ko');
+        return d ? d : byTitle(a, b);
+      });
+      return arr;
+    }
     if (state.sort === 'title') {
       arr.sort(function(a, b){ return String(a.title).localeCompare(String(b.title), 'ko'); });
       return arr;
@@ -3491,6 +3590,24 @@
     el.value = state.genre;
   }
 
+  /* 2026-11-22 — 정렬 선택지. 출판사별·장르별은 책 탭에서만 나온다. */
+  var SORT_BASE = [['default','기본 순서'],['date-desc','날짜 늦은 순'],['title','가나다순']];
+  var SORT_BOOK = SORT_BASE.concat([['publisher','출판사별'],['genre','장르별']]);
+  function isBookSort(v){ return v === 'publisher' || v === 'genre'; }
+  /* 책 탭에서는 다섯 가지, 다른 탭에서는 기본 세 가지. 책을 떠나면 화면에는 '기본 순서'로 보이고,
+     고른 값(state.sort)은 남겨 두었다가 책 탭으로 돌아오면 그대로 다시 쓴다. */
+  function syncSortSel(){
+    var el = document.getElementById('sort');
+    if (!el) return;
+    var opts = (state.cat === 'book') ? SORT_BOOK : SORT_BASE;
+    var key = opts.map(function(o){ return o[0]; }).join('|');
+    if (el.getAttribute('data-opts') !== key) {
+      el.innerHTML = opts.map(function(o){ return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('');
+      el.setAttribute('data-opts', key);
+    }
+    el.value = (state.cat !== 'book' && isBookSort(state.sort)) ? 'default' : state.sort;
+  }
+
   /* 2026-11-21 은유 님 요청 — 정렬(·장르) 드롭다운을 섹션 헤더 오른쪽(건수 옆 빈 자리)에.
      카테고리 탭에서는 .filter-bar 가 아니라 그 섹션 헤더에 붙이고,
      전체 보기이거나 섹션이 없을 때는 원래 자리(.filter-bar)로 되돌린다.
@@ -3529,7 +3646,7 @@
       html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
-           + (cat === 'book' && state.cat === 'book' ? viewSegHTML() : '')
+           + (cat === 'book' && state.cat === 'book' ? viewSegHTML() + statsBtnHTML() : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
@@ -3814,6 +3931,12 @@
       + '<button type="button" data-view="shelf" aria-pressed="' + shelf + '">책꽂이</button>'
       + '</div>';
   }
+  /* 책 탭 섹션 헤더의 '통계' 단추 (2026-11-22) */
+  function statsBtnHTML(){
+    return '<button class="statbtn" type="button" data-act="bstats" aria-haspopup="dialog" title="독서 통계">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 19v-6"/><path d="M12 19V5"/><path d="M19 19v-9"/></svg>'
+      + '<span>통계</span></button>';
+  }
   /* 마우스(호버)가 있는 기기인지 — 폰에서는 한 번 탭 = 책등 뽑기 */
   function hoverCapable(){
     return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
@@ -3856,6 +3979,28 @@
     var w2 = Math.max(19, Math.round(h2 * (0.082 + Math.min(0.036, t.length * 0.0013))));
     return { id: it.id, it: it, v: true, h: h2, w: w2, color: vColorOf(it) };
   }
+  /* 2026-11-22 — 가상 책등 제목이 책 높이를 넘지 않게.
+     먼저 기본 8.5px, 조금 안 들어가면 글자를 줄이고(최저 7px),
+     그래도 길면 …로 줄여 단정하게 끊는다 — 예전에는 중간에서 잘렸다. */
+  function vtCharW(ch){
+    var c = ch.charCodeAt(0);
+    if (c === 32) return 0.34;
+    if (c < 128) return /[A-Z0-9]/.test(ch) ? 0.62 : 0.55;
+    if (c >= 0xAC00 && c <= 0xD7A3) return 1;        /* 한글 음절 */
+    if (c >= 0x3130 && c <= 0x318F) return 0.6;      /* ㄱ~ㅎ 자모 */
+    if ((c >= 0x4E00 && c <= 0x9FFF) || (c >= 0x3000 && c <= 0x303F) || (c >= 0xFF00 && c <= 0xFF60)) return 1;
+    return 0.64;
+  }
+  function vtFit(text, avail){
+    var chars = Array.from(String(text)), sw = 0, i;
+    for (i = 0; i < chars.length; i++) sw += vtCharW(chars[i]);
+    if (!sw) return { size: 8.5, text: '' };
+    if (sw * 8.5 <= avail) return { size: 8.5, text: chars.join('') };
+    if (sw * 7 <= avail) return { size: Math.floor(avail / sw * 10) / 10, text: chars.join('') };
+    var keep = Math.floor(avail / (7 * (sw / chars.length))) - 1;
+    keep = Math.max(3, Math.min(chars.length - 1, keep));
+    return { size: 7, text: chars.slice(0, keep).join('') + '…' };
+  }
   function spineHTML(g){
     var it = g.it;
     var au = String(it.author || '').replace(/\s*지음$/, '').split(',')[0].trim();
@@ -3867,10 +4012,21 @@
         + '" loading="lazy" decoding="async">' + '</button>';
     }
     var dark = lumOf(g.color) > 0.62;
+    /* 제목이 들어갈 자리 — .sh-vt 위아래 여백 14와 제목 max-height 여유 26을 뺀 높이.
+       저자 줄(약 38px)까지 보태면 제목이 너무 잘리므로, 제목이 7px로도 다 앉지 않으면
+       그 책등은 저자 줄을 빼고 제목을 살린다(저자는 말풍선·카드 팝업에 그대로 있다). */
+    var content = g.h - 14;
+    var availNo = Math.max(20, content - 26);
+    var availAu = Math.max(20, content - 26 - 38);
+    var title = cleanBookTitle(it.title);
+    var need7 = 0, chs = Array.from(title), k;
+    for (k = 0; k < chs.length; k++) need7 += vtCharW(chs[k]) * 7;
+    var showAu = !!au && need7 <= availAu;
+    var fit = vtFit(title, showAu ? availAu : availNo);
     return open
       + '<span class="sh-vt" style="background:' + esc(g.color) + ';color:' + (dark ? '#2A2A2E' : '#FFFFFF') + '">'
-      + '<b>' + esc(cleanBookTitle(it.title)) + '</b>'
-      + (au ? '<i>' + esc(au.length > 14 ? au.slice(0, 13) + '…' : au) + '</i>' : '')
+      + '<b style="font-size:' + fit.size + 'px">' + esc(fit.text) + '</b>'
+      + (showAu ? '<i>' + esc(au.length > 14 ? au.slice(0, 13) + '…' : au) + '</i>' : '')
       + '</span></button>';
   }
   /* 폭을 재서 한 단에 꽉 차게 책등을 세운다 — 넘치면 다음 단 */
@@ -3950,6 +4106,119 @@
     render();
     toResults();
   }
+
+  /* ────────────── 독서 통계 팝업 (2026-11-22) ────────────── */
+  var bstatEl = document.getElementById('bstatModal');
+  var bstatSheet = document.getElementById('bstatSheet');
+  var bstatBody = document.getElementById('bstatBody');
+  var bstatSub = document.getElementById('bstatSub');
+  var BSTAT_COLOR = { '완독':'b-green', '읽는 중':'b-lemon', '미독':'b-soft', '관심':'b-watch' };
+
+  /* 객체를 큰 순으로 — 같은 수면 이름 가나다순 */
+  function statTop(obj, n){
+    var arr = Object.keys(obj).map(function(k){ return { k: k, n: obj[k] }; });
+    arr.sort(function(a, b){ return (b.n - a.n) || String(a.k).localeCompare(String(b.k), 'ko'); });
+    return (n && n > 0) ? arr.slice(0, n) : arr;
+  }
+  function statRow(label, n, max, cls, rank){
+    var w = max > 0 ? Math.max(3, Math.round(n / max * 100)) : 0;
+    return '<div class="bstat-row"><span class="bstat-lb">'
+      + (rank ? '<i>' + rank + '</i>' : '') + esc(label) + '</span>'
+      + '<span class="bstat-bar"><i class="' + (cls || '') + '" style="width:' + w + '%"></i></span>'
+      + '<b class="bstat-n">' + n + '</b></div>';
+  }
+  /* 지금 책 데이터(state.items 중 cat==='book')로 바로 계산한다 */
+  function bookStatsHTML(){
+    var books = [], i, it;
+    for (i = 0; i < state.items.length; i++) {
+      it = state.items[i];
+      if (it.cat === 'book') books.push(it);
+    }
+    var total = books.length;
+    var own = { '서재': 0, '대여': 0, '미분류': 0 }, st = {}, stShelf = {}, gen = {}, pub = {};
+    books.forEach(function(b){
+      var o = ownOf(b) || '미분류';
+      own[o]++;
+      var s = b.status || '미분류';
+      st[s] = (st[s] || 0) + 1;
+      if (o === '서재') stShelf[s] = (stShelf[s] || 0) + 1;
+      var g = String(b.genre == null ? '' : b.genre).trim() || '장르 없음';
+      gen[g] = (gen[g] || 0) + 1;
+      if (o === '서재') {
+        var p = String(b.publisher == null ? '' : b.publisher).trim();
+        if (p) pub[p] = (pub[p] || 0) + 1;
+      }
+    });
+    var shelfDone = stShelf['완독'] || 0;
+    var rate = own['서재'] ? Math.round(shelfDone / own['서재'] * 100) : 0;
+    var h = '';
+
+    h += '<div class="bstat-kpis">'
+      + '<div class="bstat-kpi bstat-kpi--key"><b>' + total + '</b><span>전체</span></div>'
+      + '<div class="bstat-kpi"><b>' + own['서재'] + '</b><span>서재</span></div>'
+      + '<div class="bstat-kpi"><b>' + own['대여'] + '</b><span>대여</span></div>'
+      + '<div class="bstat-kpi"><b>' + own['미분류'] + '</b><span>미분류</span></div>'
+      + '</div>';
+
+    h += '<div class="bstat-rate">'
+      + '<div class="bstat-rate-top"><span>서재 완독률</span><b>' + rate + '%</b></div>'
+      + '<div class="bstat-bar bstat-bar--lg"><i class="b-green" style="width:' + (rate > 0 ? Math.max(3, rate) : 0) + '%"></i></div>'
+      + '<p class="bstat-note">서재 ' + own['서재'] + '권 중 완독 ' + shelfDone + '권</p>'
+      + '</div>';
+
+    /* 독서 상태 — 완독 · 읽는 중 · 미독 · 관심 순 */
+    var ST_ORDER = ['완독', '읽는 중', '미독', '관심', '읽고 싶은 책'];
+    var stKeys = ST_ORDER.filter(function(s){ return st[s]; });
+    Object.keys(st).forEach(function(s){ if (ST_ORDER.indexOf(s) < 0) stKeys.push(s); });
+    var maxSt = 0;
+    stKeys.forEach(function(s){ if (st[s] > maxSt) maxSt = st[s]; });
+    h += '<div class="bstat-block"><h3 class="bstat-h">독서 상태</h3>';
+    stKeys.forEach(function(s){ h += statRow(s, st[s], maxSt, BSTAT_COLOR[s] || ''); });
+    h += '</div>';
+
+    /* 장르별 분포 — 상위 여섯 장르 권수 막대 */
+    var gs = statTop(gen, 6);
+    var maxG = gs.length ? gs[0].n : 0;
+    h += '<div class="bstat-block"><h3 class="bstat-h">장르 분포<em>전체 기준</em></h3>';
+    gs.forEach(function(e){ h += statRow(e.k, e.n, maxG, 'b-gen'); });
+    var gRest = gs.reduce(function(a, e){ return a - e.n; }, total);
+    if (gRest > 0) h += '<p class="bstat-note">그 외 ' + gRest + '권</p>';
+    h += '</div>';
+
+    /* 가장 많이 소장한 출판사 TOP 5 — 서재 기준 */
+    var ps = statTop(pub, 5);
+    var maxP = ps.length ? ps[0].n : 0;
+    h += '<div class="bstat-block"><h3 class="bstat-h">많이 소장한 출판사<em>서재 기준 TOP 5</em></h3>';
+    if (!ps.length) h += '<p class="bstat-note">출판사가 적힌 서재 책이 아직 없습니다.</p>';
+    ps.forEach(function(e, k){ h += statRow(e.k, e.n, maxP, 'b-pub', k + 1); });
+    h += '</div>';
+
+    return h;
+  }
+  function openBookStats(){
+    if (!bstatEl || !bstatBody) return;
+    bstatBody.innerHTML = bookStatsHTML();
+    if (bstatSub) {
+      var n = 0, i;
+      for (i = 0; i < state.items.length; i++) if (state.items[i].cat === 'book') n++;
+      bstatSub.textContent = '책 ' + n + '권 기준 · 지금 서재';
+    }
+    bstatEl.hidden = false;
+    if (bstatSheet) {
+      bstatSheet.scrollTop = 0;
+      try { bstatSheet.focus({ preventScroll: true }); } catch (e) { try { bstatSheet.focus(); } catch (e2) {} }
+    }
+  }
+  function closeBookStats(){ if (bstatEl) bstatEl.hidden = true; }
+  if (bstatEl) {
+    var bstatXEl = document.getElementById('bstatX');
+    if (bstatXEl) bstatXEl.addEventListener('click', closeBookStats);
+    bstatEl.addEventListener('click', function(e){ if (e.target === bstatEl) closeBookStats(); });   /* 배경을 누르면 닫는다 */
+  }
+  sectionsEl.addEventListener('click', function(e){
+    var b = (e.target && e.target.closest) ? e.target.closest('[data-act="bstats"]') : null;
+    if (b) openBookStats();
+  });
   sectionsEl.addEventListener('mouseover', function(e){
     if (state.bookView !== 'shelf') return;
     var sp = e.target.closest ? e.target.closest('.sh-spine') : null;
@@ -5021,6 +5290,7 @@
     renderKindChips();
     renderShelfChips();
     renderGenreSel();
+    syncSortSel();   /* 책 탭에서만 출판사별·장르별 선택지 */
     /* 상태·서가·정렬 줄은 카테고리를 골랐을 때만 — 전체/메모에서는 접어 둔다 */
     var filtersEl = document.getElementById('filters');
     if (filtersEl) filtersEl.hidden = (state.cat === 'all' || state.cat === 'memo');
@@ -5155,6 +5425,7 @@
       var over = (typeof modalEl !== 'undefined' && modalEl && !modalEl.hidden)
         || (typeof memoModalEl !== 'undefined' && memoModalEl && !memoModalEl.hidden)
         || (typeof cmEl !== 'undefined' && cmEl && !cmEl.hidden);
+      if (bstatEl && !bstatEl.hidden) closeBookStats();   /* 독서 통계 창 */
       closeMenu(); closeModal(); closeMemoForm();
       if (!over) closeBCard();
       if (!isTypingInSearch()) setMore(false);
