@@ -1723,6 +1723,36 @@
      이 기기 저장본의 표지를 한 번 더 이 값으로 되돌린다. */
   var NOTEBOOK_COVERS = {"s07":"https://ticketimage.interpark.com/Play/image/large/26/26000026_p.gif","bc21":"https://image.aladin.co.kr/product/30042/72/cover200/8931022859_1.jpg","bc22":"https://image.aladin.co.kr/product/30634/78/cover200/8932040958_1.jpg","bp10a":"https://image.aladin.co.kr/product/270/62/cover200/8925530643_1.jpg","bp12":"https://image.aladin.co.kr/product/39657/24/cover500/8954625762_1.jpg","bp16b":"https://image.aladin.co.kr/product/39493/3/cover500/k592139413_1.jpg","bp17a":"https://image.aladin.co.kr/product/596/65/cover150/s542636622_1.jpg","bp21a":"https://image.aladin.co.kr/product/11/69/cover150/8970121943_1.gif","bp21b":"https://image.aladin.co.kr/product/39/74/cover150/8989232376_1.gif","bp21c":"https://image.aladin.co.kr/product/7/30/cover150/8932008132_1.gif","bp25b":"https://image.aladin.co.kr/product/38793/21/cover500/k902137265_1.jpg","bp29a":"https://image.aladin.co.kr/product/38490/79/cover500/k062135115_1.jpg","bp31b":"https://image.aladin.co.kr/product/38354/11/cover500/k402135262_1.jpg","bj_075":"https://image.aladin.co.kr/product/36589/28/cover200/893102522x_1.jpg","bj_102":"https://image.aladin.co.kr/product/592/76/cover200/8932909970_1.jpg","bj_107":"https://image.aladin.co.kr/product/21/88/cover150/8932000220_1.gif","bj_125":"https://image.aladin.co.kr/product/31080/73/cover200/8932922306_1.jpg","bj_147":"https://image.aladin.co.kr/product/56/82/cover150/8986609622_1.jpg","bj_158":"https://image.aladin.co.kr/product/35526/55/cover200/k642036972_1.jpg"};
 
+  /* ── 1회성 마이그레이션이 항목에 찍는 '갱신 시각' (2026-11-21 수정) ──
+     예전에는 마이그레이션이 실행되는 그 순간(new Date())을 찍었다. 그래서 다른 기기를 나중에 처음 열면
+     그 기기의 마이그레이션 시각이 사용자가 앞서 다른 기기에서 한 편집보다 늦게 찍혀,
+     Gist 병합에서 사용자의 최신 편집분이 밀렸다(예: 16:21 노트북 편집 < 16:24 아이패드 마이그레이션).
+     이제 마이그레이션마다 처음 배포된 시각을 아래 고정값(UTC)으로 쓰고, 항목에 이미 그보다 새로운
+     시각이 찍혀 있으면(그 뒤에 사용자가 고친 항목) updatedAt 을 건드리지 않고 그대로 둔다.
+     → 패치 시각이 사용자의 최신 편집보다 이르므로 동기화에서 사용자의 편집분이 절대 밀리지 않는다. */
+  var MIG_STAMP = {
+    forumEwha:  '2026-11-18T00:10:42.000Z',   /* forumEwha20261118 배포 */
+    settop:     '2026-11-20T16:49:06.000Z',   /* settopSplit20261121 배포 */
+    booksShelf: '2026-11-17T02:10:00.000Z',   /* booksShelfMigrate20261117 배포 */
+    bookRework: '2026-11-21T06:16:37.000Z',   /* bookRework20261121 배포 */
+    libSub:     '2026-11-20T17:01:38.000Z',   /* libSubToMemo20261121 배포 */
+    media:      '2026-11-17T15:44:31.000Z',   /* mediaTabSplit20261118 배포 */
+    yna:        '2026-11-16T10:04:34.000Z',   /* ynaSynced20261116 배포 */
+    ynaSub:     '2026-11-16T10:16:17.000Z',   /* ynaSub20261116 배포 */
+    gradAdm:    '2026-11-16T19:33:11.000Z',   /* gradAdm20261117b 배포 */
+    caseNotes:  '2026-11-16T19:51:23.000Z',   /* caseNotes20261117 배포 */
+    hd119:      '2026-11-19T11:08:55.000Z',   /* memoHduk20261119 배포 */
+    hd120:      '2026-11-20T01:30:50.000Z',   /* memoHduk20261120 배포 */
+    notebook:   '2026-11-21T07:10:41.000Z',   /* notebookSync20261121 배포 */
+    covers:     '2026-11-21T07:16:43.000Z'    /* notebookCovers20261121 배포 */
+  };
+  function migTouch(it, stamp){
+    if (!it) return;
+    var cur = String(it.updatedAt || '');
+    if (cur && cur >= stamp) return;   /* 그 뒤에 사용자가 고친 항목은 시각을 그대로 둔다 */
+    it.updatedAt = stamp;
+  }
+
   function load(){
     var saved = null;
     var raw = readStore(STORE);
@@ -1849,7 +1879,7 @@
         it = state.items[j];
         if (it.id !== 'f02') continue;
         if (it.status !== '신청 완료') { it.status = '신청 완료'; delete it._hay; loadChanged = true; }
-        it.updatedAt = new Date().toISOString();   /* 옛 사본이 상태를 되돌리지 못하도록 이번 갱신 시각만 남긴다 */
+        migTouch(it, MIG_STAMP.forumEwha);   /* 옛 사본이 상태를 되돌리지 못하도록 패치 시각만 남긴다 */
       }
       var etd = briefTodos(), edel = briefDels(), edrop = [], ekey;
       for (j = 0; j < etd.length; j++) {
@@ -1873,7 +1903,7 @@
         if (it.memo === '1/28 · 1/30 관람') {
           it.memo = '';
           delete it._hay;
-          it.updatedAt = new Date().toISOString();
+          migTouch(it, MIG_STAMP.settop);
           loadChanged = true;
         }
       }
@@ -1948,7 +1978,7 @@
           if (rsd[rf] === undefined) continue;
           if (String(it[rf] == null ? '' : it[rf]) !== String(rsd[rf])) { it[rf] = rsd[rf]; rp = true; }
         }
-        if (rp) { it.updatedAt = new Date().toISOString(); delete it._hay; loadChanged = true; }
+        if (rp) { migTouch(it, MIG_STAMP.booksShelf); delete it._hay; loadChanged = true; }
       }
       booksShelfSynced = true;
     }
@@ -1976,7 +2006,7 @@
           it.status = st2;
           it.own = ow2;
           it.genre = gn2;
-          it.updatedAt = new Date().toISOString();
+          migTouch(it, MIG_STAMP.bookRework);
           delete it._hay;
           loadChanged = true;
         }
@@ -1999,7 +2029,7 @@
         if (String(it.sub == null ? '' : it.sub) !== '' || String(it.memo == null ? '' : it.memo) !== libNext) {
           it.sub = '';
           it.memo = libNext;
-          it.updatedAt = new Date().toISOString();
+          migTouch(it, MIG_STAMP.libSub);
           delete it._hay;
           loadChanged = true;
         }
@@ -2017,7 +2047,7 @@
         it.cat = 'video';
         it.kind = '기타자료';
         it.status = MEDIA_STATUS[it.status] || '시청 전';
-        it.updatedAt = new Date().toISOString();
+        migTouch(it, MIG_STAMP.media);
         delete it._hay;
         loadChanged = true;
       }
@@ -2045,7 +2075,7 @@
           }
         }
         /* 옛 사본이 이 카드를 되돌리지 않도록 이번 갱신을 최신 시각으로 남긴다(메모·상태는 그대로) */
-        yna.updatedAt = new Date().toISOString();
+        migTouch(yna, MIG_STAMP.yna);
         delete yna._hay;
       }
       ynaSynced = true;
@@ -2060,7 +2090,7 @@
       }
       if (ysub && String(ysub.sub == null ? '' : ysub.sub) !== YNA_SUB) {
         ysub.sub = YNA_SUB;
-        ysub.updatedAt = new Date().toISOString();
+        migTouch(ysub, MIG_STAMP.ynaSub);
         delete ysub._hay;
         loadChanged = true;
       }
@@ -2080,7 +2110,7 @@
           if (!Object.prototype.hasOwnProperty.call(ga, gk)) continue;
           if (String(it[gk] == null ? '' : it[gk]) !== ga[gk]) { it[gk] = ga[gk]; patched = true; }
         }
-        if (patched) { it.updatedAt = new Date().toISOString(); delete it._hay; loadChanged = true; }
+        if (patched) { migTouch(it, MIG_STAMP.gradAdm); delete it._hay; loadChanged = true; }
       }
       gradAdmSynced = true;
     }
@@ -2098,7 +2128,7 @@
           if (!Object.prototype.hasOwnProperty.call(cns, ck)) continue;
           if (String(it[ck] == null ? '' : it[ck]) !== cns[ck]) { it[ck] = cns[ck]; cnPatched = true; }
         }
-        if (cnPatched) { it.updatedAt = new Date().toISOString(); delete it._hay; loadChanged = true; }
+        if (cnPatched) { migTouch(it, MIG_STAMP.caseNotes); delete it._hay; loadChanged = true; }
       }
       caseNotesSynced = true;
     }
@@ -2113,7 +2143,7 @@
         if (String(it.summary || '').indexOf('[11.19 20:00 후속 정리]') >= 0) continue;
         it.summary = String(it.summary || '') + HD_MEMO_ADD;
         it.body = String(it.body || '') + HD_MEMO_ADD;
-        it.updatedAt = new Date().toISOString();
+        migTouch(it, MIG_STAMP.hd119);
         delete it._hay;
         loadChanged = true;
       }
@@ -2131,7 +2161,7 @@
         if (String(it.body || '').indexOf(hd2Tag) >= 0) continue;
         it.summary = String(it.summary || '') + HD_MEMO_ADD2;
         it.body = String(it.body || '') + HD_MEMO_ADD2;
-        it.updatedAt = new Date().toISOString();
+        migTouch(it, MIG_STAMP.hd120);
         delete it._hay;
         loadChanged = true;
       }
@@ -2273,7 +2303,7 @@
             nbTouched = true;
           }
         }
-        if (nbTouched) { nbIt.updatedAt = new Date().toISOString(); delete nbIt._hay; loadChanged = true; }
+        if (nbTouched) { migTouch(nbIt, MIG_STAMP.notebook); delete nbIt._hay; loadChanged = true; }
       }
       /* 책의 소장(서재)·대여도 노트북 기준으로 한 번 맞춘다 — 이 백업에서 바뀌지 않았더라도
          이 기기 저장본이 옛 값(빈 값)으로 남아 '미분류'로 세어지는 책까지 함께 맞춘다.
@@ -2286,7 +2316,7 @@
         nbOwn = (nbSd.own === '서재' || nbSd.own === '대여') ? nbSd.own : '';
         if (String(nbIt.own == null ? '' : nbIt.own) !== nbOwn) {
           nbIt.own = nbOwn;
-          nbIt.updatedAt = new Date().toISOString();
+          migTouch(nbIt, MIG_STAMP.notebook);
           delete nbIt._hay;
           loadChanged = true;
         }
@@ -2321,7 +2351,7 @@
         if (!ncImg) continue;
         if (String(ncIt.image == null ? '' : ncIt.image) !== ncImg) {
           ncIt.image = ncImg;
-          ncIt.updatedAt = new Date().toISOString();
+          migTouch(ncIt, MIG_STAMP.covers);
           delete ncIt._hay;
           loadChanged = true;
         }
