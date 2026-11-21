@@ -493,6 +493,10 @@
   .ownbtn:hover{color:var(--ink)}
   .ownbtn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:-2px}
   select.sel--genre{max-width:116px}
+  /* 카드 상단 배지 줄에 들어가는 작은 서재/대여 칩 — 줄 높이·여백을 그대로 두려고 배지와 같은 크기로 */
+  .ownsel--top{border-radius:999px;height:18px;margin-left:1px}
+  .ownsel--top .ownbtn{font-size:9.5px;font-weight:700;padding:1px 6px;line-height:1.1}
+  .ownsel--top .ownbtn.is-on{background:var(--green);color:#fff}
 
   /* ───────────── sections & cards ───────────── */
   main{max-width:1240px;width:100%;margin:0 auto;padding:0 0 28px;flex:1 1 auto}
@@ -2210,7 +2214,7 @@
 
     if (ui) {
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
-      if (ui.own === '서재' || ui.own === '대여') state.own = ui.own;
+      if (ui.own === '서재' || ui.own === '대여' || ui.own === '미분류') state.own = ui.own;
       if (ui.genre && GENRES.indexOf(ui.genre) >= 0) state.genre = ui.genre;
       if (ui.sort && ['default','date-desc','title'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
@@ -2454,7 +2458,7 @@
       if (state.cat !== 'all' && it.cat !== state.cat) continue;
       if (state.status !== 'all' && it.status !== state.status) continue;
       /* 소장(서재)/대여와 장르는 책에서만 — 독서 상태와 완전히 따로 건다 */
-      if (it.cat === 'book' && state.own !== 'all' && ownOf(it) !== state.own) continue;
+      if (it.cat === 'book' && state.own !== 'all' && (ownOf(it) || '미분류') !== state.own) continue;
       if (it.cat === 'book' && state.genre !== 'all' && it.genre !== state.genre) continue;
       if (!matchQuery(it, state.q)) continue;
       if (state.kind !== 'all' && state.cat !== 'all'
@@ -2717,9 +2721,9 @@
     return (m && m.cat === 'memo') ? m : null;
   }
   /* 책 카드 하단의 소장(서재)/대여 단추 — 누르면 그 값으로, 한 번 더 누르면 비운다 */
-  function ownPillHTML(it){
+  function ownPillHTML(it, top){
     var o = ownOf(it);
-    var h = '<span class="ownsel" role="group" aria-label="소장·대여">';
+    var h = '<span class="ownsel' + (top ? ' ownsel--top' : '') + '" role="group" aria-label="소장·대여">';
     OWNS.forEach(function(v){
       h += '<button class="ownbtn' + (o === v ? ' is-on' : '') + '" type="button" data-act="own" data-own="' + v + '"'
         + ' aria-pressed="' + (o === v) + '" title="' + (o === v ? v + ' 해제' : v + '로 표시') + '">' + v + '</button>';
@@ -2764,6 +2768,8 @@
       badgeCls = nk === '뉴스레터' ? 'tag--letter' : (nk === '판례' ? 'tag--case' : 'tag--news');
     }
     h += '<div class="card-top"><span class="tag ' + badgeCls + '">' + esc(badge) + '</span>';
+    /* 2026-11-21 은유 님 요청 — 책의 서재/대여 토글은 카드 하단이 아니라 '책' 배지 바로 옆(상단 배지 줄)에 둔다 */
+    if (it.cat === 'book') h += ownPillHTML(it, true);
     if (it.pick) h += '<span class="pick">고른 일정</span>';
     /* 2026-11-21 — 책 카드의 서가 배지(구매 기록·읽은 책)는 없앴다. 소장/대여는 카드 하단 칩이 보여 준다. */
     if (it.cat === 'grad') {
@@ -2854,7 +2860,6 @@
     h += '<div class="card-foot">';
     h += '<button class="state ' + (ST_CLASS[it.status] || 'st--watch') + '" type="button" data-act="state" aria-haspopup="true" aria-expanded="false">'
        + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
-    if (it.cat === 'book') h += ownPillHTML(it);
     h += memoPillHTML(it);
     h += '<span class="sp"></span>';
     /* 책 카드에는 '열기' 버튼을 두지 않는다 — 데이터(url)는 그대로 두고 화면에서만 숨긴다 */
@@ -2991,7 +2996,7 @@
     for (k = 0; k < state.items.length; k++) {
       it = state.items[k];
       if (state.cat !== 'all' && it.cat !== state.cat) continue;
-      if (it.cat === 'book' && state.own !== 'all' && ownOf(it) !== state.own) continue;
+      if (it.cat === 'book' && state.own !== 'all' && (ownOf(it) || '미분류') !== state.own) continue;
       if (it.cat === 'book' && state.genre !== 'all' && it.genre !== state.genre) continue;
       if (!matchQuery(it, state.q)) continue;
       counts[it.status] = (counts[it.status] || 0) + 1;
@@ -3039,20 +3044,20 @@
     var wrap = document.getElementById('shelfChips');
     if (state.cat !== 'book') { wrap.innerHTML = ''; wrap.hidden = true; return; }
     wrap.hidden = false;
-    var counts = { '서재': 0, '대여': 0 }, k, it, o;
+    var counts = { '서재': 0, '대여': 0, '미분류': 0 }, k, it, o;
     for (k = 0; k < state.items.length; k++) {
       it = state.items[k];
       if (it.cat !== 'book') continue;
       if (state.status !== 'all' && it.status !== state.status) continue;
       if (state.genre !== 'all' && it.genre !== state.genre) continue;
       if (!matchQuery(it, state.q)) continue;
-      o = ownOf(it);
-      if (o) counts[o]++;
+      o = ownOf(it) || '미분류';
+      counts[o]++;
     }
     var html = '<button class="chip chip--shelf" type="button" data-own="all" aria-pressed="' + (state.own === 'all') + '">전체</button>';
-    OWNS.forEach(function(v){
+    OWNS.concat(['미분류']).forEach(function(v){
       html += '<button class="chip chip--shelf" type="button" data-own="' + v + '" aria-pressed="' + (state.own === v) + '">'
-        + v + ' <span class="n">' + counts[v] + '</span></button>';
+        + v + ' <span class="n">' + (counts[v] || 0) + '</span></button>';
     });
     wrap.innerHTML = html;
   }
