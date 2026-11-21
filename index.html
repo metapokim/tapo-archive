@@ -1772,6 +1772,15 @@
   /* 2026-11-22 현대문학 핀 시리즈 《조각 공원》(bp6)·《쥐와 굴》(bp125)은 이미 완독으로 있던 책이라
      빈 지은이·출판사·알라딘 링크만 이 기기 저장본에 한 번 채운다(상태·서가·구매일·메모는 그대로). */
   var pinInfoSynced = false;
+  /* 2026-11-22 현대문학 네 권 — 《딩》(bn20261121_57)·《풀업》(bn20261121_58)은 '현대문학 · 소설',
+     《있다》(bn20261121_67)·《사라진 재의 아이》(bn20261121_68)은 '현대문학 · 시'인데, 이 기기 저장본에서
+     출판사·장르 칸이 비거나 카드가 빠져 필터에 잡히지 않았다. 서지 칸을 기본 데이터로 한 번 맞추고,
+     빠진 카드는 되살린다(상태·서가·구매일·메모는 그대로). */
+  var pinFixSynced = false;
+  /* 되살린 네 권은 다른 기기에 남은 옛 '지움' 기록이 다시 지우지 못하게 지킨다.
+     은유 님이 이 기기에서 직접 지운 뒤(pinKeepOff)에는 평소대로 지운 대로 둔다. */
+  var PIN_KEEP = { 'bn20261121_57': 1, 'bn20261121_58': 1, 'bn20261121_67': 1, 'bn20261121_68': 1 };
+  var pinKeepOff = false;
 
   /* 2026-11-17 판례 11건 요약 보강 — 기기에 저장된 판례 카드도 한 번만 맞춘다(메모·상태는 그대로). */
   var CASE_NOTES = {
@@ -1995,7 +2004,8 @@
     covers:     '2026-11-21T07:16:43.000Z',
     book22:     '2026-11-21T17:20:00.000Z',   /* bookSync20261122 배포 */   /* notebookCovers20261121 배포 */
     backup2:    '2026-11-21T14:53:29.000Z',   /* backup2Sync20261121 배포(백업 내보낸 시각) */
-    pinInfo:    '2026-11-22T02:30:00.000Z'    /* 핀 시리즈 2권 서지 보강 배포 */
+    pinInfo:    '2026-11-22T02:30:00.000Z',   /* 핀 시리즈 2권 서지 보강 배포 */
+    pinFix:     '2026-11-21T17:50:00.000Z'    /* 현대문학 4권(있다·사라진 재의 아이·딩·풀업) 복구 배포(2026-11-22 02:50 KST) */
   };
   function migTouch(it, stamp){
     if (!it) return;
@@ -2013,6 +2023,7 @@
     var ui = null, u0 = null;
     var uiraw = readStore(UIKEY);
     if (uiraw) { try { u0 = JSON.parse(uiraw); if (u0 && typeof u0 === 'object') ui = u0; } catch (e) { ui = null; } }
+    pinKeepOff = !!(ui && ui.pinKeepOff20261122);
 
     /* 아침 브리핑 체크 기록 (날짜가 바뀌면 자동으로 새 브리핑에 적용되지 않는다) */
     if (saved && saved.brief && typeof saved.brief === 'object') {
@@ -2693,6 +2704,51 @@
       pinInfoSynced = true;
     }
 
+    /* 2026-11-22 현대문학 네 권 복구 — 《있다》(bn20261121_67)는 저장본의 출판사 칸이 비어,
+       《사라진 재의 아이》(bn20261121_68)는 카드가 빠져 '현대문학 · 시'에서 57권으로만 보였다.
+       같은 날 《딩》(bn20261121_57)·《풀업》(bn20261121_58)도 '현대문학 · 소설'에서 빠져 있어 함께 맞춘다.
+       없는 카드는 기본 데이터에서 되살리고(지운 표시도 걷어 낸다), 있는 카드는 서지 네 칸만 채운다.
+       상태(미독)·서가·구매일·메모는 건드리지 않는다. */
+    if (saved && saved.items && saved.items.length && !(ui && ui.pinFix20261122)) {
+      var pfIds = ['bn20261121_57', 'bn20261121_58', 'bn20261121_67', 'bn20261121_68'];
+      var pfFields = ['author', 'publisher', 'genre', 'image'];
+      var pfi, pfj, pfId, pfS, pfIt, pfk, pfch, pfNew;
+      for (pfi = 0; pfi < pfIds.length; pfi++) {
+        pfId = pfIds[pfi];
+        pfS = seedById[pfId];
+        if (!pfS || REMOVED_IDS[pfId]) continue;
+        /* 이 기기에 남은 '지움' 표시는 은유 님이 의도한 삭제가 아니다 — 걷어 내고 되살린다 */
+        pfk = state.deleted.indexOf(pfId);
+        if (pfk >= 0) { state.deleted.splice(pfk, 1); loadChanged = true; }
+        pfIt = null;
+        for (pfk = 0; pfk < state.items.length; pfk++) {
+          if (String(state.items[pfk].id) === pfId) { pfIt = state.items[pfk]; break; }
+        }
+        if (!pfIt) {
+          /* id 는 다르지만 같은 책이 옛 사본으로 들어와 있으면 그것을 고친다 */
+          for (pfk = 0; pfk < state.items.length; pfk++) {
+            if (state.items[pfk].cat === 'book' && String(state.items[pfk].title) === String(pfS.title)) { pfIt = state.items[pfk]; break; }
+          }
+        }
+        if (!pfIt) {
+          pfNew = norm(clone(pfS));
+          migTouch(pfNew, MIG_STAMP.pinFix);
+          state.items.push(pfNew);
+          loadChanged = true;
+          continue;
+        }
+        pfch = false;
+        for (pfj = 0; pfj < pfFields.length; pfj++) {
+          if (String(pfIt[pfFields[pfj]] == null ? '' : pfIt[pfFields[pfj]]) !== String(pfS[pfFields[pfj]] == null ? '' : pfS[pfFields[pfj]])) {
+            pfIt[pfFields[pfj]] = pfS[pfFields[pfj]];
+            pfch = true;
+          }
+        }
+        if (pfch) { migTouch(pfIt, MIG_STAMP.pinFix); delete pfIt._hay; loadChanged = true; }
+      }
+      pinFixSynced = true;
+    }
+
     if (ui) {
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
       /* 2026-11-21 — 소장/대여·장르 필터는 저장본에서 되살리지 않는다. 탭(카테고리)처럼 새로고침하면 '전체'로.
@@ -2709,7 +2765,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.own = 'all';
 
-    if (backup2Synced || notebookCoversSynced || notebookSynced || bjSynced || forumSynced || posterSynced || booksShelfSynced || bookReworkSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || bookSync22 || pinInfoSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (backup2Synced || notebookCoversSynced || notebookSynced || bjSynced || forumSynced || posterSynced || booksShelfSynced || bookReworkSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || bookSync22 || pinInfoSynced || pinFixSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -2725,6 +2781,8 @@
       backup2Sync20261121: (backup2Synced || prev.backup2Sync20261121) ? 1 : 0,
       bookSync20261122: (bookSync22 || prev.bookSync20261122) ? 1 : 0,
       pinInfo20261122: (pinInfoSynced || prev.pinInfo20261122) ? 1 : 0,
+      pinFix20261122: (pinFixSynced || prev.pinFix20261122) ? 1 : 0,
+      pinKeepOff20261122: (pinKeepOff || prev.pinKeepOff20261122) ? 1 : 0,
       bjSynced20261115: (bjSynced || prev.bjSynced20261115) ? 1 : 0,
       forumSynced20261116: (forumSynced || prev.forumSynced20261116) ? 1 : 0,
       forumPoster20261116: (posterSynced || prev.forumPoster20261116) ? 1 : 0,
@@ -5495,6 +5553,8 @@
     var it = state.items.splice(idx, 1)[0];
     /* 지운 id 는 기본 항목이든 직접 만든 메모든 모두 남긴다 — 다른 기기에서 되살아나지 않게 */
     if (state.deleted.indexOf(it.id) < 0) state.deleted.push(it.id);
+    /* 복구한 현대문학 네 권을 직접 지운 경우 — 그때부터는 지킴을 풀어 지운 대로 둔다 */
+    if (PIN_KEEP[it.id] && !pinKeepOff) { pinKeepOff = true; saveUIPrefs(); }
     persist();
     render();
     /* 제목 없이 적은 메모도 안내가 비지 않도록 */
@@ -6491,8 +6551,17 @@
     if (!remote.items && !remote.ov && !remote.deleted && !remote.brief && !remote.lemon) return false;
     var changed = false, k, idx, f, id, local, r, stamp;
     var del = remote.deleted || [];
+    /* 2026-11-22 현대문학 네 권 복구 — 다른 기기에 남은 옛 '지움' 기록이 되살린 카드를 다시 지우지 못하게 한다.
+       이 기기에서 은유 님이 직접 지운 뒤(pinKeepOff)에는 평소대로 지운다. */
+    if (!pinKeepOff) {
+      for (k = state.deleted.length - 1; k >= 0; k--) {
+        if (PIN_KEEP[state.deleted[k]]) { state.deleted.splice(k, 1); changed = true; }
+      }
+    }
     for (k = 0; k < del.length; k++) {
-      if (del[k] && state.deleted.indexOf(del[k]) < 0) { state.deleted.push(del[k]); changed = true; }
+      if (!del[k] || state.deleted.indexOf(del[k]) >= 0) continue;
+      if (!pinKeepOff && PIN_KEEP[del[k]]) continue;
+      state.deleted.push(del[k]); changed = true;
     }
     for (k = state.items.length - 1; k >= 0; k--) {
       if (state.deleted.indexOf(state.items[k].id) >= 0) { state.items.splice(k, 1); changed = true; }
