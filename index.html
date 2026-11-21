@@ -736,6 +736,19 @@
     transition:background .15s,border-color .15s;
   }
   .mini--send:hover{color:var(--ink);background:#EAEAEC;border-color:#D4D4D8}
+  /* 메모에 연결된 카드 — 카드 하단 '메모 앱으로 보내기' 바로 오른쪽의 12px 초록 동그라미 (2026-11-21).
+     우측 상단 .lemon-dot 과 같은 크기·같은 투명 히트박스이고 색만 초록이다.
+     이 메모를 memoId 로 가리키는 카드가 있을 때만 그려지고, 누르면 그 카드들이 팝업으로 열린다. */
+  .memo-link-dot{
+    flex:0 0 auto;position:relative;z-index:2;width:12px;height:12px;padding:0;margin:0 1px;
+    border-radius:50%;border:1.5px solid #15803D;background:#16A34A;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:background .16s ease,border-color .16s ease,box-shadow .16s ease;
+  }
+  .memo-link-dot::before{content:'';position:absolute;left:-9px;top:-9px;right:-9px;bottom:-9px;border-radius:50%}
+  .memo-link-dot:hover{background:#15803D;border-color:#166534;box-shadow:0 0 0 2px rgba(22,163,74,.22)}
+  .memo-link-dot:active{background:#166534}
+  .memo-link-dot:focus-visible{outline:2px solid var(--green);outline-offset:3px}
   /* 메모 — 카드 하단 상태 칩 바로 오른쪽의 작은 알약.
      붙은 메모가 있으면 초록빛으로 또렷하게('메모'), 없으면 차분한 회색('+ 메모').
      오른쪽 열기·편집·지우기는 그대로 두고 왼쪽 빈자리만 채운다(사이 여백은 .sp 가 맡는다). */
@@ -750,6 +763,34 @@
   .mini-memo.is-on{color:#065F46;background:var(--green-w);border-color:#A7F3D0}
   .mini-memo.is-on:hover{background:#D1FAE5;border-color:#6EE7B7}
   .mini-memo-dot{width:5px;height:5px;flex:0 0 5px;border-radius:999px;background:currentColor;opacity:.55}
+  /* 메모에 연결된 카드 팝업 — 카드 한 장을 읽기 전용으로, 실제 카드와 같은 차림으로 보여 준다 */
+  .lc-list{display:flex;flex-direction:column;gap:12px;margin:0}
+  .lc-card{border:1px solid var(--line);border-radius:18px;padding:13px 14px;background:#fff}
+  .lc-head{display:flex;align-items:flex-start;gap:12px}
+  .lc-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .lc-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .lc-title{margin:2px 0 0;font-size:15px;line-height:1.42;font-weight:800;letter-spacing:-.025em;color:var(--ink);word-break:keep-all;overflow-wrap:anywhere}
+  .lc-chip{
+    display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:.01em;
+    border-radius:999px;padding:3px 9px;border:1px solid var(--line-2);background:#fff;color:var(--ink-2);white-space:nowrap;
+  }
+  .lc-thumb{flex:0 0 78px;width:78px;aspect-ratio:3 / 4;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#F4F4F5}
+  .lc-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+  .lc-sum{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .lc-memo{
+    margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--ink);
+    background:#F7F7F8;border-radius:11px;padding:8px 11px;
+    white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;
+    max-height:96px;overflow-y:auto;
+  }
+  .lc-foot{display:flex;align-items:center;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid #F4F4F5;flex-wrap:wrap}
+  .lc-goto{
+    display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font:inherit;
+    font-size:11px;font-weight:700;color:#065F46;background:var(--green-w);border:1px solid #A7F3D0;
+    border-radius:999px;padding:5px 11px;cursor:pointer;transition:background .15s,border-color .15s;
+  }
+  .lc-goto:hover{background:#D1FAE5;border-color:#6EE7B7}
+  .lc-goto:active{background:#BBF7D0}
   /* 카드 메모 팝업 — 읽기 좋은 글자 크기와 줄바꿈 그대로 */
   .cm-tabs{display:flex;gap:6px;margin:0 0 14px}
   .cm-tab{
@@ -1318,6 +1359,17 @@
           <button class="btn btn--dark" type="button" id="cmLink" disabled>붙이기</button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="linkCardsModal" hidden>
+  <div class="sheet" id="linkCardsSheet" role="dialog" aria-modal="true" aria-labelledby="lcTitle">
+    <h2 id="lcTitle">연결된 카드</h2>
+    <p class="hint" id="lcHint"></p>
+    <div class="lc-list" id="lcList"></div>
+    <div class="sheet-foot">
+      <button class="btn btn--ghost" type="button" id="lcClose">닫기</button>
     </div>
   </div>
 </div>
@@ -2838,6 +2890,20 @@
     if (!d || isNaN(d.getTime())) return '';
     return (d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
+  /* ── 메모에 연결된 카드 (2026-11-21) ──
+     메모 탭 카드 id 를 memoId 로 가리키는 카드를 찾는다. 메모 카드가 붙은 카드 쪽(linkedMemo)의 반대 방향. */
+  function linkedCardsOfMemo(id){
+    return state.items.filter(function(x){ return x && x.id !== id && x.memoId === id; });
+  }
+  /* 메모 카드 하단의 초록 동그라미 — 연결된 카드가 한 장이라도 있을 때만 그린다 */
+  function memoLinkDot(it){
+    var cards = linkedCardsOfMemo(it.id);
+    if (!cards.length) return '';
+    var names = cards.map(function(c){ return String(c.title || '').trim() || META[c.cat] && META[c.cat].label || '카드'; });
+    var label = '연결된 카드 ' + cards.length + '장 보기 · ' + names.join(', ');
+    return '<button class="memo-link-dot" type="button" data-act="linkcards" aria-haspopup="dialog"'
+      + ' aria-label="' + esc(label) + '" title="' + esc(label) + '"></button>';
+  }
   function memoCardHTML(it){
     var title = String(it.title || '').trim();
     var body = String(it.body || '');
@@ -2855,6 +2921,9 @@
     h += '</div></div>';
     h += '<div class="card-foot">';
     h += '<button class="mini mini--send" type="button" data-act="send" title="아이폰 공유 시트로 메모 앱에 보냅니다">메모 앱으로 보내기</button>';
+    /* 이 메모를 memoId 로 가리키는 카드(학회·포럼 / 공연·전시·영화 / 책)가 있으면
+       '메모 앱으로 보내기' 바로 오른쪽에 12px 초록 동그라미를 둔다 — 누르면 그 카드가 팝업으로 열린다. */
+    h += memoLinkDot(it);
     h += '<span class="sp"></span>';
     h += '<button class="mini" type="button" data-act="edit">편집</button>';
     h += '<button class="mini mini--del" type="button" data-act="del">지우기</button>';
@@ -4916,6 +4985,7 @@
       toast(it.own ? (it.own === '서재' ? '서재로 표시했습니다' : '대여로 표시했습니다') : '소장·대여 표시를 지웠습니다');
     }
     else if (act === 'send') { sendMemo(it); }
+    else if (act === 'linkcards') { openLinkCards(id); }
     else if (act === 'edit') { if (it.cat === 'memo') openMemoForm(id); else openForm(id); }
     else if (act === 'del') { removeItem(id); }
   });
@@ -5371,6 +5441,156 @@
     window.addEventListener('resize', cmAutoSize);
     document.addEventListener('keydown', function(e){
       if (e.key === 'Escape' && !cmEl.hidden) closeCardMemo();
+    });
+  }
+
+  /* ────────────────────── 메모에 연결된 카드 팝업 (2026-11-21) ──────────────────────
+     메모 카드 하단의 초록 동그라미를 누르면 이 팝업이 열린다.
+     memoId 가 이 메모를 가리키는 카드를 실제 카드와 같은 차림으로 읽기 전용으로 보여 주고,
+     '카드로 이동'으로 그 카드가 있는 탭으로 넘어가 카드까지 스크롤한다. */
+  var lcEl = document.getElementById('linkCardsModal');
+  var lcReturnFocus = null;
+
+  function lcLinesOf(it, badge){
+    var bits = [];
+    if (it.cat === 'forum') {
+      if (it.place) bits.push(it.place);
+    } else if (it.cat === 'show') {
+      if (it.place) bits.push(it.place);
+      if (it.genre && it.genre !== badge) bits.push(it.genre);
+      if (it.seller) bits.push(it.seller);
+      if (it.price) bits.push(money(it.price));
+    } else if (it.cat === 'book') {
+      if (it.author) bits.push(it.author);
+      if (it.publisher || it.genre) bits.push([it.publisher, it.genre].filter(function(x){ return !!x; }).join(' | '));
+      var ow = ownOf(it);
+      if (ow) bits.push(ow);
+    } else {
+      if (it.author) bits.push(it.author);
+      if (it.publisher || it.genre) bits.push([it.publisher, it.genre].filter(function(x){ return !!x; }).join(' | '));
+      if (it.place) bits.push(it.place);
+    }
+    return bits;
+  }
+
+  function lcCardHTML(it){
+    var badge = (META[it.cat] || {}).label || '', badgeCls = 'tag--' + it.cat;
+    if (it.cat === 'show') {
+      var sk = kindOf(it);
+      badge = sk;
+      badgeCls = sk === '전시' ? 'tag--exhibit' : 'tag--show';
+    }
+    var h = '<article class="lc-card" data-card="' + esc(it.id) + '">';
+    h += '<div class="lc-head"><div class="lc-main">';
+    h += '<div class="lc-top"><span class="tag ' + badgeCls + '">' + esc(badge) + '</span>';
+    if (it.date) {
+      var when = (it.cat === 'show' || it.cat === 'video' || it.cat === 'news') ? yearWhen(it.date) : dateLine(it.date, true);
+      if (when) h += '<span class="when">' + esc(when) + (it.time ? ' · ' + esc(it.time) : '') + '</span>';
+    }
+    if (it.status) h += '<span class="lc-chip ' + (ST_CLASS[it.status] || 'st--watch') + '">' + esc(it.status) + '</span>';
+    h += '</div>';
+    h += '<h3 class="lc-title">' + esc(it.title) + (it.extra ? ' ' + esc(it.extra) : '') + '</h3>';
+    var bits = lcLinesOf(it, badge);
+    if (bits.length) h += '<p class="line line--dim">' + esc(bits.join(' · ')) + '</p>';
+    if (it.summary) h += '<p class="line line--dim lc-sum">' + esc(it.summary) + '</p>';
+    h += '</div>';
+    var src = thumbOf(it);
+    if (src) {
+      h += '<div class="lc-thumb"><img src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"'
+        + (it.imgpos ? ' style="object-position:' + esc(it.imgpos) + '"' : '') + '></div>';
+    }
+    h += '</div>';
+    if (String(it.memo || '').trim()) h += '<p class="lc-memo">' + esc(it.memo) + '</p>';
+    h += '<div class="lc-foot">';
+    h += '<button class="lc-goto" type="button" data-goto="' + esc(it.id) + '">카드로 이동</button>';
+    h += '<span class="sp"></span>';
+    /* 책 카드에는 카드와 똑같이 열기 단추를 두지 않는다 */
+    if (it.url && it.cat !== 'book') h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
+    if (it.extraUrl) h += '<a class="mini mini--open mini--doc" href="' + esc(it.extraUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(it.extraLabel || '자료') + '</a>';
+    h += '</div></article>';
+    return h;
+  }
+
+  function openLinkCards(id){
+    if (!lcEl) return;
+    var memo = byId(id);
+    if (!memo) return;
+    var cards = linkedCardsOfMemo(id);
+    if (!cards.length) return;
+    cards.sort(function(a, b){
+      var ai = CAT_ORDER.indexOf(a.cat), bi = CAT_ORDER.indexOf(b.cat);
+      if (ai !== bi) return ai - bi;
+      var ad = String(a.date || ''), bd = String(b.date || '');
+      return ad < bd ? -1 : (ad > bd ? 1 : 0);
+    });
+    var name = String(memo.title || '').trim();
+    document.getElementById('lcHint').textContent = (name ? '‘' + name + '’ ' : '이 ')
+      + '메모에 붙은 카드 ' + cards.length + '장입니다. ‘카드로 이동’을 누르면 그 카드가 있는 탭으로 넘어갑니다.';
+    document.getElementById('lcList').innerHTML = cards.map(lcCardHTML).join('');
+    lcReturnFocus = document.activeElement;
+    lcEl.hidden = false;
+    var sheet = document.getElementById('linkCardsSheet');
+    if (sheet && sheet.scrollTop) sheet.scrollTop = 0;
+    var closeBtn = document.getElementById('lcClose');
+    if (closeBtn && closeBtn.focus) {
+      try { closeBtn.focus({ preventScroll: true }); } catch (e) { closeBtn.focus(); }
+    }
+  }
+
+  function closeLinkCards(){
+    if (!lcEl) return;
+    lcEl.hidden = true;
+    var f = lcReturnFocus;
+    lcReturnFocus = null;
+    if (f && f.focus && document.contains && document.contains(f)) {
+      try { f.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+
+  /* 연결된 카드가 있는 탭으로 넘어가 그 카드까지 스크롤한다.
+     검색어·필터에 가려져 있거나 모바일 5건 제한에 밀렸으면 보이도록 풀어서 연다. */
+  function gotoLinkedCard(id){
+    var it = byId(id);
+    if (!it) { closeLinkCards(); return; }
+    closeLinkCards();
+    state.q = '';
+    var qEl = document.getElementById('q');
+    if (qEl) qEl.value = '';
+    state.genre = 'all';
+    pickCat(it.cat);
+    var el = cardEl(id), guard = 0;
+    while (!el && guard++ < 20) {
+      state.limits[it.cat] = (state.limits[it.cat] || 24) + 30;
+      render();
+      el = cardEl(id);
+    }
+    if (!el) return;
+    if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.classList.add('is-new');
+    setTimeout(function(){ el.classList.remove('is-new'); }, 2400);
+    if (el.focus) {
+      el.setAttribute('tabindex', '-1');
+      try { el.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+
+  if (lcEl) {
+    lcEl.addEventListener('click', function(e){
+      if (e.target === lcEl) { closeLinkCards(); return; }
+      var go = e.target.closest ? e.target.closest('[data-goto]') : null;
+      if (go) { gotoLinkedCard(go.getAttribute('data-goto')); return; }
+      var b = e.target.closest ? e.target.closest('button') : null;
+      if (b && b.id === 'lcClose') closeLinkCards();
+    });
+    /* 사진을 못 불러오면 깨진 아이콘 대신 사진 자리만 감춘다 */
+    lcEl.addEventListener('error', function(e){
+      var t = e.target;
+      if (!t || String(t.tagName || '').toUpperCase() !== 'IMG') return;
+      var box = t.parentNode;
+      if (box && String(box.className).indexOf('lc-thumb') >= 0 && box.remove) box.remove();
+    }, true);
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !lcEl.hidden) closeLinkCards();
     });
   }
 
