@@ -5546,29 +5546,46 @@
   function ghFail(res){
     var e = new Error('http-' + res.status);
     e.status = res.status;
-    throw e;
+    /* GitHub이 내려주는 실제 에러 message 를 함께 담는다 (403 원인 판별용) */
+    return res.text().then(function(txt){
+      var obj = null;
+      try { obj = JSON.parse(txt); } catch (errJson) { obj = null; }
+      if (obj && typeof obj.message === 'string' && obj.message) {
+        e.ghMsg = obj.message.replace(/\s+/g, ' ').trim().slice(0, 200);
+      }
+      throw e;
+    }, function(){ throw e; });
   }
   function ghJson(res){
     if (!res.ok) return ghFail(res);
     return res.json();
+  }
+  /* 어느 단계(조회·생성·저장·원본조회)에서 실패했는지 에러에 표시 */
+  function ghTag(p, step){
+    return p.catch(function(e){ if (e && !e.step) e.step = step; throw e; });
   }
   function gistText(json){
     var f = json && json.files && json.files[GIST_FILE];
     if (!f) return '';
     if (f.truncated && f.raw_url) {
       return fetch(f.raw_url, { headers: { 'Authorization': 'Bearer ' + syncCfg.token }, cache: 'no-store' })
-        .then(function(r){ return r.ok ? r.text() : ''; });
+        .then(function(r){ if (!r.ok) return ghFail(r); return r.text(); })
+        .catch(function(e){ if (e && !e.step) e.step = '원본조회'; throw e; });
     }
     return f.content || '';
   }
   function syncErrMsg(err){
-    var st = err && err.status;
-    if (st === 401) return '토큰이 올바르지 않습니다 (gist 권한 확인)';
-    if (st === 403) return '권한이 없습니다 (토큰에 gist 권한이 있는지 확인)';
-    if (st === 404) return 'Gist ID를 찾을 수 없습니다';
-    if (st === 422) return 'Gist 형식 오류 (Gist ID를 다시 확인)';
-    if (st) return 'GitHub 오류 (' + st + ')';
-    return '네트워크 오류 — 연결을 확인해 주세요';
+    var st = err && err.status, msg;
+    if (st === 401) msg = '토큰이 올바르지 않습니다 (gist 권한 확인)';
+    else if (st === 403) msg = '권한이 없습니다 (토큰에 gist 권한이 있는지 확인)';
+    else if (st === 404) msg = 'Gist ID를 찾을 수 없습니다';
+    else if (st === 422) msg = 'Gist 형식 오류 (Gist ID를 다시 확인)';
+    else if (st) msg = 'GitHub 오류 (' + st + ')';
+    else msg = '네트워크 오류 — 연결을 확인해 주세요';
+    var extra = '';
+    if (err && err.step) extra += '[' + err.step + '] ';
+    if (err && err.ghMsg) extra += 'GitHub: ' + err.ghMsg;
+    return extra ? msg + ' · ' + extra : msg;
   }
 
   function setSyncState(st){
@@ -5616,8 +5633,8 @@
     setSyncStatus('동기화 중…', '');
 
     var pull = syncCfg.gistId
-      ? fetch('https://api.github.com/gists/' + encodeURIComponent(syncCfg.gistId),
-          { headers: ghHeaders(), cache: 'no-store' }).then(ghJson).then(gistText)
+      ? ghTag(fetch('https://api.github.com/gists/' + encodeURIComponent(syncCfg.gistId),
+          { headers: ghHeaders(), cache: 'no-store' }).then(ghJson).then(gistText), '조회')
       : Promise.resolve('');
 
     pull.then(function(text){
@@ -5633,20 +5650,20 @@
       if (!syncCfg.gistId) {
         var file = {};
         file[GIST_FILE] = { content: content };
-        return fetch('https://api.github.com/gists', {
+        return ghTag(fetch('https://api.github.com/gists', {
           method: 'POST',
           headers: ghHeaders(),
           body: JSON.stringify({ description: 'TAPO’s archive — 기기 간 동기화 (비공개)', public: false, files: file })
         }).then(ghJson).then(function(json){
           if (json && json.id) { syncCfg.gistId = json.id; saveSyncCfg(); }
           return json;
-        });
+        }), '생성');
       }
       var files = {};
       files[GIST_FILE] = { content: content };
-      return fetch('https://api.github.com/gists/' + encodeURIComponent(syncCfg.gistId), {
+      return ghTag(fetch('https://api.github.com/gists/' + encodeURIComponent(syncCfg.gistId), {
         method: 'PATCH', headers: ghHeaders(), body: JSON.stringify({ files: files })
-      }).then(ghJson);
+      }).then(ghJson), '저장');
     }).then(function(){
       syncCfg.lastSync = new Date().toISOString();
       saveSyncCfg();
