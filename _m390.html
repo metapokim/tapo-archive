@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>390 확인</title>
+<style>html,body{margin:0;background:#E9E9EC}
+.wrap{padding:12px}
+iframe{border:0;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:14px}
+</style></head><body>
+<div class="wrap"><iframe id="f390" width="390" height="1500"></iframe></div>
+<script>
+  var f = document.getElementById('f390');
+  f.onload = function(){
+    setTimeout(function(){
+      try {
+        var d = f.contentDocument;
+        var more = d.getElementById('topbarMoreBtn');
+        if (more && more.getAttribute('aria-expanded') !== 'true') more.click();
+        var tab = d.querySelector('[data-cat="book"]');
+        if (tab) tab.click();
+      } catch(e){}
+    }, 500);
+  };
+  f.src = './index.html?v=' + Date.now();
+</script>
+</body></html>
