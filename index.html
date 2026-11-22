@@ -591,13 +591,34 @@
     line-height:0;cursor:pointer;border-radius:2px 2px 0 0;transform-origin:bottom center;
     transition:transform .19s cubic-bezier(.22,.68,.3,1),box-shadow .19s ease,filter .19s ease;
     -webkit-tap-highlight-color:transparent;
+    /* 2026-11-23 — 책등을 길게 누를 때 iOS 사파리의 확대경·이미지 저장 메뉴(컨텍스트 메뉴)와
+       글자 선택이 뜨지 않게. 세로 스크롤은 그대로 돼서 선반 위에서도 페이지를 쓸어 올릴 수 있다. */
+    -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;
+    touch-action:pan-y;
   }
-  .sh-spine img{display:block;width:100%;height:100%;border-radius:2px 2px 0 0}
+  .sh-spine img{display:block;width:100%;height:100%;border-radius:2px 2px 0 0;pointer-events:none;-webkit-user-drag:none}
   /* 마우스가 스치는 책등이 살짝 떠오르며 그림자가 진해진다 */
   .sh-spine:hover,.sh-spine:focus-visible{transform:translateY(-10px);box-shadow:0 12px 16px -10px rgba(24,24,27,.5);z-index:6}
   .sh-spine:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
   /* 모바일 — 한 번 탭하면 뽑아 든 듯 위로 떠오른다 */
   .sh-spine.is-picked{transform:translateY(-12px);box-shadow:0 14px 18px -10px rgba(24,24,27,.55);z-index:6}
+  /* 2026-11-23 은유 님 요청 — 책등을 길게 눌러(380ms) 옮겨 꽂기.
+     끌고 있는 책등은 제자리를 비우고(흐리게), 손끝을 따라오는 고스트 책등과
+     '여기로 꽂힌다' 세로 삽입선(사이트 초록)이 뜬다. */
+  .sh-spine.sh-drag-src{opacity:.16}
+  body.is-shelf-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
+  body.is-shelf-dragging .bshelf .sh-spine{pointer-events:none;transform:none!important;box-shadow:none!important}
+  body.is-shelf-dragging .sh-tip{opacity:0!important}
+  .sh-ghost{
+    position:fixed;left:0;top:0;z-index:95;pointer-events:none;border-radius:2px 2px 0 0;
+    transform-origin:0 0;will-change:transform;
+    box-shadow:0 20px 28px -14px rgba(24,24,27,.55),0 3px 8px -3px rgba(24,24,27,.28);
+  }
+  .sh-ghost img{display:block;width:100%;height:100%;border-radius:2px 2px 0 0}
+  .sh-ins{
+    position:absolute;width:3px;border-radius:3px;background:var(--green);pointer-events:none;
+    box-shadow:0 0 0 3px rgba(16,185,129,.15);z-index:7;
+  }
   /* 표지 대표색으로 만든 가상 책등 — 제목·저자가 세로로 */
   .sh-vt{
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
@@ -1973,6 +1994,10 @@
     own: 'all',
     genre: 'all',
     sort: 'default',
+    /* 2026-11-23 — '내 순서' 정렬: 책등을 길게 눌러 옮긴 책 id 배열(책 전체 기준).
+       필터로 몇 권만 보여도 순서는 책 전체 기준이라, 필터를 풀면 옮긴 자리가 그대로 남는다.
+       customOrderAt 은 기기 간 동기화에서 마지막으로 옮긴 쪽을 가리기 위한 시각. */
+    customOrder: [], customOrderAt: '',
     bookView: 'card',   /* 책 탭 보기 — card | shelf (2026-11-21) */
     bookZoom: 1,        /* 책꽂이 배율 — 1 | 1.6, 확대 단추 (2026-11-23) */
     q: '',
@@ -2160,6 +2185,16 @@
       for (lk0 in saved.lemon) {
         if (Object.prototype.hasOwnProperty.call(saved.lemon, lk0)) state.lemon[lk0] = Number(saved.lemon[lk0]) || 0;
       }
+    }
+    /* 2026-11-23 — 책등을 길게 눌러 옮겨 둔 '내 순서' (책 전체 id 배열) */
+    if (saved && Array.isArray(saved.customOrder)) {
+      var co0 = [], co1, cid0;
+      for (co1 = 0; co1 < saved.customOrder.length; co1++) {
+        cid0 = String(saved.customOrder[co1] == null ? '' : saved.customOrder[co1]);
+        if (cid0 && co0.indexOf(cid0) < 0) co0.push(cid0);
+      }
+      state.customOrder = co0;
+      state.customOrderAt = String(saved.customOrderAt || '');
     }
     normBrief();
     /* 목록에 이미 있는 문구를 직접 추가한 할 일에도 또 넣어 둔 사본을 정리한다 */
@@ -2962,7 +2997,7 @@
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
       /* 2026-11-21 — 소장/대여·장르 필터는 저장본에서 되살리지 않는다. 탭(카테고리)처럼 새로고침하면 '전체'로.
          (되살리면 화면에 안 보이는 필터가 걸려 '책 584'인데 '전체 215'로 보이는 일이 생긴다) */
-      if (ui.sort && ['default','date-desc','title','publisher','genre'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
+      if (ui.sort && ['default','date-desc','title','publisher','genre','custom'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
       if (ui.bookView === 'shelf' || ui.bookView === 'card') state.bookView = ui.bookView;
       if (ui.bookZoom === 1 || ui.bookZoom === 1.6) state.bookZoom = ui.bookZoom;
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
@@ -3024,7 +3059,9 @@
       items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
       deleted: state.deleted,
       brief: state.brief,
-      lemon: state.lemon
+      lemon: state.lemon,
+      customOrder: state.customOrder,      /* 2026-11-23 — '내 순서' 책꽂이 순서 */
+      customOrderAt: state.customOrderAt
     };
     var ok = writeStore(STORE, JSON.stringify(payload));
     if (ok) stampSaved();
@@ -3262,8 +3299,70 @@
     return head.concat(mid, tail);   /* 고정 3명 → 나머지 대학원 → 논문 */
   }
 
+  /* ── '내 순서' (2026-11-23 은유 님 요청) ────────────────────────────────
+     책꽂이에서 책등을 길게 눌러 옮긴 순서를 책 전체 id 배열로 들고 있는다.
+     필터·검색으로 몇 권만 꽂혀 있어도 순서 자체는 책 전체 기준이라, 필터를 풀면
+     옮겨 둔 자리가 그대로 남는다. */
+  function allBookIds(){
+    var out = [], k;
+    for (k = 0; k < state.items.length; k++) if (state.items[k].cat === 'book') out.push(state.items[k].id);
+    return out;
+  }
+  /* 저장된 '내 순서'를 지금 책 목록에 맞춘다 — 지운 책은 빼고, 새로 들어온 책(저장된 순서에 없는 책)은
+     목록 앞쪽에 붙인다(state.items 는 새 책이 앞). */
+  function customOrderIds(){
+    var ids = allBookIds(), have = {}, seen = {}, out = [], k, id;
+    for (k = 0; k < ids.length; k++) have[ids[k]] = 1;
+    for (k = 0; k < ids.length; k++) {
+      id = ids[k];
+      if (state.customOrder.indexOf(id) < 0) { out.push(id); seen[id] = 1; }
+    }
+    for (k = 0; k < state.customOrder.length; k++) {
+      id = String(state.customOrder[k] == null ? '' : state.customOrder[k]);
+      if (!id || seen[id] || !have[id]) continue;
+      seen[id] = 1; out.push(id);
+    }
+    return out;
+  }
+  /* 지금 순서를 '내 순서'의 출발점으로 삼는다 — 처음 '내 순서'를 고를 때(또는 처음 길게 눌렀을 때) 한 번만 */
+  function seedCustomOrder(fromIds){
+    var ids = allBookIds(), have = {}, out = [], seen = {}, k, id;
+    for (k = 0; k < ids.length; k++) have[ids[k]] = 1;
+    for (k = 0; k < (fromIds || []).length; k++) {
+      id = String(fromIds[k] == null ? '' : fromIds[k]);
+      if (!have[id] || seen[id]) continue;
+      seen[id] = 1; out.push(id);
+    }
+    for (k = 0; k < ids.length; k++) if (!seen[ids[k]]) { seen[ids[k]] = 1; out.push(ids[k]); }
+    state.customOrder = out;
+    state.customOrderAt = new Date().toISOString();
+  }
+  /* 지금 화면에 보이는 순서(걸린 필터·정렬 그대로) → 그 뒤에 안 보이는 책들을 현재 정렬로 */
+  function currentBookOrderIds(){
+    var out = [], seen = {}, k, list;
+    var res = filtered();
+    var vis = sortList((res && res.book) || [], 'book');
+    for (k = 0; k < vis.length; k++) { out.push(vis[k].id); seen[vis[k].id] = 1; }
+    list = state.items.filter(function(x){ return x.cat === 'book'; });
+    list = sortList(list, 'book');
+    for (k = 0; k < list.length; k++) if (!seen[list[k].id]) { seen[list[k].id] = 1; out.push(list[k].id); }
+    return out;
+  }
+
   function sortList(list, cat){
     var arr = list.slice();
+    /* 2026-11-23 — '내 순서': 책등을 길게 눌러 옮긴 순서 그대로(책 전체 기준).
+       필터·검색은 그대로 걸린 채 이 순서 안에서 보인다. */
+    if (cat === 'book' && state.cat === 'book' && state.sort === 'custom') {
+      var ord = customOrderIds(), pos = {}, oi;
+      for (oi = 0; oi < ord.length; oi++) pos[ord[oi]] = oi;
+      arr.sort(function(a, b){
+        var x = (pos[a.id] === undefined) ? -1 : pos[a.id];
+        var y = (pos[b.id] === undefined) ? -1 : pos[b.id];
+        return x - y;
+      });
+      return arr;
+    }
     /* 2026-11-22 — 책 탭의 출판사별·장르별 정렬.
        출판사·장르 이름을 가나다순으로 묶고, 같은 묶음 안에서는 제목순.
        출판사·장르가 비어 있는 책은 맨 뒤로 모은다. */
@@ -3912,10 +4011,13 @@
     el.value = state.genre;
   }
 
-  /* 2026-11-22 — 정렬 선택지. 출판사별·장르별은 책 탭에서만 나온다. */
+  /* 2026-11-22 — 정렬 선택지. 출판사별·장르별은 책 탭에서만 나온다.
+     2026-11-23 — '내 순서': 책등을 길게 눌러 옮긴 순서(책 탭 전용). */
   var SORT_BASE = [['default','기본 순서'],['date-desc','날짜 늦은 순'],['title','가나다순']];
-  var SORT_BOOK = SORT_BASE.concat([['publisher','출판사별'],['genre','장르별']]);
+  var SORT_BOOK = [['default','기본 순서'],['custom','내 순서'],['date-desc','날짜 늦은 순'],['title','가나다순'],['publisher','출판사별'],['genre','장르별']];
   function isBookSort(v){ return v === 'publisher' || v === 'genre'; }
+  /* 책 탭에서만 뜻이 있는 정렬 — 책을 떠나면 화면에는 '기본 순서'로 보인다 */
+  function isBookOnlySort(v){ return isBookSort(v) || v === 'custom'; }
   /* 책 탭에서는 다섯 가지, 다른 탭에서는 기본 세 가지. 책을 떠나면 화면에는 '기본 순서'로 보이고,
      고른 값(state.sort)은 남겨 두었다가 책 탭으로 돌아오면 그대로 다시 쓴다. */
   function syncSortSel(){
@@ -3927,7 +4029,7 @@
       el.innerHTML = opts.map(function(o){ return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('');
       el.setAttribute('data-opts', key);
     }
-    el.value = (state.cat !== 'book' && isBookSort(state.sort)) ? 'default' : state.sort;
+    el.value = (state.cat !== 'book' && isBookOnlySort(state.sort)) ? 'default' : state.sort;
   }
 
   /* 2026-11-21 은유 님 요청 — 정렬(·장르) 드롭다운을 섹션 헤더 오른쪽(건수 옆 빈 자리)에.
@@ -4494,7 +4596,7 @@ var MUNHAK_NOT = ["8954670474"];
       + ' style="width:' + g.w + 'px;height:' + g.h + 'px" aria-label="' + label + ' — 카드로 열기">';
     if (!g.v) {
       return open + '<img src="spines/' + esc(it.id) + '.jpg" alt="" width="' + g.w + '" height="' + g.h
-        + '" loading="lazy" decoding="async">' + '</button>';
+        + '" loading="lazy" decoding="async" draggable="false">' + '</button>';
     }
     var dark = lumOf(g.color) > 0.62;
     /* 제목이 들어갈 자리 — .sh-vt 위아래 여백 14와 제목 max-height 여유 26을 뺀 높이.
@@ -4600,6 +4702,258 @@ var MUNHAK_NOT = ["8954670474"];
     saveUIPrefs();
     render();
     toResults();
+  }
+
+  /* ──────────── 책꽂이 롱프레스 순서 이동 (2026-11-23 은유 님 요청) ────────────
+     책등을 380ms 동안 움직이지 않고 누르고 있으면 그 책이 살짝 들려 손끝(커서)을 따라오고,
+     놓을 자리에 세로 삽입선이 뜨다. 손을 떼면 그 자리에 꽂혀 '내 순서'로 저장된다.
+     짧게 탭/클릭하면 지금처럼 그 책 카드가 뜨다 — 끌고 난 직후의 클릭만 삼킨다. */
+  var SH_HOLD = 380, SH_MOVE = 8, SH_EDGE = 76;
+  var shPress = null, shDrag = null, shDragLock = 0;
+
+  function shSpineEl(e){ return (e && e.closest) ? e.closest('.sh-spine') : null; }
+  function shPressCancel(){
+    if (!shPress) return;
+    if (shPress.timer) clearTimeout(shPress.timer);
+    shPress = null;
+  }
+  function shPressStart(el, cx, cy){
+    if (shDrag || !el) return;
+    shPressCancel();
+    shPress = { el: el, id: el.getAttribute('data-id'), x: cx, y: cy, timer: null };
+    shPress.timer = setTimeout(function(){
+      if (!shPress) return;
+      var p = shPress;
+      shPressCancel();
+      shDragBegin(p.el, p.x, p.y, p.id);
+    }, SH_HOLD);
+  }
+  /* 길게 누르기 전에 손가락·커서가 움직였으면 그건 스크롤이다 — 끌기를 포기한다 */
+  function shPressMoved(cx, cy){
+    if (!shPress) return;
+    if (Math.abs(cx - shPress.x) > SH_MOVE || Math.abs(cy - shPress.y) > SH_MOVE) shPressCancel();
+  }
+  /* 선반에 놓인 책등의 위치를 페이지 좌표로 한 번 재 둔다 — 끄는 동안에는 다시 재지 않는다 */
+  function shShelfRects(box){
+    var rows = [], px = window.pageXOffset || 0, py = window.pageYOffset || 0;
+    var rowEls = box.querySelectorAll('.sh-row'), k, q;
+    for (k = 0; k < rowEls.length; k++) {
+      var rowEl = rowEls[k], r = rowEl.getBoundingClientRect();
+      var booksEl = rowEl.querySelector('.sh-books');
+      var br = booksEl ? booksEl.getBoundingClientRect() : r;
+      var sps = [], spEls = rowEl.querySelectorAll('.sh-spine');
+      for (q = 0; q < spEls.length; q++) {
+        var b = spEls[q].getBoundingClientRect();
+        sps.push({ id: spEls[q].getAttribute('data-id'),
+          left: b.left + px, right: b.right + px, top: b.top + py, bottom: b.bottom + py });
+      }
+      rows.push({ el: rowEl, top: r.top + py, bottom: r.bottom + py, left: r.left + px, width: r.width,
+        bTop: br.top + py, bBottom: br.bottom + py, spines: sps });
+    }
+    return rows;
+  }
+  function shDragBegin(el, cx, cy, id){
+    var box = document.getElementById('bookShelf');
+    if (!box || !el) return false;
+    /* 다른 정렬로 보고 있었다면 '내 순서'로 바꿔 놓고 옮긴다 — 옮긴 순서는 '내 순서'에만 담긴다.
+       이미 옮겨 둔 '내 순서'가 있으면 그대로 쓰고, 없을 때만 지금 순서를 초기값으로 잡는다. */
+    if (!state.customOrder.length) seedCustomOrder(currentBookOrderIds());
+    if (state.sort !== 'custom') {
+      state.sort = 'custom';
+      saveUIPrefs();
+      render();
+      el = sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]');
+      box = document.getElementById('bookShelf');     /* 2026-11-23 — 다시 그린 뒤의 선반을 잰다(끝난 선반을 재면 0이 된다) */
+      if (!el || !box) return false;
+      toast('내 순서로 바꿔 옮겨요 — 놓으면 이 순서로 저장돼요');
+    }
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    hideShelfTip();
+    shDrag = {
+      id: id, el: el, dx: cx - r.left, dy: cy - r.top, w: r.width, h: r.height,
+      list: (shelfPaintList || []).map(function(it){ return it.id; }),
+      rows: shShelfRects(box), ghost: null, ins: null, idx: 0, cx: cx, cy: cy, raf: 0
+    };
+    el.classList.add('sh-drag-src');
+    document.body.classList.add('is-shelf-dragging');
+    var g = document.createElement('div');
+    g.className = 'sh-ghost';
+    g.style.width = Math.round(shDrag.w) + 'px';
+    g.style.height = Math.round(shDrag.h) + 'px';
+    g.innerHTML = el.innerHTML;
+    document.body.appendChild(g);
+    shDrag.ghost = g;
+    shDragTrack(cx, cy);
+    shListen(true);
+    shDrag.raf = requestAnimationFrame(shAutoScroll);
+    return true;
+  }
+  function shGhostAt(d, cx, cy){
+    d.cx = cx; d.cy = cy;
+    var x = Math.round(cx - d.dx), y = Math.round(cy - d.dy - 7);
+    d.ghost.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) scale(1.045)';
+  }
+  /* 포인터가 어느 선반(단)의 어느 책등 사잇자리에 있는지 */
+  function shHitTest(px, py){
+    var rows = shDrag.rows, k, best = 0, bd = Infinity, dd;
+    for (k = 0; k < rows.length; k++) {
+      if (py >= rows[k].bTop - 8 && py <= rows[k].bBottom + 8) { best = k; bd = 0; break; }
+      dd = py < rows[k].bTop ? rows[k].bTop - py : py - rows[k].bBottom;
+      if (dd < bd) { bd = dd; best = k; }
+    }
+    var row = rows[best], before = null, j;
+    for (j = 0; j < row.spines.length; j++) {
+      if (px < (row.spines[j].left + row.spines[j].right) / 2) { before = row.spines[j]; break; }
+    }
+    return { row: row, rowIndex: best, before: before };
+  }
+  /* 보이는 책 목록에서의 최종 자리 — 지금 자리에서 빼고 나서 끼우는 자리 */
+  function shDropIndex(hit){
+    var list = shDrag.list, at, from, sp;
+    if (hit.before) at = list.indexOf(hit.before.id);
+    else {
+      sp = hit.row.spines[hit.row.spines.length - 1];
+      at = sp ? list.indexOf(sp.id) + 1 : list.length;
+    }
+    if (at < 0) at = list.length;
+    from = list.indexOf(shDrag.id);
+    if (from < 0) return at;
+    return at > from ? at - 1 : at;
+  }
+  function shShowIns(hit){
+    var d = shDrag;
+    if (!d) return;
+    var row = hit.row, line = d.ins, x, last = row.spines[row.spines.length - 1];
+    if (!line) { line = document.createElement('div'); line.className = 'sh-ins'; d.ins = line; }
+    if (line.parentNode !== row.el) row.el.appendChild(line);
+    if (hit.before) x = hit.before.left - row.left - 2;
+    else x = last ? (last.right - row.left - 1) : 2;
+    x = Math.max(0, Math.min(x, row.width - 3));
+    line.style.left = Math.round(x) + 'px';
+    line.style.top = Math.round((row.bTop - row.top) - 3) + 'px';
+    line.style.height = Math.round(Math.max(12, (row.bBottom - row.bTop) + 4)) + 'px';
+  }
+  function shDragTrack(cx, cy){
+    var d = shDrag;
+    if (!d) return;
+    shGhostAt(d, cx, cy);
+    var hit = shHitTest(cx + (window.pageXOffset || 0), cy + (window.pageYOffset || 0));
+    d.idx = shDropIndex(hit);
+    shShowIns(hit);
+  }
+  /* 화면 위·아래 가장자리에 닿으면 부드럽게 자동 스크롤 — 위·아래 선반으로도 옮길 수 있다 */
+  function shAutoScroll(){
+    var d = shDrag;
+    if (!d) return;
+    var vh = window.innerHeight, y = d.cy, sp = 0;
+    if (y < SH_EDGE) sp = -Math.min(18, Math.round((SH_EDGE - y) / 4) + 2);
+    else if (y > vh - SH_EDGE) sp = Math.min(18, Math.round((y - (vh - SH_EDGE)) / 4) + 2);
+    if (sp) {
+      var before = window.pageYOffset || 0;
+      window.scrollBy(0, sp);
+      if ((window.pageYOffset || 0) !== before) shDragTrack(d.cx, d.cy);
+    }
+    d.raf = requestAnimationFrame(shAutoScroll);
+  }
+  function shDragEnd(){
+    var d = shDrag;
+    if (!d) return;
+    var from = d.list.indexOf(d.id), to = d.idx;
+    shDragCleanup();
+    if (from < 0 || to < 0 || to === from) return;      /* 자리를 안 바꿨으면 저장하지 않는다 */
+    state.customOrder = mergeCustomOrder(d.list, d.id, to);
+    state.customOrderAt = new Date().toISOString();
+    state.sort = 'custom';
+    saveUIPrefs();
+    persist();
+    render();
+    toast('순서를 바꿨습니다 — 이 순서로 기억해 둘게요');
+  }
+  /* 보이는 목록(list)에서 id 를 to 자리로 옮긴 결과를, 책 전체 '내 순서'에 접어 넣는다.
+     필터 밖이라 안 보이는 책들의 자리는 그대로 둔다. */
+  function mergeCustomOrder(list, id, to){
+    var from = list.indexOf(id), vis, full, visSet = {}, merged = [], vi = 0, k;
+    if (from < 0) return customOrderIds();
+    vis = list.slice();
+    vis.splice(from, 1);
+    if (to < 0) to = 0;
+    if (to > vis.length) to = vis.length;
+    vis.splice(to, 0, id);
+    full = customOrderIds();
+    for (k = 0; k < list.length; k++) visSet[list[k]] = 1;
+    for (k = 0; k < full.length; k++) {
+      if (visSet[full[k]]) merged.push(vi < vis.length ? vis[vi++] : full[k]);
+      else merged.push(full[k]);
+    }
+    return merged;
+  }
+  function shDragCleanup(){
+    var d = shDrag;
+    if (!d) return;
+    shDrag = null;
+    if (d.raf) { try { cancelAnimationFrame(d.raf); } catch (e) {} }
+    if (d.ghost && d.ghost.parentNode) d.ghost.parentNode.removeChild(d.ghost);
+    if (d.ins && d.ins.parentNode) d.ins.parentNode.removeChild(d.ins);
+    if (d.el) d.el.classList.remove('sh-drag-src');
+    document.body.classList.remove('is-shelf-dragging');
+    shListen(false);
+    shDragLock = Date.now();     /* 끌고 난 직후의 클릭(카드 팝업)은 삼킨다 */
+  }
+  function shListen(on){
+    var m = on ? 'addEventListener' : 'removeEventListener';
+    window[m]('touchmove', shOnTouchMove, { passive: false });
+    window[m]('touchend', shOnTouchEnd, false);
+    window[m]('touchcancel', shOnTouchEnd, false);
+    window[m]('mousemove', shOnMouseMove, false);
+    window[m]('mouseup', shOnMouseUp, false);
+  }
+  function shOnTouchMove(e){
+    if (!shDrag) return;
+    if (e.cancelable) e.preventDefault();     /* 끄는 동안에는 페이지가 스크롤되지 않게 */
+    var t = e.touches[0] || e.changedTouches[0];
+    if (t) shDragTrack(t.clientX, t.clientY);
+  }
+  function shOnTouchEnd(e){
+    if (!shDrag) return;
+    if (e.cancelable) e.preventDefault();     /* 손을 뗀 뒤 따라오는 탭(카드 팝업)을 막는다 */
+    shDragEnd();
+  }
+  function shOnMouseMove(e){ if (shDrag) shDragTrack(e.clientX, e.clientY); }
+  function shOnMouseUp(){ if (shDrag) shDragEnd(); }
+
+  if (sectionsEl) {
+    sectionsEl.addEventListener('touchstart', function(e){
+      if (e.touches.length !== 1) return;
+      if (!(state.cat === 'book' && state.bookView === 'shelf')) return;
+      var sp = shSpineEl(e.target);
+      if (!sp) return;
+      var t = e.touches[0];
+      shPressStart(sp, t.clientX, t.clientY);
+    }, { passive: true });
+    sectionsEl.addEventListener('touchmove', function(e){
+      if (shDrag || !shPress) return;
+      var t = e.touches[0];
+      if (t) shPressMoved(t.clientX, t.clientY);
+    }, { passive: true });
+    sectionsEl.addEventListener('touchend', function(){ if (!shDrag) shPressCancel(); }, { passive: true });
+    sectionsEl.addEventListener('touchcancel', function(){ if (!shDrag) shPressCancel(); }, { passive: true });
+    sectionsEl.addEventListener('mousedown', function(e){
+      if (e.button !== 0) return;
+      if (!(state.cat === 'book' && state.bookView === 'shelf')) return;
+      var sp = shSpineEl(e.target);
+      if (!sp) return;
+      shPressStart(sp, e.clientX, e.clientY);
+    });
+    document.addEventListener('mousemove', function(e){
+      if (shDrag || !shPress) return;
+      shPressMoved(e.clientX, e.clientY);
+    });
+    document.addEventListener('mouseup', function(){ if (!shDrag) shPressCancel(); });
+    /* 폰·태블릿에서 길게 누를 때 뜨는 '이미지 저장' 메뉴를 책등에서는 막는다 */
+    sectionsEl.addEventListener('contextmenu', function(e){
+      if (state.cat === 'book' && state.bookView === 'shelf' && shSpineEl(e.target)) e.preventDefault();
+    });
   }
 
   /* ──────────── 책꽂이 확대·캡처 (2026-11-23 은유 님 요청) ──────────── */
@@ -6535,6 +6889,8 @@ var MUNHAK_NOT = ["8954670474"];
     }
     var actEl = target.closest ? target.closest('[data-act]') : null;
     if (!actEl) return;
+    /* 책등을 끌고 난 직후(600ms)의 클릭은 삼킨다 — 놓자마자 카드 팝업이 뜨지 않게 */
+    if (actEl.getAttribute('data-act') === 'spine' && shDragLock && Date.now() - shDragLock < 600) return;
     runCardAct(actEl);
   });
 
@@ -6670,9 +7026,18 @@ var MUNHAK_NOT = ["8954670474"];
   });
 
   document.getElementById('sort').addEventListener('change', function(){
-    state.sort = this.value;
+    var next = this.value;
+    /* 2026-11-23 — '내 순서'를 처음 고르면 지금 보이던 순서를 그대로 초기 순서로 삼는다.
+       이미 옮겨 둔 순서가 있으면 그대로 쓴다(다시 덮어쓰지 않는다). */
+    var seeded = false;
+    if (next === 'custom' && state.cat === 'book' && !state.customOrder.length) {
+      seedCustomOrder(currentBookOrderIds());
+      seeded = true;
+    }
+    state.sort = next;
     saveUIPrefs();
     render();
+    if (seeded) { persist(); toast('지금 보이던 순서를 내 순서로 잡았어요 — 책등을 길게 눌러 옮겨 보세요'); }
   });
 
   document.getElementById('addBtn').addEventListener('click', function(){
@@ -7198,13 +7563,16 @@ var MUNHAK_NOT = ["8954670474"];
     }
     return { app: APP_ID, v: 1, updatedAt: new Date().toISOString(),
       device: syncCfg.device, items: items, ov: ov, deleted: state.deleted.slice(), brief: state.brief,
-      lemon: state.lemon };
+      lemon: state.lemon,
+      /* 2026-11-23 — 책꽂이 '내 순서'도 기기 간에 함께 간다(마지막으로 옮긴 기기가 이긴다) */
+      customOrder: customOrderIds(), customOrderAt: state.customOrderAt || '' };
   }
 
   /* Gist 내용을 이 기기에 병합 — 항목은 updatedAt 이 큰 쪽, 삭제 목록은 합집합 */
   function applySyncPayload(remote){
     if (!remote || remote.app !== APP_ID) return false;
-    if (!remote.items && !remote.ov && !remote.deleted && !remote.brief && !remote.lemon) return false;
+    if (!remote.items && !remote.ov && !remote.deleted && !remote.brief && !remote.lemon
+        && !remote.customOrder) return false;
     var changed = false, k, idx, f, id, local, r, stamp;
     var del = remote.deleted || [];
     /* 2026-11-22 현대문학 네 권 복구 — 다른 기기에 남은 옛 '지움' 기록이 되살린 카드를 다시 지우지 못하게 한다.
@@ -7304,6 +7672,19 @@ var MUNHAK_NOT = ["8954670474"];
       rv2 = Number(rlemon[lk]) || 0;
       lv2 = Number(state.lemon[lk]) || 0;
       if (Math.abs(rv2) > Math.abs(lv2)) { state.lemon[lk] = rv2; changed = true; }
+    }
+    /* 2026-11-23 — 책꽂이 '내 순서' — 마지막으로 옮긴(customOrderAt) 기기 쪽을 따른다 */
+    if (Array.isArray(remote.customOrder) && String(remote.customOrderAt || '') > String(state.customOrderAt || '')) {
+      var rc = [], rk, rid;
+      for (rk = 0; rk < remote.customOrder.length; rk++) {
+        rid = String(remote.customOrder[rk] == null ? '' : remote.customOrder[rk]);
+        if (rid && rc.indexOf(rid) < 0) rc.push(rid);
+      }
+      if (rc.length) {
+        state.customOrder = rc;
+        state.customOrderAt = String(remote.customOrderAt || '');
+        changed = true;
+      }
     }
     /* 끌어서 바꾼 할 일 순서 — 마지막으로 바꾼 시각(at)이 더 큰 쪽을 따른다 */
     var ro = rbrief.order;
@@ -7556,7 +7937,9 @@ var MUNHAK_NOT = ["8954670474"];
       items: state.items.map(function(it){ var c = clone(it); delete c._hay; return c; }),
       deleted: state.deleted,
       brief: state.brief,
-      lemon: state.lemon
+      lemon: state.lemon,
+      customOrder: state.customOrder,      /* 2026-11-23 — '내 순서' 책꽂이 순서 */
+      customOrderAt: state.customOrderAt
     };
     var text = JSON.stringify(payload, null, 1);
     var blob = new Blob([text], { type: 'application/json' });
@@ -7591,6 +7974,10 @@ var MUNHAK_NOT = ["8954670474"];
           state.deleted = (parsed && parsed.deleted) || [];
           if (parsed && parsed.brief && typeof parsed.brief === 'object') state.brief = parsed.brief;
           state.lemon = (parsed && parsed.lemon && typeof parsed.lemon === 'object') ? parsed.lemon : {};
+          /* 2026-11-23 — '내 순서'도 백업과 함께 복원한다 */
+          state.customOrder = (parsed && Array.isArray(parsed.customOrder))
+            ? parsed.customOrder.filter(function(x){ return typeof x === 'string' && x; }) : [];
+          state.customOrderAt = String((parsed && parsed.customOrderAt) || '');
           normBrief();
           persist();
           render();
