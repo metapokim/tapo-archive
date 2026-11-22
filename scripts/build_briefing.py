@@ -51,6 +51,10 @@ UPCOMING_HIDE_DEFAULT = r"덕소2"
 # '다가오는 일정'이 아닌 카테고리 (기사·논문·메모·영상은 날짜가 '올린 날'일 뿐,
 # 책도 날짜가 '서재에 넣은 날'일 뿐 — index.html upcomingDD 와 같은 규칙)
 UPCOMING_SKIP_CATS = {"news", "grad", "memo", "video", "book"}
+# 학회·포럼 중 상태가 '관심'인 카드는 '다가오는 일정'에서 빼다 (2026-11-22 은유 님 요청 —
+# index.html 의 upcomingSkipStatus 와 같은 규칙. 신청 전·신청 완료 등 다른 상태는 그대로)
+UPCOMING_SKIP_INTEREST_CATS = {"forum"}
+UPCOMING_SKIP_STATUS = "관심"
 UPCOMING_DAYS = 60
 
 
@@ -298,6 +302,9 @@ def build_upcoming(src: str, today: date) -> list:
             continue
         if str(it.get("status") or "") in done:
             continue
+        if (str(it.get("cat") or "") in UPCOMING_SKIP_INTEREST_CATS
+                and str(it.get("status") or "") == UPCOMING_SKIP_STATUS):
+            continue                                          # 관심 학회·포럼은 빼기
         r = add(it.get("date"), it.get("title"), it.get("time"), it.get("place"))
         if r:
             r["id"] = str(it.get("id") or "")
