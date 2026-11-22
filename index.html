@@ -4757,8 +4757,8 @@ var MUNHAK_NOT = ["8954670474"];
     if (!box || !el) return false;
     /* 다른 정렬로 보고 있었다면 '내 순서'로 바꿔 놓고 옮긴다 — 옮긴 순서는 '내 순서'에만 담긴다.
        이미 옮겨 둔 '내 순서'가 있으면 그대로 쓰고, 없을 때만 지금 순서를 초기값으로 잡는다. */
+    if (!state.customOrder.length) seedCustomOrder(currentBookOrderIds());
     if (state.sort !== 'custom') {
-      if (!state.customOrder.length) seedCustomOrder(currentBookOrderIds());
       state.sort = 'custom';
       saveUIPrefs();
       render();
