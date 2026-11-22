@@ -4717,8 +4717,11 @@ var MUNHAK_NOT = ["8954670474"];
     var cw = Math.round(Math.min(box.clientWidth, Math.max(90, padL + padR + usedW)));
     var chh = Math.round(padT + padB + innerH);
     if (cw < 10 || chh < 10) { toast('책꽂이가 아직 그려지지 않았어요'); return; }
-    /* 아이폰 사파리의 캔버스 한도(넓이 16M 픽셀 안팍)를 넘지 않게 배율을 정한다 */
-    var S = Math.min(3, Math.sqrt(10000000 / (cw * chh)), 8000 / cw, 8000 / chh);
+    /* 아이폰 사파리의 캔버스 한도(넓이 16M 픽셀 안팍)를 넘지 않게 배율을 정한다.
+       마우스가 있는 PC는 브라우저 한도가 넉넉해 조금 더 크게 그린다. */
+    var maxArea = hoverCapable() ? 16000000 : 10000000;
+    var maxDim = hoverCapable() ? 12000 : 8000;
+    var S = Math.min(3, Math.sqrt(maxArea / (cw * chh)), maxDim / cw, maxDim / chh);
     S = Math.max(0.3, S) || 1;
     var cv = document.createElement('canvas');
     cv.width = Math.max(1, Math.round(cw * S));
@@ -4781,7 +4784,8 @@ var MUNHAK_NOT = ["8954670474"];
           document.body.appendChild(a);
           a.click();
           setTimeout(function(){ URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 1500);
-          toast('책꽂이를 이미지로 저장했어요 (' + shelfPaintList.length + '권)');
+          toast('책꽂이를 이미지로 저장했어요 (' + shelfPaintList.length + '권)'
+            + (S < 1 ? ' · 책이 많아 해상도가 낮으니 필터로 좁혀 보세요' : ''));
         } else if (capEl && capImg) {
           capImg.src = url;
           if (capSave) { capSave.href = url; capSave.download = name; }
