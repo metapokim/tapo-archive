@@ -507,11 +507,11 @@
 
   /* ───────────── 책꽂이 보기 (2026-11-21) ───────────── */
   /* 책 탭에서만 보이는 카드/책꽂이 전환 — 섹션 헤더 오른쪽, 정렬 드롭다운 앞 */
-  .viewseg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line-2);border-radius:999px;background:#fff}
+  .viewseg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line-2);border-radius:999px;background:#fff;flex:0 0 auto}
   .viewseg button{
     font:inherit;font-size:11.5px;font-weight:700;color:#71717A;background:none;border:0;border-radius:999px;
     padding:5px 11px;cursor:pointer;letter-spacing:-.01em;-webkit-tap-highlight-color:transparent;
-    transition:background .15s,color .15s;
+    transition:background .15s,color .15s;white-space:nowrap;   /* 확대·캡처 단추가 늘어도 '카드/책꽂이'가 줄바꿈되지 않게 */
   }
   .viewseg button:hover{color:var(--ink)}
   .viewseg button[aria-pressed="true"]{background:var(--lemon);color:#18181B;font-weight:800}
@@ -1201,16 +1201,16 @@
     /* 카드|책꽂이 · 통계 · 오늘 뭐 읽지? — 폰에서는 세 단추가 한 줄을 통째로 쓰고 오른쪽에 모인다.
        390~430px 어디서도 셋이 갈라져 두 줄이 되지 않는다. */
     .sec-head.has-view > .sec-tools{
-      display:flex;order:3;flex:1 1 100%;align-items:center;justify-content:flex-end;gap:5px;margin:6px 0 0;
+      display:flex;order:3;flex:1 1 100%;align-items:center;justify-content:flex-end;gap:4px;margin:6px 0 0;
     }
     .sec-head.has-view > .sec-tools > *{margin:0!important;flex:0 0 auto}
-    .sec-head.has-view > .sec-tools > .statbtn{height:26px;font-size:11px;padding:0 9px}
+    .sec-head.has-view > .sec-tools > .statbtn{height:26px;font-size:11px;padding:0 8px}
     .statbtn svg{width:12px;height:12px;flex:0 0 12px}
     .sec-head.has-view > .sec-tools > .dicebtn{height:26px;font-size:11px;padding:0 9px}
     .dicebtn svg{width:12px;height:12px;flex:0 0 12px}
     .bstat-row{grid-template-columns:84px minmax(0,1fr) 30px;gap:7px}
     .viewseg{padding:2px}
-    .viewseg button{padding:4px 9px;font-size:11px}
+    .viewseg button{padding:4px 7px;font-size:11px}
     .bshelf{--sh-pad:10px;border-radius:16px;padding:13px var(--sh-pad) 2px}
     .sh-row{padding-bottom:7px}
     .sh-plank{height:8px}
