@@ -6618,6 +6618,11 @@
       var sk = kindOf(it);
       badge = sk;
       badgeCls = sk === '전시' ? 'tag--exhibit' : 'tag--show';
+    } else if (it.cat === 'news') {
+      /* 기사·뉴스레터 카드는 팝업에서도 카드와 같은 구분 배지(기사·뉴스레터·판례)를 쓴다 */
+      var nk = kindOf(it);
+      badge = nk;
+      badgeCls = nk === '뉴스레터' ? 'tag--letter' : (nk === '판례' ? 'tag--case' : 'tag--news');
     }
     var h = '<article class="lc-card" data-card="' + esc(it.id) + '">';
     h += '<div class="lc-head"><div class="lc-main">';
