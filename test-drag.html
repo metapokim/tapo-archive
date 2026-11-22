@@ -4763,7 +4763,8 @@ var MUNHAK_NOT = ["8954670474"];
       saveUIPrefs();
       render();
       el = sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]');
-      if (!el) return false;
+      box = document.getElementById('bookShelf');     /* 2026-11-23 — 다시 그린 뒤의 선반을 잰다(끝난 선반을 재면 0이 된다) */
+      if (!el || !box) return false;
       toast('내 순서로 바꿔 옮겨요 — 놓으면 이 순서로 저장돼요');
     }
     var r = el.getBoundingClientRect();
@@ -8032,114 +8033,85 @@ var MUNHAK_NOT = ["8954670474"];
 
 </script>
 
-<div id="tapotest" style="position:fixed;left:0;top:0;z-index:9999;max-width:100vw;max-height:70vh;overflow:auto;background:#111;color:#0f0;font:11px/1.45 monospace;padding:8px;white-space:pre-wrap"></div>
+<div id="tapotest" style="position:fixed;left:0;top:0;z-index:9999;max-width:100vw;max-height:80vh;overflow:auto;background:#111;color:#0f0;font:11px/1.4 monospace;padding:8px;white-space:pre-wrap"></div>
 <script>
 (function(){
   var log = [], el = document.getElementById('tapotest');
   function say(s){ log.push(s); el.textContent = log.join('\n'); }
   function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
-  function mv(t,x,y,btn){ window.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0,buttons:btn})); }
+  function mv(t,x,y,b){ window.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0,buttons:b})); }
   function md(e,x,y){ e.dispatchEvent(new MouseEvent('mousedown',{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0,buttons:1})); }
-  function mids(){ var s = document.getElementById('bookShelf'); if(!s) return []; return [].slice.call(s.querySelectorAll('.sh-spine')).map(function(e){ return e.getAttribute('data-id'); }); }
-  function centre(e){ var r = e.getBoundingClientRect(); return { x: r.left + Math.min(r.width/2, 12), y: r.top + r.height/2, r: r }; }
-  function eshop(){ return document.getElementById('bookShelf'); }
-  async function dragBy(step){
-    var sh = eshop(); if(!sh) return 'NO SHELF';
-    var rows = [].slice.call(sh.querySelectorAll('.sh-row'));
-    var sp = [].slice.call(rows[0].querySelectorAll('.sh-spine'));
-    if (sp.length < 4) return 'TOO FEW IN ROW0';
-    var src = sp[0], c0 = centre(src);
-    var tgt = sp[3], tr = tgt.getBoundingClientRect();
-    md(src, c0.x, c0.y);
-    await sleep(470);
-    var ghost = !!document.querySelector('.sh-ghost');
-    var dragging = document.body.classList.contains('is-shelf-dragging');
-    var x1 = tr.right - 1, y1 = tr.top + tr.height/2;
-    mv('mousemove', x1, y1, 1);
-    await sleep(90);
+  function shelf(){ return document.getElementById('bookShelf'); }
+  function ids(){ var s = shelf(); return s ? [].slice.call(s.querySelectorAll('.sh-spine')).map(function(e){ return e.getAttribute('data-id'); }) : []; }
+  function rows(){ var s = shelf(); return s ? [].slice.call(s.querySelectorAll('.sh-row')) : []; }
+  function sortVal(){ return document.getElementById('sort').value; }
+  function setSort(v){ var st = document.getElementById('sort'); st.value = v; st.dispatchEvent(new Event('change', {bubbles:true})); }
+  async function hold(src){
+    var r = src.getBoundingClientRect(), x = r.left + Math.min(r.width/2, 12), y = r.top + r.height/2;
+    md(src, x, y); await sleep(480); return {x:x,y:y};
+  }
+  async function dropTo(x, y){
+    mv('mousemove', x, y, 1); await sleep(90);
     var line = document.querySelector('.sh-ins');
-    var lineLeft = line ? line.style.left : '';
-    mv('mousemove', x1, y1, 1);
-    await sleep(30);
-    mv('mouseup', x1, y1, 0);
-    await sleep(280);
-    return JSON.stringify({ step: step, ghost: ghost, dragging: dragging, line: !!line, lineLeft: lineLeft,
-      ghostAfter: !!document.querySelector('.sh-ghost'), lineAfter: !!document.querySelector('.sh-ins'),
-      bodyAfter: document.body.classList.contains('is-shelf-dragging'),
-      sort: (document.getElementById('sort')||{}).value,
-      toast: (document.getElementById('toast')||{}).textContent,
-      head: mids().slice(0,8) });
+    var seen = line ? ('line@' + line.style.left + '/' + line.style.top + ' h' + line.style.height) : 'NO LINE';
+    mv('mousemove', x, y, 1); await sleep(30);
+    mv('mouseup', x, y, 0); await sleep(300);
+    return seen;
   }
   async function run(){
     try {
-      window.scrollTo(0,0);
-      var tab = document.querySelector('#tabs button[data-cat="book"]');
-      tab.click();
+      document.querySelector('#tabs button[data-cat="book"]').click();
       await sleep(400);
       var vs = document.querySelector('.viewseg button[data-view="shelf"]');
       if (vs && vs.getAttribute('aria-pressed') !== 'true') { vs.click(); await sleep(400); }
-      say('SETUP cat=' + (document.querySelector('.sec[data-cat="book"]') ? 'book-ok' : 'no-sec') + ' shelf=' + !!eshop() + ' spines=' + mids().length);
-      var shelf = eshop(); if (shelf) shelf.scrollIntoView({block:'start'});
-      await sleep(350);
+      if (vs) vs = document.querySelector('.viewseg button[data-view="shelf"]');
+      await sleep(200);
+      say('START sort=' + sortVal() + ' n=' + ids().length);
 
-      var before = mids();
-      say('BEFORE ' + JSON.stringify(before.slice(0,8)));
+      /* T1. 출판사별로 보다가 길게 눌러 옮기기 → 내 순서로 바뀌고 기존 내 순서는 유지 */
+      var customBefore = ids().slice();                 /* 지금(=내 순서) 순서를 기억 */
+      setSort('publisher'); await sleep(500);
+      var pubHead = ids().slice(0, 6);
+      var sp = rows()[0].querySelectorAll('.sh-spine');
+      var srcId = sp[0].getAttribute('data-id');
+      var pos = await hold(sp[0]);
+      var t = rows()[0].querySelectorAll('.sh-spine')[3];
+      var tr = t.getBoundingClientRect();
+      var lineSeen = await dropTo(tr.right - 1, tr.top + tr.height/2);
+      var after = ids();
+      say('T1 publisherHead=' + JSON.stringify(pubHead));
+      say('T1 lineSeen=' + lineSeen + ' sort=' + sortVal() + ' toast=' + (document.getElementById('toast')||{}).textContent);
+      say('T1 head=' + JSON.stringify(after.slice(0,6)) + ' movedTo=' + after.indexOf(srcId));
+      var customKept = customBefore.length > 0 && JSON.stringify(after) === JSON.stringify((function(){
+        var a = customBefore.slice(); var i = a.indexOf(srcId); a.splice(i,1); a.splice(3,0,srcId); return a; })());
+      say('T1 droppedAt3=' + (after.indexOf(srcId) === 3) + ' orderFromOldCustom=' + customKept);
 
-      /* A. 짧은 클릭 — 카드 팝업 */
-      var sp0 = eshop().querySelector('.sh-spine');
-      var c0 = centre(sp0);
-      md(sp0, c0.x, c0.y);
-      await sleep(80);
-      window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true,cancelable:true,clientX:c0.x,clientY:c0.y,button:0,buttons:0}));
-      sp0.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:c0.x,clientY:c0.y}));
-      await sleep(250);
-      var bm = document.getElementById('bcardModal');
-      say('A tap->modal open=' + (bm ? !bm.hidden : 'no-modal'));
-      if (bm && !bm.hidden) { var x = document.getElementById('bcardX'); if (x) x.click(); await sleep(200); }
-
-      /* B. 기본 순서에서 길게 눌러 옮기기 → 내 순서로 전환 */
-      say('B ' + await dragBy('B'));
-
-      /* C. 같은 화면에서 다시 한 번 (이미 내 순서) */
-      say('C ' + await dragBy('C'));
-
-      /* D. 확대(1.6x) 상태에서 */
-      var zb = document.querySelector('[data-act="zoom"]');
-      if (zb) { zb.click(); await sleep(350); }
-      var h1 = eshop().querySelector('.sh-spine').getBoundingClientRect().height;
-      say('D zoomH=' + Math.round(h1));
-      say('D ' + await dragBy('D'));
-
-      /* E. 필터(서재) 걸고 옮기기 — 필터 밖 책들의 상대 순서는 그대로여야 한다 */
-      if (zb) { zb.click(); await sleep(300); }
-      var fullBefore = mids();
-      var own = document.querySelector('.chips [data-own="서재"]') || document.querySelector('[data-own="서재"]');
-      if (own) { own.click(); await sleep(350); }
-      var visCount = mids().length;
-      var src = eshop().querySelector('.sh-spine');
-      var srcId = src.getAttribute('data-id');
-      var r2 = [].slice.call(eshop().querySelectorAll('.sh-row'))[0].querySelectorAll('.sh-spine');
-      var t = r2[Math.min(4, r2.length-1)], tr2 = t.getBoundingClientRect();
-      var cc = centre(src);
-      md(src, cc.x, cc.y);
-      await sleep(470);
-      mv('mousemove', tr2.right - 1, tr2.top + tr2.height/2, 1);
-      await sleep(80);
-      mv('mouseup', tr2.right - 1, tr2.top + tr2.height/2, 0);
-      await sleep(300);
-      say('E filtered vis=' + visCount + ' moved=' + srcId + ' toast=' + (document.getElementById('toast')||{}).textContent);
-      var own2 = document.querySelector('[data-own="서재"]');
-      if (own2) { var all = document.querySelector('.chips [data-own="all"]') || document.querySelector('[data-own="all"]'); if (all) all.click(); await sleep(350); }
-      var fullAfter = mids();
-      var strip = function(a){ return a.filter(function(x){ return x !== srcId; }); };
-      say('E sameSet=' + (fullBefore.length === fullAfter.length) + ' othersOrderKept=' + (JSON.stringify(strip(fullBefore)) === JSON.stringify(strip(fullAfter))) + ' movedTo=' + fullAfter.indexOf(srcId) + ' was=' + fullBefore.indexOf(srcId));
-
-      /* F. 새로고침 뒤에도 '내 순서' 유지되는지 — 저장 후 reload */
-      say('F saved order head=' + JSON.stringify(fullAfter.slice(0,5)));
+      /* T2. 서재 필터를 걸고 옮기기 — 필터 밖 책의 자리는 그대로 */
+      var fullBefore = ids();
+      document.querySelector('.chips [data-own="서재"]').click();
+      await sleep(450);
+      var visBefore = ids();
+      say('T2 vis=' + visBefore.length + ' first=' + JSON.stringify(visBefore.slice(0,6)));
+      var row0 = rows()[0].querySelectorAll('.sh-spine');
+      var src2 = row0[0], src2Id = src2.getAttribute('data-id');
+      var p2 = await hold(src2);
+      var t2 = row0[Math.min(4, row0.length-1)];
+      var tr2 = t2.getBoundingClientRect();
+      var line2 = await dropTo(tr2.right - 1, tr2.top + tr2.height/2);
+      var visAfter = ids();
+      say('T2 line=' + line2 + ' visFirst=' + JSON.stringify(visAfter.slice(0,6)) + ' movedToVis=' + visAfter.indexOf(src2Id));
+      document.querySelector('.chips [data-own="all"]').click();
+      await sleep(450);
+      var fullAfter = ids();
+      var strip = function(a, x){ return a.filter(function(v){ return v !== x; }); };
+      var a1 = strip(fullBefore, src2Id), a2 = strip(fullAfter, src2Id);
+      var diff = -1;
+      for (var i=0;i<a1.length;i++) if (a1[i] !== a2[i]) { diff = i; break; }
+      say('T2 len ' + fullBefore.length + '->' + fullAfter.length + ' othersSame=' + (JSON.stringify(a1) === JSON.stringify(a2)) + ' firstDiff=' + diff);
+      if (diff >= 0) say('T2 around: before=' + JSON.stringify(a1.slice(Math.max(0,diff-2), diff+4)) + ' after=' + JSON.stringify(a2.slice(Math.max(0,diff-2), diff+4)));
+      say('T2 full head=' + JSON.stringify(fullAfter.slice(0,10)));
       say('DONE');
-    } catch (err) {
-      say('ERR ' + (err && err.stack || err));
-    }
+    } catch (e) { say('ERR ' + (e && e.stack || e)); }
   }
   window.addEventListener('load', function(){ setTimeout(run, 900); });
 })();

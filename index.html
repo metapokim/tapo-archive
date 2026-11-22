@@ -4763,7 +4763,8 @@ var MUNHAK_NOT = ["8954670474"];
       saveUIPrefs();
       render();
       el = sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]');
-      if (!el) return false;
+      box = document.getElementById('bookShelf');     /* 2026-11-23 — 다시 그린 뒤의 선반을 잰다(끝난 선반을 재면 0이 된다) */
+      if (!el || !box) return false;
       toast('내 순서로 바꿔 옮겨요 — 놓으면 이 순서로 저장돼요');
     }
     var r = el.getBoundingClientRect();
