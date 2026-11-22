@@ -1866,6 +1866,10 @@
   /* 2026-11-22 《모자》(bp138) 서지 교정 — 알라딘 [국내도서] 모자 / 문지 스펙트럼 / 토마스 베른하르트(김현성 옴김) /
      문학과지성사 2020. 05 로 바로잡은 기본 데이터를, 이미 사이트를 열어 둔 기기의 저장본에도 한 번 맞춘다. */
   var bookFix22bSynced = false;
+  /* 2026-11-22 시집 출판사 빈칸 — 예전 동기화 이전 저장본에서 장르가 '시'인 책의 출판사 칸이 비어
+     서가·장르 필터와 시리즈 높이가 어긋났다(은유 님: "시집에 출판사 빠진거 왜케 많아?").
+     시집 안에서만, 기본 데이터(SEED)에 이미 확인된 출판사가 있는 경우에만 한 번 채운다. */
+  var poemPubSynced = false;
   /* 되살린 네 권은 다른 기기에 남은 옛 '지움' 기록이 다시 지우지 못하게 지킨다.
      은유 님이 이 기기에서 직접 지운 뒤(pinKeepOff)에는 평소대로 지운 대로 둔다. */
   var PIN_KEEP = { 'bn20261121_57': 1, 'bn20261121_58': 1, 'bn20261121_67': 1, 'bn20261121_68': 1 };
@@ -2096,7 +2100,8 @@
     backup2:    '2026-11-21T14:53:29.000Z',   /* backup2Sync20261121 배포(백업 내보낸 시각) */
     pinInfo:    '2026-11-22T02:30:00.000Z',   /* 핀 시리즈 2권 서지 보강 배포 */
     pinFix:     '2026-11-21T17:50:00.000Z',   /* 현대문학 4권(있다·사라진 재의 아이·딩·풀업) 복구 배포(2026-11-22 02:50 KST) */
-    bookFix22b: '2026-11-21T18:01:00.000Z'    /* 《모자》·《[eBook] 사랑》·《[eBook] 천마》·《불안의 책》 서지 교정 배포(2026-11-22 03:01 KST) */
+    bookFix22b: '2026-11-21T18:01:00.000Z',   /* 《모자》·《[eBook] 사랑》·《[eBook] 천마》·《불안의 책》 서지 교정 배포(2026-11-22 03:01 KST) */
+    poemPub:    '2026-11-22T12:30:00.000Z'    /* 시집 출판사 빈칸 채우기 배포(2026-11-22 21:30 KST) */
   };
   function migTouch(it, stamp){
     if (!it) return;
@@ -2905,6 +2910,25 @@
       bookFix22bSynced = true;
     }
 
+    /* 2026-11-22 시집 출판사 빈칸 채우기 — 범위는 장르 '시'뿐이다. 다른 장르 카드는 건드리지 않는다.
+       기본 데이터에 출판사가 비어 있으면 채우지 않고, 이미 값이 있는 카드도 그대로 둔다(추측 기입 금지). */
+    if (saved && saved.items && saved.items.length && !(ui && ui.poemPubFill20261122)) {
+      var ppIt, ppS, ppi;
+      for (ppi = 0; ppi < state.items.length; ppi++) {
+        ppIt = state.items[ppi];
+        if (!ppIt || ppIt.cat !== 'book') continue;
+        ppS = seedById[ppIt.id];
+        if (!ppS || String(ppS.genre == null ? '' : ppS.genre) !== '시') continue;
+        if (String(ppIt.publisher == null ? '' : ppIt.publisher).trim()) continue;
+        if (!String(ppS.publisher == null ? '' : ppS.publisher).trim()) continue;
+        ppIt.publisher = ppS.publisher;
+        migTouch(ppIt, MIG_STAMP.poemPub);
+        delete ppIt._hay;
+        loadChanged = true;
+      }
+      poemPubSynced = true;
+    }
+
     if (ui) {
       /* 카테고리는 저장본에서 되살리지 않는다 — 새로고침·재접속·로고 클릭이면 늘 '전체' 보기로 */
       /* 2026-11-21 — 소장/대여·장르 필터는 저장본에서 되살리지 않는다. 탭(카테고리)처럼 새로고침하면 '전체'로.
@@ -2921,7 +2945,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.own = 'all';
 
-    if (backup2Synced || notebookCoversSynced || notebookSynced || bjSynced || forumSynced || posterSynced || booksShelfSynced || bookReworkSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || bookSync22 || pinInfoSynced || pinFixSynced || bookFix22bSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (backup2Synced || notebookCoversSynced || notebookSynced || bjSynced || forumSynced || posterSynced || booksShelfSynced || bookReworkSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || bookSync22 || pinInfoSynced || pinFixSynced || bookFix22bSynced || poemPubSynced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -2940,6 +2964,7 @@
       pinInfo20261122: (pinInfoSynced || prev.pinInfo20261122) ? 1 : 0,
       pinFix20261122: (pinFixSynced || prev.pinFix20261122) ? 1 : 0,
       bookFix20261122b: (bookFix22bSynced || prev.bookFix20261122b) ? 1 : 0,
+      poemPubFill20261122: (poemPubSynced || prev.poemPubFill20261122) ? 1 : 0,
       pinKeepOff20261122: (pinKeepOff || prev.pinKeepOff20261122) ? 1 : 0,
       bjSynced20261115: (bjSynced || prev.bjSynced20261115) ? 1 : 0,
       forumSynced20261116: (forumSynced || prev.forumSynced20261116) ? 1 : 0,
@@ -4324,7 +4349,7 @@ var MUNJI_NOT = ["8932010609", "8932015767", "8932026157", "8932027706", "893202
 var MUNHAK_NOT = ["8954670474"];
   /* 알라딘 판형(mm)을 참고해 정한 시리즈별 고정 높이 비율 —
      시집·시인선 판형은 아담하게, 세계문학전집·전집·법의정신은 크게 */
-  var SERIES_HEIGHT = {"essais": 0.985, "changbi-si": 0.915, "choganbon": 0.865, "hyundae-poet": 0.895, "kimsooyoung": 0.985, "kundera": 0.99, "lemandarin": 0.975, "lesprit": 0.985, "minum-poet": 0.94, "minum-si": 0.94, "minum-world": 0.975, "munhak-poet": 0.95, "munhak-world": 0.955, "munji-poet": 0.94, "nanda-poet": 0.87, "yeollin": 0.97};
+  var SERIES_HEIGHT = {"essais": 0.985, "achimal": 0.9, "isang-jeonjip": 0.965, "changbi-si": 0.915, "choganbon": 0.865, "hyundae-poet": 0.895, "kimsooyoung": 0.985, "kundera": 0.99, "lemandarin": 0.975, "lesprit": 0.985, "minum-poet": 0.94, "minum-si": 0.94, "minum-world": 0.975, "munhak-poet": 0.95, "munhak-world": 0.955, "munji-poet": 0.94, "nanda-poet": 0.87, "yeollin": 0.97};
   var MUNJI_NOT_T = ['프랑스 현대 시', '복화술'];   /* 문지 시(전집·시론집 등) 중 시인선이 아닌 책들 */
   var MUNHAK_NOT_T = ['포에지', '정본 백석 시집'];  /* 문학동네 시 중 시인선이 아닌 책들 */
   var MINUM_NOT_T = ['시란 무엇인가', '나는 문이다', '거대한 뿌리여', '불온한 검은 피', '파리의 우울', '거대한 뿌리'];
@@ -4336,6 +4361,8 @@ var MUNHAK_NOT = ["8954670474"];
     var m = String(it.image || '').match(/\/([0-9]{9}[0-9xX]|[0-9]{13})(?:_|\.|$)/);
     var isbn = m ? m[1].toLowerCase() : '';
     if (t.indexOf('김수영 전집') > -1) return 'kimsooyoung';
+    /* 이상 전집(가람기획, 152*225) — 두 권을 같은 높이로 */
+    if (t.indexOf('이상 전집') > -1) return 'isang-jeonjip';
     if (/레\s*망다랭/.test(t)) return 'lemandarin';
     if (/법의\s*정신/.test(t) && pub === '나남출판') return 'lesprit';
     if (t.indexOf('초간본') > -1) return 'choganbon';
@@ -4358,6 +4385,8 @@ var MUNHAK_NOT = ["8954670474"];
       if (pub === '창비') return t.indexOf('전집') > -1 ? '' : 'changbi-si';
       if (pub === '난다') return 'nanda-poet';
       if (pub === '민음사') return MINUM_NOT_T.some(function(k){ return t.indexOf(k) > -1; }) ? '' : 'minum-si';
+      /* 아침달 시집 (2026-11-22) — 125*190 판형, 창비시선(125*200)보다 조금 아담하게 */
+      if (pub === '아침달') return 'achimal';
     }
     return '';
   }
