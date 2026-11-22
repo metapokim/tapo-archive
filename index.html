@@ -2913,7 +2913,9 @@
     /* 2026-11-22 시집 출판사 빈칸 채우기 — 범위는 장르 '시'뿐이다. 다른 장르 카드는 건드리지 않는다.
        기본 데이터에 출판사가 비어 있으면 채우지 않고, 이미 값이 있는 카드도 그대로 둔다(추측 기입 금지). */
     window.__ppDbg = { flag: !!(ui && ui.poemPubFill20261122), savedN: (saved && saved.items) ? saved.items.length : -1, ran: 0, filled: 0, seats: 0 };
-    if (saved && saved.items && saved.items.length && !(ui && ui.poemPubFill20261122)) {
+    /* 1회 플래그는 '채울 것이 없는 상태'에서 먼저 쓰여 버릴 수 있어(다른 기기의 옛 사본이 나중에 들어오는 경우)
+       빈 칸을 채우는 이 보정은 비어 있을 때마다 조용히 다시 돈다 — 채운 것이 있을 때만 플래그를 남긴다. */
+    if (saved && saved.items && saved.items.length) {
       window.__ppDbg.ran = 1;
       var ppIt, ppS, ppi;
       for (ppi = 0; ppi < state.items.length; ppi++) {
