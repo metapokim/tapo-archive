@@ -4259,16 +4259,62 @@
     var n = parseInt(String(hex).slice(1), 16);
     return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
   }
+  /* ── 2026-11-22 13개 시리즈 책등 높이 통일 ──────────────────────────
+     같은 시리즈(민음의 시·문학동네 시인선·열린책들 세계문학 등)는 판형이
+     같으므로 책등 높이도 시리즈마다 한 값으로 고정한다. 시리즈 소속 판별은
+     알라딘 상품 정보(시리즈 SRID)를 보유 도서 전수로 확인해 만든 규칙 —
+     시리즈 키가 붙은 책은 그 시리즈의 고정 비율을 쓰고, 이 13개 시리즈가
+     아닌 책은 예전처럼 책마다 조금씩 다른 키를 유지한다.
+     두께(w)는 기존 실측 이미지 비율을 그대로 둔다. */
+var SERIES_ISBN = {"8932001030": "munji-poet", "8932001871": "munji-poet", "8932004811": "munji-poet", "893201051x": "munji-poet", "8932014388": "munji-poet", "8932014566": "munji-poet", "8932018251": "munji-poet", "8932018502": "munji-poet", "8932019800": "munji-poet", "8932021694": "munji-poet", "8932023646": "munji-poet", "8932024162": "munji-poet", "8932024626": "munji-poet", "8932024634": "munji-poet", "8932026092": "munji-poet", "8932026130": "munji-poet", "8932026203": "munji-poet", "893202670x": "munji-poet", "8932026858": "munji-poet", "893202765x": "munji-poet", "8932028532": "munji-poet", "8932028842": "munji-poet", "893203026x": "munji-poet", "8932031142": "munji-poet", "8932035229": "munji-poet", "893203530x": "munji-poet", "8932036152": "munji-poet", "893203754x": "munji-poet", "8932037698": "munji-poet", "8932038015": "munji-poet", "8932038023": "munji-poet", "8932038295": "munji-poet", "8932038945": "munji-poet", "8932039976": "munji-poet", "8932040443": "munji-poet", "8932041059": "munji-poet", "8932041342": "munji-poet", "8932042101": "munji-poet", "8932043272": "munji-poet", "8932045151": "munji-poet", "8932045844": "munji-poet", "8954613780": "munhak-poet", "8954613802": "munhak-poet", "8954614795": "munhak-world", "8954618014": "munhak-world", "8954618650": "munhak-poet", "8954619207": "munhak-poet", "8954619215": "munhak-poet", "8954619460": "munhak-poet", "8954620787": "munhak-poet", "895462085x": "munhak-poet", "8954625762": "munhak-world", "8954637329": "munhak-poet", "8954652824": "munhak-poet", "8954653189": "munhak-poet", "8954654347": "munhak-poet", "8954655890": "munhak-poet", "8954673007": "munhak-poet", "8954677630": "munhak-poet", "8954682677": "munhak-poet", "8954682766": "munhak-poet", "8954683517": "munhak-poet", "8954686982": "munhak-poet", "8954690076": "munhak-poet", "8954690815": "munhak-poet", "8954693148": "munhak-poet", "8954693377": "munhak-poet", "8954693547": "munhak-poet", "8954696015": "munhak-poet", "8954696805": "munhak-poet", "8954697771": "munhak-poet", "8954698123": "munhak-poet", "8954698654": "munhak-poet", "8954699332": "munhak-poet", "8954699448": "munhak-poet", "8954699839": "munhak-poet"};
+var SERIES_BY_ID = {"bj_176": "minum-world", "bm20261122_38": "minum-world", "bm20261122_46": "munhak-world", "bp17a": "munhak-world"};
+var MUNJI_NOT = ["8932010609", "8932015767", "8932026157", "8932027706", "8932027722", "8932042292", "8932042306"];
+var MUNHAK_NOT = ["8954670474"];
+  /* 알라딘 판형(mm)을 참고해 정한 시리즈별 고정 높이 비율 —
+     시집·시인선 판형은 아담하게, 세계문학전집·전집·법의정신은 크게 */
+  var SERIES_HEIGHT = {"choganbon": 0.865, "hyundae-poet": 0.925, "kimsooyoung": 0.985, "kundera": 0.99, "lemandarin": 0.975, "lesprit": 0.985, "minum-poet": 0.94, "minum-si": 0.94, "minum-world": 0.975, "munhak-poet": 0.95, "munhak-world": 0.955, "munji-poet": 0.94, "yeollin": 0.97};
+  var MUNJI_NOT_T = ['프랑스 현대 시', '복화술'];   /* 문지 시(전집·시론집 등) 중 시인선이 아닌 책들 */
+  var MUNHAK_NOT_T = ['포에지', '정본 백석 시집'];  /* 문학동네 시 중 시인선이 아닌 책들 */
+  var MINUM_NOT_T = ['시란 무엇인가', '나는 문이다', '거대한 뿌리여', '불온한 검은 피', '파리의 우울', '거대한 뿌리'];
+  function seriesKeyOf(it){
+    var pub = String(it.publisher || '');
+    var t = cleanBookTitle(it.title);
+    var a = String(it.author || '');
+    var g = String(it.genre || '');
+    var m = String(it.image || '').match(/\/([0-9]{9}[0-9xX]|[0-9]{13})(?:_|\.|$)/);
+    var isbn = m ? m[1].toLowerCase() : '';
+    if (t.indexOf('김수영 전집') > -1) return 'kimsooyoung';
+    if (/레\s*망다랭/.test(t)) return 'lemandarin';
+    if (/법의\s*정신/.test(t) && pub === '나남출판') return 'lesprit';
+    if (t.indexOf('초간본') > -1) return 'choganbon';
+    if (pub === '열린책들') return isbn.indexOf('8932922') === 0 ? 'choganbon' : 'yeollin';
+    if (isbn.indexOf('8932922') === 0) return 'choganbon';
+    if (isbn.slice(0, 6) === '893290' || isbn.slice(0, 6) === '893291') return 'yeollin';
+    if (a.indexOf('밀란 쿤데라') > -1 || t.indexOf('밀란 쿤데라') > -1) return 'kundera';
+    if (SERIES_ISBN[isbn]) return SERIES_ISBN[isbn];
+    if (isbn.indexOf('893746') === 0) return 'minum-world';
+    if (isbn.indexOf('8937475') === 0 || isbn.indexOf('8937418') === 0) return 'minum-poet';
+    if (isbn.indexOf('8937408') === 0 || isbn.indexOf('8937409') === 0) return 'minum-si';
+    if (SERIES_BY_ID[it.id]) return SERIES_BY_ID[it.id];
+    if (g === '시') {
+      if (pub === '문학과지성사') return (MUNJI_NOT.indexOf(isbn) > -1 || MUNJI_NOT_T.some(function(k){ return t.indexOf(k) > -1; })) ? '' : 'munji-poet';
+      if (pub === '문학동네') return (MUNHAK_NOT.indexOf(isbn) > -1 || MUNHAK_NOT_T.some(function(k){ return t.indexOf(k) > -1; })) ? '' : 'munhak-poet';
+      if (pub === '현대문학') return 'hyundae-poet';
+      if (pub === '민음사') return MINUM_NOT_T.some(function(k){ return t.indexOf(k) > -1; }) ? '' : 'minum-si';
+    }
+    return '';
+  }
   /* 책등 하나의 폭·높이 — 실제 이미지의 가로/세로 비율을 그대로 쓴다 */
   function spineGeom(it, H){
     var r = SPINE[it.id];                                   /* 높이 400px 기준 실측 폭 */
-    var j = 0.945 + (shHash(String(it.id) + 'h') % 6) / 100;   /* 책마다 키가 조금씩 다르게 */
+    var sh = SERIES_HEIGHT[seriesKeyOf(it)] || 0;           /* 시리즈 고정 높이 비율 */
+    var j = sh || 0.945 + (shHash(String(it.id) + 'h') % 6) / 100;   /* 책마다 키가 조금씩 다르게 — 시리즈는 고정 */
     if (r) {
       var h = Math.round(H * j);
       return { id: it.id, it: it, v: false, h: h, w: Math.max(2, Math.round(h * r / 400)) };
     }
     var t = cleanBookTitle(it.title);
-    var h2 = Math.round(H * (0.955 + (shHash(String(it.id)) % 3) / 100));
+    var h2 = Math.round(H * (sh || 0.955 + (shHash(String(it.id)) % 3) / 100));
     var w2 = Math.max(19, Math.round(h2 * (0.082 + Math.min(0.036, t.length * 0.0013))));
     return { id: it.id, it: it, v: true, h: h2, w: w2, color: vColorOf(it) };
   }
