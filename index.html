@@ -3430,7 +3430,7 @@
     h += '</div></div>';
     h += '<div class="card-foot">';
     h += '<button class="mini mini--send" type="button" data-act="send" title="아이폰 공유 시트로 메모 앱에 보냅니다">공유</button>';
-    /* 이 메모를 memoId 로 가리키는 카드(학회·포럼 / 공연·전시·영화 / 책)가 있으면
+    /* 이 메모를 memoId 로 가리키는 카드(학회·포럼 / 공연·전시·영화 / 책 / 기사·뉴스레터)가 있으면
        '메모 앱으로 보내기' 바로 오른쪽에 12px 초록 동그라미를 둔다 — 누르면 그 카드가 팝업으로 열린다. */
     h += memoLinkDot(it);
     h += '<span class="sp"></span>';
@@ -3441,9 +3441,9 @@
   }
 
   /* ── 카드에 붙는 메모 (2026-11-21) ──
-     학회·포럼 / 공연·전시·영화 / 책 카드의 memoId 가 메모 탭(cat:'memo') 카드 id 를 가리킨다.
+     학회·포럼 / 공연·전시·영화 / 책 / 기사·뉴스레터 카드의 memoId 가 메모 탭(cat:'memo') 카드 id 를 가리킨다.
      붙은 메모가 지워졌으면 없는 것으로 보고 '+ 메모'로 돌아간다. */
-  var MEMO_CATS = { forum:1, show:1, book:1 };
+  var MEMO_CATS = { forum:1, show:1, book:1, news:1 };
   function linkedMemo(it){
     if (!it || !MEMO_CATS[it.cat] || !it.memoId) return null;
     var m = byId(it.memoId);
