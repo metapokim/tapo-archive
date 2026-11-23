@@ -4175,8 +4175,25 @@
       }
       html += '</section>';
     });
+    /* 2026-11-24 — 선반을 다시 그릴 때 잠깐 높이가 줄어 페이지 스크롤이 맨 위로 튀던 것을 막는다.
+       (책장이 접힌 채로 널판을 그리면 문서가 짧아져 스크롤이 0으로 돌아가고, 은유 님이 옮긴 자리를 놓쳤다) */
+    var keepShelf = null;
+    if (shelfNeedsPaint) {
+      var oldShelf = document.getElementById('bookShelf');
+      if (oldShelf) keepShelf = oldShelf.getBoundingClientRect().top;
+    }
     sectionsEl.innerHTML = html;
-    if (shelfNeedsPaint) { shelfNeedsPaint = false; paintShelf(shelfPaintList); }
+    if (shelfNeedsPaint) {
+      shelfNeedsPaint = false;
+      paintShelf(shelfPaintList);
+      if (keepShelf !== null) {
+        var newShelf = document.getElementById('bookShelf');
+        if (newShelf) {
+          var shelfJump = newShelf.getBoundingClientRect().top - keepShelf;
+          if (shelfJump) window.scrollBy(0, shelfJump);
+        }
+      }
+    }
   }
 
   /* 섭션 접기/펼치기 — 화면을 다시 그리지 않고 그 자리만 바꾸어 스크롤이 튀지 않게 한다 */
@@ -5058,19 +5075,14 @@ var MUNHAK_NOT = ["8954670474"];
        이미 옮겨 둔 '내 순서'가 있으면 그대로 쓰고, 없을 때만 지금 순서를 초기값으로 잡는다. */
     if (!state.customOrder.length) seedCustomOrder(shelfOrderIds.length ? shelfOrderIds.slice() : currentBookOrderIds());
     if (state.sort !== 'custom') {
-      /* 2026-11-24 — 다시 그리면 선반 높이가 잠깐 줄어 스크롤이 맨 위로 튄다.
-         그대로 두면 화면 맨 위 기준으로 자리를 계산해 소품이 엉뚱한 곳에 꽂혔다.
-         그리기 전 선반의 화면 위치를 기억해 두고 그대로 되돌린다. */
-      var keepTop = box.getBoundingClientRect().top;
+      /* 2026-11-24 — render() 가 스크롤을 맨 위로 돌리지 않게 되었으므로(renderSections),
+         여기서는 다시 그린 뒤의 선반·책등만 다시 잡는다. */
       state.sort = 'custom';
       saveUIPrefs();
       render();
       box = document.getElementById('bookShelf');     /* 2026-11-23 — 다시 그린 뒤의 선반을 잰다(끝난 선반을 재면 0이 된다) */
-      if (!box) return false;
-      var jump = box.getBoundingClientRect().top - keepTop;
-      if (jump) window.scrollBy(0, jump);
       el = sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]');
-      if (!el) return false;
+      if (!el || !box) return false;
       toast('내 순서로 바꿔 옮겨요 — 놓으면 이 순서로 저장돼요');
     }
     /* 2026-11-23 — 소품도 '내 순서'에 함께 담기게: 지금 선반에 선 소품 자리를 먼저 기록해 둔다 */
