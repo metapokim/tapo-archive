@@ -111,10 +111,11 @@
   .navitem .n{margin-left:auto;font-size:11px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
   .navitem[aria-pressed="true"] .n{color:var(--lemon)}
   .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--line);padding-top:15px}
-  .side-btns{display:flex;gap:6px}
-  .side-btns .btn{flex:1 1 0;padding:8px 6px;font-size:12px;justify-content:center}
-  .side-btns .btn--cloud{flex:0 0 auto;width:34px;height:34px;padding:0}
-  .side-btns .btn--cloud svg{width:17px;height:17px}
+  .side-btns{display:flex;gap:6px;align-items:center}
+  /* 2026-11-24 은유 님 요청 — PC·아이패드 사이드바 아래 백업·불러오기·동기화 단추를 아담하게(폰 하단과 같은 결) */
+  .side-btns .btn{flex:1 1 0;padding:0 10px;font-size:11.5px;height:28px;min-height:0;line-height:1;justify-content:center}
+  .side-btns .btn--cloud{flex:0 0 auto;width:28px;height:28px;padding:0}
+  .side-btns .btn--cloud svg{width:14px;height:14px}
 
   /* ───────────── 바로가기 링크 ───────────── */
   .quick{display:flex;flex-wrap:wrap;gap:7px;order:6;flex:1 1 100%}
@@ -130,8 +131,11 @@
   .quick a:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
   .quick a svg{display:block;width:14px;height:14px;flex:0 0 14px;opacity:.75}
   .quick a .arw{width:10px;height:10px;flex:0 0 10px;opacity:.4;margin-left:1px}
-  .quick--side{order:0;flex:none;flex-direction:column;gap:6px}
-  .quick--side a{justify-content:flex-start;padding:9px 12px}
+  .quick--side{order:0;flex:none;flex-direction:column;gap:5px}
+  /* 2026-11-24 은유 님 요청 — 사이드바 바로가기 알약도 한 단 작게 */
+  .quick--side a{justify-content:flex-start;padding:5px 10px;font-size:11.5px;gap:6px}
+  .quick--side a svg{width:12px;height:12px;flex:0 0 12px}
+  .quick--side a .arw{width:9px;height:9px;flex:0 0 9px}
   .quick--top{display:none}
 
   /* ───────────── main column ───────────── */
@@ -1341,7 +1345,7 @@
     <div class="side-brand">
       <h1 class="brand"><button class="brand-hit" id="brandHome" type="button" title="새로고침" aria-label="TAPO’s archive — 새로고침">TAPO’s <mark>archive</mark></button></h1>
       <button class="navtoggle" id="navToggleBtn" type="button" aria-controls="sideNav" aria-expanded="true" title="메뉴 숨기기" aria-label="메뉴 숨기기">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.6" width="18" height="14.8" rx="3.2"/><path d="M9.1 4.6v14.8"/><path d="M16.4 9.6 14 12l2.4 2.4"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.2h16"/><path d="M4 12h16"/><path d="M4 16.8h16"/></svg>
       </button>
     </div>
     <nav class="side-nav" id="sideNav" aria-label="카테고리"></nav>
@@ -1369,7 +1373,7 @@
       <div class="topbar-in">
         <div class="brand-sm"><button class="brand-hit" id="brandSm" type="button" title="새로고침" aria-label="TAPO’s archive — 새로고침">TAPO’s <mark>archive</mark></button></div>
         <button class="navtoggle nav-open" id="navOpenBtn" type="button" aria-controls="sideNav" aria-expanded="false" title="메뉴 열기" aria-label="메뉴 열기">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.6" width="18" height="14.8" rx="3.2"/><path d="M9.1 4.6v14.8"/><path d="M14.2 9.6 16.6 12l-2.4 2.4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.2h16"/><path d="M4 12h16"/><path d="M4 16.8h16"/></svg>
         </button>
         <button class="btn btn--more" id="topbarMoreBtn" type="button" aria-expanded="false" aria-controls="topbarSearch tabs topbarQuick" aria-label="검색·카테고리 펼치기" title="검색·카테고리 펼치기">
           <span class="more-cat" id="topbarMoreCat" hidden></span>
@@ -4700,14 +4704,15 @@ var MUNHAK_NOT = ["8954670474"];
     for (r = 0; r < rows.length; r++){
       row = rows[r];
       if (row.length < 2) continue;
-      if (row[0].prop && !row[1].prop) { tmp = row[0]; row[0] = row[1]; row[1] = tmp; }
+      /* 2026-11-24 — 은유 님이 맨 앞·맨 끝으로 옮겨 둔 소품은 그 자리에 그대로 둔다 */
+      if (row[0].prop && !row[0].pin && !row[1].prop) { tmp = row[0]; row[0] = row[1]; row[1] = tmp; }
       L = row.length - 1;
-      if (row[L].prop && !row[L - 1].prop) { tmp = row[L]; row[L] = row[L - 1]; row[L - 1] = tmp; }
+      if (row[L].prop && !row[L].pin && !row[L - 1].prop) { tmp = row[L]; row[L] = row[L - 1]; row[L - 1] = tmp; }
     }
   }
   /* 지금 화면 책 순서에 소품을 끼워 넣은 목록 — {id, item} 또는 {id, prop} */
   function shelfEntries(books, W, H){
-    var ids = [], k, i, p, anchor, row, within, ordIdx = {}, pos = {}, ins = [], byAnchor = {}, rest = [], out = [];
+    var ids = [], k, i, p, anchor, row, within, ordIdx = {}, pos = {}, ins = [], byAnchor = {}, rest = [], front = [], out = [];
     for (k = 0; k < books.length; k++) ids.push(books[k].id);
     if (!ids.length) return [];
     if (!propsVisible() || !PROPS.length) {
@@ -4728,7 +4733,9 @@ var MUNHAK_NOT = ["8954670474"];
         var bid = String(state.customOrder[k] == null ? '' : state.customOrder[k]);
         if (pos[bid] !== undefined) { anchor = bid; break; }
       }
+      /* 2026-11-24 — 첫 책보다 앞(맨 앞)에 둔 소품은 예전에 통째로 빠져 사라졌다. 따로 모아 맨 앞에 세운다 */
       if (anchor) ins.push({ after: anchor, prop: p, seq: at });
+      else front.push({ prop: p, seq: at });
     }
     /* 2) 아직 자리를 정하지 않은 소품 — 선반 여러 단에 골고루 퍼지게 기본 자리 */
     var bg = [], brows, rowsN, fracs = [0.34, 0.52, 0.68, 0.44, 0.60, 0.74], fi = 0;
@@ -4752,12 +4759,19 @@ var MUNHAK_NOT = ["8954670474"];
         (byAnchor[ins[k].after] = byAnchor[ins[k].after] || []).push(ins[k]);
       } else rest.push(ins[k]);
     }
+    front.sort(function(a, b){ return a.seq - b.seq; });
+    for (k = 0; k < front.length; k++) out.push({ id: front[k].prop.id, prop: front[k].prop });
     for (k = 0; k < ids.length; k++){
       out.push({ id: ids[k], item: books[k] });
       var here = byAnchor[ids[k]];
       if (here) for (i = 0; i < here.length; i++) out.push({ id: here[i].prop.id, prop: here[i].prop });
     }
     for (k = 0; k < rest.length; k++) out.push({ id: rest[k].prop.id, prop: rest[k].prop });
+    /* 2026-11-24 — 맨 앞·맨 끝에 세운 소품은 단 안에서 이웃 책과 자리를 맞바꾸지 않는다 */
+    if (out.length) {
+      if (out[0].prop) out[0].pin = true;
+      if (out.length > 1 && out[out.length - 1].prop) out[out.length - 1].pin = true;
+    }
     return out;
   }
   /* 화면에 놓일 선반 단 — 책등과 소품을 함께 폭으로 채운다 */
@@ -4765,6 +4779,7 @@ var MUNHAK_NOT = ["8954670474"];
     var entries = shelfEntries(list || [], W, H), rows = [], cur = [], curW = 0, k, g;
     for (k = 0; k < entries.length; k++){
       g = entries[k].prop ? propGeom(entries[k].prop, H) : spineGeom(entries[k].item, H);
+      if (entries[k].pin) g.pin = true;      /* 맨 앞·맨 끝 소품 — fixPropEdges 가 건드리지 않게 */
       if (cur.length && curW + g.w > W) { rows.push(cur); cur = []; curW = 0; }
       cur.push(g); curW += g.w;
     }
@@ -4784,11 +4799,11 @@ var MUNHAK_NOT = ["8954670474"];
         else rest.push(id);
       }
     }
+    out = rest.slice();      /* 2026-11-24 — 첫 책보다 앞에 둔 소품은 맨 앞에 그대로 둔다(예전엔 맨 뒤로 밀렸다) */
     for (k = 0; k < books.length; k++){
       out.push(books[k]);
       if (byAnchor[books[k]]) for (j = 0; j < byAnchor[books[k]].length; j++) out.push(byAnchor[books[k]][j]);
     }
-    for (k = 0; k < rest.length; k++) out.push(rest[k]);
     return out;
   }
   /* 소품을 처음 옮기기 전, 지금 화면 순서대로 소품 id를 '내 순서'에 넣어 둔다 */
