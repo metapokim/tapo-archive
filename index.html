@@ -4554,7 +4554,7 @@ var MUNHAK_NOT = ["8954670474"];
     if (OH_ISBN[isbn] || OH_BY_ID[it.id]) return 'ohjeonghee';
     /* 2026-11-23 — 새로 넣은 네 묶음도 판형이 같은끼리 책등 세로 높이를 맞춘다 */
     if (pub === '창비' && /^창작과\s*비평\s*\d+호/.test(t)) return 'changbi-quarterly';   /* 계간지 209~212호 (153*224) */
-    if (ISEONGBOK_ISBN[isbn] || ISEONGB_BY_ID[it.id]) return 'iseongbok';               /* 이성복 세 권 */
+    if (ISEONGBOK_ISBN[isbn] || ISEONGBOK_BY_ID[it.id]) return 'iseongbok';             /* 이성복 세 권 */
     /* 2026-11-23 — 봄날의책 시집(102·120*205)과 최영미 《서른, 잔치는 끝났다》 두 판본(창비·이미출판사)도
        같은 판형끼리 책등 높이를 맞춘다. 대산세계문학총서 《악의 꽃》(152*225)은 세계문학전집만큼 크게. */
     if (pub.indexOf('봄날의책') > -1 && (g === '시' || t.indexOf('시인선') > -1)) return 'bomnal';
