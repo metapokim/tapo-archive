@@ -540,6 +540,8 @@
   .statbtn[aria-pressed="true"]{background:var(--lemon-w);border-color:var(--lemon-2);color:var(--ink)}
   .statbtn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
   .sec-head.has-view > .statbtn{margin-left:6px}
+  /* 2026-11-23 — 소품 숨기기 단추는 다른 단추와 같은 모양을 쓰고, 폰에서는 그림만 남긴다 */
+  .propbtn span{white-space:nowrap}
 
   /* 책 탭 섹션 헤더의 '오늘 뭐 읽지?' 단추 (2026-11-22) — 통계 단추 옆, 미독 책 한 권 뽑기 */
   .dicebtn{
@@ -1241,6 +1243,10 @@
     }
     .sec-head.has-view > .sec-tools > *{margin:0!important;flex:0 0 auto}
     .sec-head.has-view > .sec-tools > .statbtn{height:26px;font-size:11px;padding:0 8px}
+    /* 2026-11-23 — 소품 단추는 폰에서 그림만. 혹시 한 줄에 다 안 들어가도 겹치지 않고 다음 줄로 내려간다 */
+    .sec-head.has-view > .sec-tools{flex-wrap:wrap;row-gap:5px}
+    .sec-head.has-view > .sec-tools > .propbtn{padding:0 7px}
+    .sec-head.has-view > .sec-tools > .propbtn > span{display:none}
     .statbtn svg{width:12px;height:12px;flex:0 0 12px}
     .sec-head.has-view > .sec-tools > .dicebtn{height:26px;font-size:11px;padding:0 9px}
     .dicebtn svg{width:12px;height:12px;flex:0 0 12px}
@@ -2018,6 +2024,7 @@
     customOrder: [], customOrderAt: '',
     bookView: 'card',   /* 책 탭 보기 — card | shelf (2026-11-21) */
     bookZoom: 1,        /* 책꽂이 배율 — 1 | 1.6, 확대 단추 (2026-11-23) */
+    propOff: 0,         /* 책꽂이 소품 6종 숨김 — '소품' 단추 (2026-11-23 은유 님 요청) */
     q: '',
     kind: 'all',
     collapsed: {},     /* 전체 보기에서 접어 둔 섭션 (cat → 1) */
@@ -3041,6 +3048,7 @@
       if (ui.sort && ['default','date-desc','title','publisher','genre','custom'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
       if (ui.bookView === 'shelf' || ui.bookView === 'card') state.bookView = ui.bookView;
       if (ui.bookZoom === 1 || ui.bookZoom === 1.6) state.bookZoom = ui.bookZoom;
+      state.propOff = (ui.propOff === 1) ? 1 : 0;   /* 2026-11-23 — 소품 숨김 상태도 기억 */
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
         state.collapsed = {};
         (Array.isArray(ui.collapsed) ? ui.collapsed : Object.keys(ui.collapsed)).forEach(function(c){
@@ -3061,6 +3069,7 @@
     if (praw) { try { prev = JSON.parse(praw); } catch (e) { prev = null; } }
     if (!prev || typeof prev !== 'object') prev = {};
     writeStore(UIKEY, JSON.stringify({ own: state.own, genre: state.genre, sort: state.sort, bookView: state.bookView, bookZoom: state.bookZoom,
+      propOff: state.propOff ? 1 : 0,
       collapsed: Object.keys(state.collapsed || {}),
       notebookSync20261121: (notebookSynced || prev.notebookSync20261121) ? 1 : 0,
       notebookCovers20261121: (notebookCoversSynced || prev.notebookCovers20261121) ? 1 : 0,
@@ -4114,7 +4123,7 @@
       html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
-           + (cat === 'book' && state.cat === 'book' ? '<div class="sec-tools">' + diceBtnHTML() + statsBtnHTML() + (shelfView ? zoomBtnHTML() + capBtnHTML() : '') + viewSegHTML() + '</div>' : '')
+           + (cat === 'book' && state.cat === 'book' ? '<div class="sec-tools">' + diceBtnHTML() + statsBtnHTML() + (shelfView ? zoomBtnHTML() + capBtnHTML() + propBtnHTML() : '') + viewSegHTML() + '</div>' : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
@@ -4484,6 +4493,16 @@
     return '<button class="statbtn" type="button" data-act="cap" title="지금 보이는 책꽂이를 이미지로 저장">'
       + CAM_SVG + '<span>캡처</span></button>';
   }
+  /* 2026-11-23 은유 님 요청 — 소품 6종을 한 번에 숨기고 다시 보이는 단추.
+     누른 상태(aria-pressed=true)면 소품이 보이고, 끄면 숨는다. 폰에서는 글자를 빼고 그림만. */
+  var PROP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.4" r="3.1"/><path d="M6.6 19.2v-2.6c0-2.4 2.4-4.2 5.4-4.2s5.4 1.8 5.4 4.2v2.6"/><path d="M3.6 19.4h16.8"/></svg>';
+  function propBtnHTML(){
+    var on = !state.propOff;
+    var label = on ? '책꽂이 소품 숨기기' : '책꽂이 소품 다시 보기';
+    return '<button class="statbtn propbtn" type="button" data-act="props" aria-pressed="' + (on ? 'true' : 'false') + '"'
+      + ' aria-label="' + label + '" title="' + label + '">'
+      + PROP_SVG + '<span>' + (on ? '소품' : '소품 숨김') + '</span></button>';
+  }
   /* 책 탭 섹션 헤더의 '통계' 단추 (2026-11-22) */
   function statsBtnHTML(){
     return '<button class="statbtn" type="button" data-act="bstats" aria-haspopup="dialog" title="독서 통계">'
@@ -4623,9 +4642,10 @@ var MUNHAK_NOT = ["8954670474"];
     for (var i = 0; i < PROPS.length; i++) if (PROPS[i].id === id) return PROPS[i];
     return null;
   }
-  /* 검색어나 좁히는 필터(상태·소장/대여·장르)가 걸려 있으면 소품은 숨긴다 —
-     책을 찾는 화면에 인형이 끼어들지 않게. 기본 책꽂이 보기에서만 보인다. */
+  /* 검색어나 좁히는 필터(상태·소장/대여·장르)가 걸렸거나 '소품' 단추로 숨겼으면 소품은 안 보인다 —
+     책을 찾는 화면에 인형이 끼어들지 않게. 정렬은 소품 표시에 영향을 주지 않는다(2026-11-23). */
   function propsVisible(){
+    if (state.propOff) return false;
     return !isSearching() && state.status === 'all' && state.own === 'all' && state.genre === 'all';
   }
   function propGeom(p, H){
@@ -4663,11 +4683,14 @@ var MUNHAK_NOT = ["8954670474"];
     }
     for (k = 0; k < ids.length; k++) pos[ids[k]] = k;
     for (k = 0; k < state.customOrder.length; k++) ordIdx[String(state.customOrder[k] == null ? '' : state.customOrder[k])] = k;
-    /* 1) 이미 '내 순서'에 담긴 소품 — 그 앞 책 바로 뒤에 꽂는다 */
+    /* '내 순서'에서만 은유 님이 옮겨 둔 자리를 그대로 따른다.
+       다른 정렬(기본·가나다·날짜·출판사·장르)에서는 그 정렬된 목록 사이사이에 골고루 다시 퍼지게 한다. */
+    var useAnchors = (state.sort === 'custom');
+    /* 1) '내 순서'에 담긴 소품 — 그 앞 책 바로 뒤에 꽂는다 */
     for (i = 0; i < PROPS.length; i++){
       p = PROPS[i];
       var at = ordIdx[p.id];
-      if (at === undefined) continue;
+      if (!useAnchors || at === undefined) continue;
       anchor = null;
       for (k = at - 1; k >= 0; k--){
         var bid = String(state.customOrder[k] == null ? '' : state.customOrder[k]);
@@ -4682,7 +4705,7 @@ var MUNHAK_NOT = ["8954670474"];
     rowsN = brows.length || 1;
     for (i = 0; i < PROPS.length; i++){
       p = PROPS[i];
-      if (ordIdx[p.id] !== undefined) continue;
+      if (useAnchors && ordIdx[p.id] !== undefined) continue;
       var ri = Math.max(0, Math.min(rowsN - 1, Math.round(p.at * rowsN)));
       row = brows[ri] || [];
       within = Math.round(row.length * fracs[fi++ % fracs.length]);
@@ -5197,6 +5220,25 @@ var MUNHAK_NOT = ["8954670474"];
     var sp = btn.querySelector('span');
     if (sp) sp.textContent = on ? '원래대로' : '확대';
   }
+  function syncPropBtn(){
+    var btn = sectionsEl.querySelector('[data-act="props"]');
+    if (!btn) return;
+    var on = !state.propOff;
+    var label = on ? '책꽂이 소품 숨기기' : '책꽂이 소품 다시 보기';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+    var sp = btn.querySelector('span');
+    if (sp) sp.textContent = on ? '소품' : '소품 숨김';
+  }
+  /* 소품 6종 통째로 숨기기/보이기 — 상태는 기기 저장소(propOff)에 남는다. 캡처에도 그대로 적용된다 */
+  function toggleShelfProps(){
+    state.propOff = state.propOff ? 0 : 1;
+    saveUIPrefs();
+    syncPropBtn();
+    if (state.bookView === 'shelf' && shelfPaintList.length) paintShelf(shelfPaintList);
+    toast(state.propOff ? '소품을 숨겼습니다 — 캡처에도 안 찍혀요' : '소품을 다시 세웠습니다');
+  }
   function toggleShelfZoom(){
     state.bookZoom = (state.bookZoom > 1) ? 1 : SHELF_ZOOM_ON;
     saveUIPrefs();
@@ -5529,6 +5571,7 @@ var MUNHAK_NOT = ["8954670474"];
     if (!e.target || !e.target.closest) return;
     if (e.target.closest('[data-act="zoom"]')) { toggleShelfZoom(); return; }
     if (e.target.closest('[data-act="cap"]')) { captureShelf(); return; }
+    if (e.target.closest('[data-act="props"]')) { toggleShelfProps(); return; }
   });
   if (capEl) {
     var capXEl = document.getElementById('capX');
