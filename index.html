@@ -619,6 +619,21 @@
     position:absolute;width:3px;border-radius:3px;background:var(--green);pointer-events:none;
     box-shadow:0 0 0 3px rgba(16,185,129,.15);z-index:7;
   }
+  /* 2026-11-23 은유 님 요청 — 책꽂이 소품(피규어·인형) 6종.
+     누끼 딴 투명 PNG 를 책등과 같은 선반에 세우고, 발바닥이 널판에 닿게 맞춘다.
+     길게 누르기 드래그·확대·캡처는 책등과 똑같이 움직인다(.sh-spine 을 함께 단다). */
+  .sh-prop{padding:0 4px;box-sizing:border-box;border-radius:0;background:none;line-height:0}
+  .sh-prop img{
+    display:block;width:100%;height:100%;object-fit:contain;object-position:bottom center;
+    border-radius:0;-webkit-user-drag:none;
+    filter:drop-shadow(0 2px 2px rgba(24,24,27,.16));
+  }
+  /* 소품은 책등보다 조금만 떠오른다 — 그림자는 책 모양이 아니라 소품 윤곽을 따라간다 */
+  .sh-prop:hover,.sh-prop:focus-visible{transform:translateY(-4px);box-shadow:none}
+  .sh-prop:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px;border-radius:8px}
+  .sh-prop.is-picked{transform:none;box-shadow:none}
+  .sh-ghost.is-prop{box-shadow:none;border-radius:0;background:none;box-sizing:border-box;padding:0 4px}
+  .sh-ghost.is-prop img{filter:drop-shadow(0 14px 16px rgba(24,24,27,.38))}
   /* 표지 대표색으로 만든 가상 책등 — 제목·저자가 세로로 */
   .sh-vt{
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
@@ -3355,6 +3370,8 @@
   function seedCustomOrder(fromIds){
     var ids = allBookIds(), have = {}, out = [], seen = {}, k, id;
     for (k = 0; k < ids.length; k++) have[ids[k]] = 1;
+    /* 2026-11-23 — 책꽂이 소품도 '내 순서'에 함께 담는다 */
+    for (k = 0; k < PROPS.length; k++) have[PROPS[k].id] = 1;
     for (k = 0; k < (fromIds || []).length; k++) {
       id = String(fromIds[k] == null ? '' : fromIds[k]);
       if (!have[id] || seen[id]) continue;
@@ -4327,7 +4344,7 @@
   /* ────────────────────────── 책꽂이 보기 (2026-11-21) ──────────────────────────
      bookshelf: 실제 알라딘 책등(spines/*.jpg)을 실측 두께 비율로 세우고,
      책등 이미지가 없는 책은 표지 대표색 + 세로 제목의 가상 책등으로 채운다. */
-  var shelfPaintList = [], shelfNeedsPaint = false, pickedSpineId = '';
+  var shelfPaintList = [], shelfOrderIds = [], shelfNeedsPaint = false, pickedSpineId = '';
 
   var shTipEl = document.createElement('div');
   shTipEl.className = 'sh-tip';
@@ -4588,6 +4605,156 @@ var MUNHAK_NOT = ["8954670474"];
     }
     return '';
   }
+  /* ──────────── 책꽂이 소품 6종 (2026-11-23 은유 님 요청) ────────────
+     은유 님이 보낸 피규어·인형 사진 6장의 흰 배경을 누끼(투명 PNG) 떠서 선반 위에 세운다.
+     책 데이터(SEED·books.json·권수·독서 통계·'오늘 뭐 읽지?')에는 섞이지 않는 별도 목록이고,
+     '내 순서'(state.customOrder)에는 책 id와 나란히 prop_... id 로 담긴다.
+     at 은 아직 옮기지 않은 소품의 기본 자리(책 목록에서의 비율) — 선반 여러 단에 퍼진다. */
+  var PROPS = [
+    { id:'prop_moana',    title:'아기 모아나',          img:'props/prop_moana.png',    hRatio:0.76, ratio:0.6225, at:0.30 },
+    { id:'prop_twins',    title:'LG 트윈스 키링 인형',  img:'props/prop_twins.png',    hRatio:0.60, ratio:0.5100, at:0.14 },
+    { id:'prop_ralph',    title:'주먹왕 랄프',          img:'props/prop_ralph.png',    hRatio:0.72, ratio:0.8800, at:0.42 },
+    { id:'prop_buzz',     title:'버즈 라이트이어',      img:'props/prop_buzz.png',     hRatio:0.84, ratio:0.9100, at:0.54 },
+    { id:'prop_doraemon', title:'하와이 도라에몽',      img:'props/prop_doraemon.png', hRatio:0.70, ratio:0.7700, at:0.68 },
+    { id:'prop_potato',   title:'미스터 포테이토 헤드',  img:'props/prop_potato.png',   hRatio:0.58, ratio:0.9675, at:0.82 }
+  ];
+  function propById(id){
+    if (!id) return null;
+    for (var i = 0; i < PROPS.length; i++) if (PROPS[i].id === id) return PROPS[i];
+    return null;
+  }
+  /* 검색어나 좁히는 필터(상태·소장/대여·장르)가 걸려 있으면 소품은 숨긴다 —
+     책을 찾는 화면에 인형이 끼어들지 않게. 기본 책꽂이 보기에서만 보인다. */
+  function propsVisible(){
+    return !isSearching() && state.status === 'all' && state.own === 'all' && state.genre === 'all';
+  }
+  function propGeom(p, H){
+    var h = Math.max(40, Math.round(H * p.hRatio));
+    return { id: p.id, prop: p, v: false, h: h, w: Math.round(h * p.ratio) + 8 };
+  }
+  function packGeoms(geoms, W){
+    var rows = [], cur = [], curW = 0, k;
+    for (k = 0; k < geoms.length; k++){
+      if (cur.length && curW + geoms[k].w > W) { rows.push(cur); cur = []; curW = 0; }
+      cur.push(geoms[k]);
+      curW += geoms[k].w;
+    }
+    if (cur.length) rows.push(cur);
+    return rows;
+  }
+  /* 단 첫머리·끝머리에 소품만 서지 않게, 단 안에서 이웃 책과 자리를 맞바꾼다(폭 합계는 그대로) */
+  function fixPropEdges(rows){
+    var r, row, tmp, L;
+    for (r = 0; r < rows.length; r++){
+      row = rows[r];
+      if (row.length < 2) continue;
+      if (row[0].prop && !row[1].prop) { tmp = row[0]; row[0] = row[1]; row[1] = tmp; }
+      L = row.length - 1;
+      if (row[L].prop && !row[L - 1].prop) { tmp = row[L]; row[L] = row[L - 1]; row[L - 1] = tmp; }
+    }
+  }
+  /* 지금 화면 책 순서에 소품을 끼워 넣은 목록 — {id, item} 또는 {id, prop} */
+  function shelfEntries(books, W, H){
+    var ids = [], k, i, p, anchor, row, within, ordIdx = {}, pos = {}, ins = [], byAnchor = {}, rest = [], out = [];
+    for (k = 0; k < books.length; k++) ids.push(books[k].id);
+    if (!ids.length) return [];
+    if (!propsVisible() || !PROPS.length) {
+      return books.map(function(it){ return { id: it.id, item: it }; });
+    }
+    for (k = 0; k < ids.length; k++) pos[ids[k]] = k;
+    for (k = 0; k < state.customOrder.length; k++) ordIdx[String(state.customOrder[k] == null ? '' : state.customOrder[k])] = k;
+    /* 1) 이미 '내 순서'에 담긴 소품 — 그 앞 책 바로 뒤에 꽂는다 */
+    for (i = 0; i < PROPS.length; i++){
+      p = PROPS[i];
+      var at = ordIdx[p.id];
+      if (at === undefined) continue;
+      anchor = null;
+      for (k = at - 1; k >= 0; k--){
+        var bid = String(state.customOrder[k] == null ? '' : state.customOrder[k]);
+        if (pos[bid] !== undefined) { anchor = bid; break; }
+      }
+      if (anchor) ins.push({ after: anchor, prop: p, seq: at });
+    }
+    /* 2) 아직 자리를 정하지 않은 소품 — 선반 여러 단에 골고루 퍼지게 기본 자리 */
+    var bg = [], brows, rowsN, fracs = [0.34, 0.52, 0.68, 0.44, 0.60, 0.74], fi = 0;
+    for (k = 0; k < books.length; k++) bg.push(spineGeom(books[k], H));
+    brows = packGeoms(bg, W);
+    rowsN = brows.length || 1;
+    for (i = 0; i < PROPS.length; i++){
+      p = PROPS[i];
+      if (ordIdx[p.id] !== undefined) continue;
+      var ri = Math.max(0, Math.min(rowsN - 1, Math.round(p.at * rowsN)));
+      row = brows[ri] || [];
+      within = Math.round(row.length * fracs[fi++ % fracs.length]);
+      within = Math.max(1, Math.min(Math.max(1, row.length - 1), within));
+      anchor = row[within - 1] ? row[within - 1].id : '';
+      if (anchor) ins.push({ after: anchor, prop: p, seq: -1 });
+    }
+    /* 책 순서대로, 그 책 뒤에 붙은 소품을 끼워 넣는다 */
+    ins.sort(function(a, b){ return a.seq - b.seq; });
+    for (k = 0; k < ins.length; k++){
+      if (ins[k].after && pos[ins[k].after] !== undefined) {
+        (byAnchor[ins[k].after] = byAnchor[ins[k].after] || []).push(ins[k]);
+      } else rest.push(ins[k]);
+    }
+    for (k = 0; k < ids.length; k++){
+      out.push({ id: ids[k], item: books[k] });
+      var here = byAnchor[ids[k]];
+      if (here) for (i = 0; i < here.length; i++) out.push({ id: here[i].prop.id, prop: here[i].prop });
+    }
+    for (k = 0; k < rest.length; k++) out.push({ id: rest[k].prop.id, prop: rest[k].prop });
+    return out;
+  }
+  /* 화면에 놓일 선반 단 — 책등과 소품을 함께 폭으로 채운다 */
+  function shelfRowsFrom(list, W, H){
+    var entries = shelfEntries(list || [], W, H), rows = [], cur = [], curW = 0, k, g;
+    for (k = 0; k < entries.length; k++){
+      g = entries[k].prop ? propGeom(entries[k].prop, H) : spineGeom(entries[k].item, H);
+      if (cur.length && curW + g.w > W) { rows.push(cur); cur = []; curW = 0; }
+      cur.push(g); curW += g.w;
+    }
+    if (cur.length) rows.push(cur);
+    fixPropEdges(rows);
+    return rows;
+  }
+  /* '내 순서' 배열을 책과 소품이 섞인 순서로 편다 — 옮길 때 자리 계산에 쓴다 */
+  function mixedOrderIds(){
+    var books = customOrderIds(), pos = {}, byAnchor = {}, rest = [], out = [], k, j, id, lastBook = null;
+    for (k = 0; k < books.length; k++) pos[books[k]] = k;
+    for (k = 0; k < state.customOrder.length; k++){
+      id = String(state.customOrder[k] == null ? '' : state.customOrder[k]);
+      if (pos[id] !== undefined) { lastBook = id; continue; }
+      if (propById(id)) {
+        if (lastBook) (byAnchor[lastBook] = byAnchor[lastBook] || []).push(id);
+        else rest.push(id);
+      }
+    }
+    for (k = 0; k < books.length; k++){
+      out.push(books[k]);
+      if (byAnchor[books[k]]) for (j = 0; j < byAnchor[books[k]].length; j++) out.push(byAnchor[books[k]][j]);
+    }
+    for (k = 0; k < rest.length; k++) out.push(rest[k]);
+    return out;
+  }
+  /* 소품을 처음 옮기기 전, 지금 화면 순서대로 소품 id를 '내 순서'에 넣어 둔다 */
+  function ensurePropsInOrder(){
+    if (!propsVisible() || !PROPS.length) return;
+    var disp = shelfOrderIds || [], k, i, idx = {}, miss = [], at, anchor, out;
+    if (!disp.length) return;
+    for (k = 0; k < state.customOrder.length; k++) idx[String(state.customOrder[k] == null ? '' : state.customOrder[k])] = k;
+    for (k = 0; k < disp.length; k++) if (propById(disp[k]) && idx[disp[k]] === undefined) miss.push(k);
+    if (!miss.length) return;
+    for (i = 0; i < miss.length; i++){
+      at = miss[i];
+      anchor = null;
+      for (k = at - 1; k >= 0; k--) if (idx[disp[k]] !== undefined) { anchor = disp[k]; break; }
+      out = state.customOrder.slice();
+      out.splice(anchor ? (out.indexOf(anchor) + 1) : 0, 0, disp[at]);
+      state.customOrder = out;
+      idx = {};
+      for (k = 0; k < out.length; k++) idx[out[k]] = k;
+    }
+  }
   /* 책등 하나의 폭·높이 — 실제 이미지의 가로/세로 비율을 그대로 쓴다 */
   function spineGeom(it, H){
     var r = SPINE[it.id];                                   /* 높이 400px 기준 실측 폭 */
@@ -4652,13 +4819,22 @@ var MUNHAK_NOT = ["8954670474"];
       + (showAu ? '<i>' + esc(au.length > 14 ? au.slice(0, 13) + '…' : au) + '</i>' : '')
       + '</span></button>';
   }
+  /* 소품 하나 — 누끼 딴 PNG 를 선반에 세운다. 책등과 같은 .sh-spine 을 함께 달아
+     길게 눌러 옮기기(드래그)·확대·캡처가 책과 똑같이 움직인다. */
+  function propHTML(g){
+    var p = g.prop;
+    return '<button class="sh-spine sh-prop" type="button" data-act="prop" data-id="' + esc(p.id) + '"'
+      + ' style="width:' + g.w + 'px;height:' + g.h + 'px" aria-label="' + esc(p.title) + ' — 책꽂이 소품, 길게 눌러 옮기기">'
+      + '<img src="' + esc(p.img) + '" alt="" width="' + (g.w - 8) + '" height="' + g.h + '" loading="lazy" decoding="async" draggable="false">'
+      + '</button>';
+  }
   /* 책꽂이 배율 — 확대 단추를 누르면 책등의 가로·세로를 함께 키운다(2026-11-23).
      1.6배면 얇은 시집 책등도 손가락으로 누르기 쉬워진다. */
   var SHELF_ZOOM_ON = 1.6;
   function shelfH(){
     return Math.round(shHeight() * (state.bookZoom > 1 ? state.bookZoom : 1));
   }
-  /* 폭을 재서 한 단에 꽉 차게 책등을 세운다 — 넘치면 다음 단 */
+  /* 폭을 재서 한 단에 꽉 차게 책등을 세운다 — 넘치면 다음 단 (소품이 있으면 함께 채운다: shelfRowsFrom) */
   function shelfRowsFor(list, W, H){
     var rows = [], cur = [], curW = 0, k, g;
     for (k = 0; k < list.length; k++) {
@@ -4678,9 +4854,12 @@ var MUNHAK_NOT = ["8954670474"];
     var cs = window.getComputedStyle(box);
     var padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
     var W = Math.max(80, box.clientWidth - padL - padR);
-    var rows = shelfRowsFor(shelfPaintList, W, H);
+    var rows = shelfRowsFrom(shelfPaintList, W, H);
+    /* 화면에 놓인 그대로의 순서(소품 포함) — 길게 눌러 옮길 때의 기준 목록 */
+    shelfOrderIds = [];
+    rows.forEach(function(r){ r.forEach(function(g){ shelfOrderIds.push(g.id); }); });
     box.innerHTML = rows.map(function(r){
-      return '<div class="sh-row"><div class="sh-books">' + r.map(spineHTML).join('') + '</div>'
+      return '<div class="sh-row"><div class="sh-books">' + r.map(function(g){ return g.prop ? propHTML(g) : spineHTML(g); }).join('') + '</div>'
         + '<div class="sh-plank"></div></div>';
     }).join('');
     /* 카드 팝업이 떠 있는 책등은 다시 그린 뒤에도 뽑힌 채로 둔다 */
@@ -4694,7 +4873,21 @@ var MUNHAK_NOT = ["8954670474"];
   function showShelfTip(el){
     if (!hoverCapable()) return;
     var it = byId(el.getAttribute('data-id'));
-    if (!it) return;
+    if (!it) {
+      /* 2026-11-23 — 소품은 이름만 : 저자·출판사가 없다 */
+      var pp = propById(el.getAttribute('data-id'));
+      if (!pp) return;
+      shTipEl.innerHTML = '<b>' + esc(pp.title) + '</b><span>책꽂이 소품 — 길게 눌러 옮길 수 있어요</span>';
+      shTipEl.classList.add('is-on');
+      var pr = el.getBoundingClientRect(), pt = shTipEl.offsetWidth, ph = shTipEl.offsetHeight;
+      var pX = pr.left + pr.width / 2 - pt / 2;
+      pX = Math.max(8, Math.min(pX, window.innerWidth - pt - 8));
+      var pY = pr.top - ph - 9;
+      if (pY < 8) pY = pr.bottom + 9;
+      shTipEl.style.left = Math.round(pX) + 'px';
+      shTipEl.style.top = Math.round(pY) + 'px';
+      return;
+    }
     var bits = [];
     if (it.author) bits.push(String(it.author).replace(/\s*지음$/, ''));
     if (it.publisher) bits.push(it.publisher);
@@ -4793,7 +4986,7 @@ var MUNHAK_NOT = ["8954670474"];
     if (!box || !el) return false;
     /* 다른 정렬로 보고 있었다면 '내 순서'로 바꿔 놓고 옮긴다 — 옮긴 순서는 '내 순서'에만 담긴다.
        이미 옮겨 둔 '내 순서'가 있으면 그대로 쓰고, 없을 때만 지금 순서를 초기값으로 잡는다. */
-    if (!state.customOrder.length) seedCustomOrder(currentBookOrderIds());
+    if (!state.customOrder.length) seedCustomOrder(shelfOrderIds.length ? shelfOrderIds.slice() : currentBookOrderIds());
     if (state.sort !== 'custom') {
       state.sort = 'custom';
       saveUIPrefs();
@@ -4803,18 +4996,20 @@ var MUNHAK_NOT = ["8954670474"];
       if (!el || !box) return false;
       toast('내 순서로 바꿔 옮겨요 — 놓으면 이 순서로 저장돼요');
     }
+    /* 2026-11-23 — 소품도 '내 순서'에 함께 담기게: 지금 선반에 선 소품 자리를 먼저 기록해 둔다 */
+    ensurePropsInOrder();
     var r = el.getBoundingClientRect();
     if (!r.width || !r.height) return false;
     hideShelfTip();
     shDrag = {
       id: id, el: el, dx: cx - r.left, dy: cy - r.top, w: r.width, h: r.height,
-      list: (shelfPaintList || []).map(function(it){ return it.id; }),
+      list: shelfOrderIds.length ? shelfOrderIds.slice() : (shelfPaintList || []).map(function(it){ return it.id; }),
       rows: shShelfRects(box), ghost: null, ins: null, idx: 0, cx: cx, cy: cy, raf: 0
     };
     el.classList.add('sh-drag-src');
     document.body.classList.add('is-shelf-dragging');
     var g = document.createElement('div');
-    g.className = 'sh-ghost';
+    g.className = 'sh-ghost' + (propById(id) ? ' is-prop' : '');
     g.style.width = Math.round(shDrag.w) + 'px';
     g.style.height = Math.round(shDrag.h) + 'px';
     g.innerHTML = el.innerHTML;
@@ -4904,7 +5099,7 @@ var MUNHAK_NOT = ["8954670474"];
     saveUIPrefs();
     persist();
     render();
-    toast('순서를 바꿨습니다 — 이 순서로 기억해 둘게요');
+    toast(propById(d.id) ? '소품을 옮겼습니다 — 이 자리로 기억해 둘게요' : '순서를 바꿨습니다 — 이 순서로 기억해 둘게요');
   }
   /* 보이는 목록(list)에서 id 를 to 자리로 옮긴 결과를, 책 전체 '내 순서'에 접어 넣는다.
      필터 밖이라 안 보이는 책들의 자리는 그대로 둔다. */
@@ -4916,7 +5111,7 @@ var MUNHAK_NOT = ["8954670474"];
     if (to < 0) to = 0;
     if (to > vis.length) to = vis.length;
     vis.splice(to, 0, id);
-    full = customOrderIds();
+    full = mixedOrderIds();      /* 2026-11-23 — 소품(prop_...)도 함께 센다 */
     for (k = 0; k < list.length; k++) visSet[list[k]] = 1;
     for (k = 0; k < full.length; k++) {
       if (visSet[full[k]]) merged.push(vi < vis.length ? vis[vi++] : full[k]);
@@ -5022,6 +5217,15 @@ var MUNHAK_NOT = ["8954670474"];
     im.onerror = function(){ spineImgCache[id] = null; cb(null); };
     im.src = 'spines/' + encodeURIComponent(id) + '.jpg';
   }
+  /* 2026-11-23 — 소품 누끼 PNG 도 같은 사이트라 캔버스가 오염되지 않는다 */
+  var propImgCache = {};
+  function propImageOf(p, cb){
+    if (p.id in propImgCache) { cb(propImgCache[p.id]); return; }
+    var im = new Image();
+    im.onload = function(){ propImgCache[p.id] = im; cb(im); };
+    im.onerror = function(){ propImgCache[p.id] = null; cb(null); };
+    im.src = p.img;
+  }
   function capRoundPath(ctx, x, y, w, h, r){
     var rr = Math.max(0, Math.min(r, w / 2, h / 2));
     ctx.beginPath();
@@ -5093,7 +5297,7 @@ var MUNHAK_NOT = ["8954670474"];
     var padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
     var padT = parseFloat(cs.paddingTop) || 0, padB = parseFloat(cs.paddingBottom) || 0;
     var W = Math.max(80, box.clientWidth - padL - padR);
-    var rows = shelfRowsFor(shelfPaintList, W, shelfH());
+    var rows = shelfRowsFrom(shelfPaintList, W, shelfH());
     var ROW_GAP = 18;        /* 널판 9px + 줄 아래 여백 9px */
     var PLANK = 9;
     var innerH = 0, usedW = 0;
@@ -5118,9 +5322,9 @@ var MUNHAK_NOT = ["8954670474"];
     cv.height = Math.max(1, Math.round(chh * S));
     var ctx = cv.getContext('2d');
     if (!ctx) { toast('이 브라우저에서는 이미지를 만들 수 없어요'); return; }
-    var list = [];
-    rows.forEach(function(r){ r.forEach(function(g){ if (!g.v) list.push(g); }); });
-    var left = list.length;
+    var list = [], propList = [];
+    rows.forEach(function(r){ r.forEach(function(g){ if (g.prop) propList.push(g.prop); else if (!g.v) list.push(g); }); });
+    var left = list.length + propList.length;
     function finish(){
       ctx.scale(S, S);
       ctx.fillStyle = '#FFFFFF';
@@ -5133,7 +5337,10 @@ var MUNHAK_NOT = ["8954670474"];
         var x = padL;
         r.forEach(function(g){
           var top = base - g.h;
-          if (!g.v) {
+          if (g.prop) {
+            var pim = propImgCache[g.prop.id];
+            if (pim) ctx.drawImage(pim, x + 4, top, g.w - 8, g.h);
+          } else if (!g.v) {
             var im = spineImgCache[g.id];
             if (im) {
               ctx.save();
@@ -5190,9 +5397,15 @@ var MUNHAK_NOT = ["8954670474"];
         }
       }, 'image/png');
     }
-    if (!list.length) { finish(); return; }
+    if (!left) { finish(); return; }
     list.forEach(function(g){
       spineImageOf(g.id, function(){
+        left--;
+        if (left <= 0) finish();
+      });
+    });
+    propList.forEach(function(p){
+      propImageOf(p, function(){
         left--;
         if (left <= 0) finish();
       });
@@ -6868,6 +7081,12 @@ var MUNHAK_NOT = ["8954670474"];
     if (!actEl) return;
     var act = actEl.getAttribute('data-act');
     if (act === 'spine') { onSpineTap(actEl); return; }
+    /* 2026-11-23 — 책꽂이 소품을 짧게 누르면 가볍게 이름만 알려 준다(카드 팝업은 없다) */
+    if (act === 'prop') {
+      var pp = propById(actEl.getAttribute('data-id'));
+      if (pp) toast(pp.title + ' · 길게 누르면 다른 자리로 옮길 수 있어요');
+      return;
+    }
     if (act === 'sub') {
       var sub = actEl.getAttribute('data-sub') || '';
       state.q = sub;
@@ -6926,7 +7145,8 @@ var MUNHAK_NOT = ["8954670474"];
     var actEl = target.closest ? target.closest('[data-act]') : null;
     if (!actEl) return;
     /* 책등을 끌고 난 직후(600ms)의 클릭은 삼킨다 — 놓자마자 카드 팝업이 뜨지 않게 */
-    if (actEl.getAttribute('data-act') === 'spine' && shDragLock && Date.now() - shDragLock < 600) return;
+    if ((actEl.getAttribute('data-act') === 'spine' || actEl.getAttribute('data-act') === 'prop')
+        && shDragLock && Date.now() - shDragLock < 600) return;
     runCardAct(actEl);
   });
 
@@ -7600,8 +7820,9 @@ var MUNHAK_NOT = ["8954670474"];
     return { app: APP_ID, v: 1, updatedAt: new Date().toISOString(),
       device: syncCfg.device, items: items, ov: ov, deleted: state.deleted.slice(), brief: state.brief,
       lemon: state.lemon,
-      /* 2026-11-23 — 책꽂이 '내 순서'도 기기 간에 함께 간다(마지막으로 옮긴 기기가 이긴다) */
-      customOrder: customOrderIds(), customOrderAt: state.customOrderAt || '' };
+      /* 2026-11-23 — 책꽂이 '내 순서'도 기기 간에 함께 간다(마지막으로 옮긴 기기가 이긴다).
+         소품(prop_...) 자리도 같이 가도록 책 id만 추리지 않고 그대로 보낸다. */
+      customOrder: state.customOrder.slice(), customOrderAt: state.customOrderAt || '' };
   }
 
   /* Gist 내용을 이 기기에 병합 — 항목은 updatedAt 이 큰 쪽, 삭제 목록은 합집합 */
