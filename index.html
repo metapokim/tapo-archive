@@ -91,7 +91,8 @@
   .navtoggle:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
   .navtoggle svg{display:block;width:16px;height:16px}
   .nav-open{display:none}
-  .app.nav-collapsed{grid-template-columns:0 minmax(0,1fr)}
+  /* 접했을 때는 사이드바를 그리고에서 빼므로, 칼럼도 한 칸짜리로 바꿔 본문이 그 칸을 차지하게 한다 */
+  .app.nav-collapsed{grid-template-columns:minmax(0,1fr)}
   .app.nav-collapsed .side{display:none}
   .app.nav-collapsed .nav-open{display:inline-flex}
 
