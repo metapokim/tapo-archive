@@ -77,6 +77,24 @@
   .brand-hit:hover mark{background:var(--lemon-2)}
   .brand-hit:focus-visible{outline:2px solid var(--lemon-2);outline-offset:3px;border-radius:9px}
 
+  /* 2026-11-23 은유 님 요청 — PC·아이패드에서 사이드바 메뉴 숨기기/열기.
+     로고 옆 단추로 접으면 본문이 넓어지고, 접힌 동안에는 상단 왼쪽에 여는 단추가 나타난다.
+     좁은 화면(≤900px)은 원래 사이드바가 없으므로 두 단추 모두 숨긴다. */
+  .side-brand{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .navtoggle{
+    flex:0 0 auto;width:30px;height:30px;padding:0;border:1px solid var(--line-2);border-radius:10px;
+    background:#fff;color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s,color .15s;
+  }
+  .navtoggle:hover{background:#FAFAFA;border-color:#D4D4D8;color:var(--ink)}
+  .navtoggle:active{transform:translateY(1px)}
+  .navtoggle:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  .navtoggle svg{display:block;width:16px;height:16px}
+  .nav-open{display:none}
+  .app.nav-collapsed{grid-template-columns:0 minmax(0,1fr)}
+  .app.nav-collapsed .side{display:none}
+  .app.nav-collapsed .nav-open{display:inline-flex}
+
   .side-nav{display:flex;flex-direction:column;gap:3px;margin-top:4px}
   .navitem{
     display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;
@@ -621,7 +639,7 @@
     position:absolute;width:3px;border-radius:3px;background:var(--green);pointer-events:none;
     box-shadow:0 0 0 3px rgba(16,185,129,.15);z-index:7;
   }
-  /* 2026-11-23 은유 님 요청 — 책꽂이 소품(피규어·인형) 6종.
+  /* 2026-11-23 은유 님 요청 — 책꽂이 소품(피규어·인형) 8종.
      누끼 딴 투명 PNG 를 책등과 같은 선반에 세우고, 발바닥이 널판에 닿게 맞춘다.
      길게 누르기 드래그·확대·캡처는 책등과 똑같이 움직인다(.sh-spine 을 함께 단다). */
   .sh-prop{padding:0 4px;box-sizing:border-box;border-radius:0;background:none;line-height:0}
@@ -1149,6 +1167,8 @@
     .topbar{margin:0 -16px;padding:10px 16px 8px;border-bottom:1px solid var(--line)}
     .topbar-in{flex-wrap:wrap;gap:7px}
     .brand-sm{display:block;flex:0 1 auto;min-width:0}
+    /* 폰에는 사이드바가 없으니 메뉴 열기 단추도 두지 않는다 */
+    .nav-open{display:none!important}
     .btn--more{display:inline-flex}
     .topbar .btn--dark{flex:0 0 auto;padding:8px 13px;font-size:12px}
     /* 기본은 접힌 1줄 — ▾를 눌러야 검색·카테고리·바로가기가 펼쳐진다 */
@@ -1319,6 +1339,9 @@
   <aside class="side">
     <div class="side-brand">
       <h1 class="brand"><button class="brand-hit" id="brandHome" type="button" title="새로고침" aria-label="TAPO’s archive — 새로고침">TAPO’s <mark>archive</mark></button></h1>
+      <button class="navtoggle" id="navToggleBtn" type="button" aria-controls="sideNav" aria-expanded="true" title="메뉴 숨기기" aria-label="메뉴 숨기기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.6" width="18" height="14.8" rx="3.2"/><path d="M9.1 4.6v14.8"/><path d="M16.4 9.6 14 12l2.4 2.4"/></svg>
+      </button>
     </div>
     <nav class="side-nav" id="sideNav" aria-label="카테고리"></nav>
     <div class="side-foot">
@@ -1344,6 +1367,9 @@
     <header class="topbar">
       <div class="topbar-in">
         <div class="brand-sm"><button class="brand-hit" id="brandSm" type="button" title="새로고침" aria-label="TAPO’s archive — 새로고침">TAPO’s <mark>archive</mark></button></div>
+        <button class="navtoggle nav-open" id="navOpenBtn" type="button" aria-controls="sideNav" aria-expanded="false" title="메뉴 열기" aria-label="메뉴 열기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.6" width="18" height="14.8" rx="3.2"/><path d="M9.1 4.6v14.8"/><path d="M14.2 9.6 16.6 12l-2.4 2.4"/></svg>
+        </button>
         <button class="btn btn--more" id="topbarMoreBtn" type="button" aria-expanded="false" aria-controls="topbarSearch tabs topbarQuick" aria-label="검색·카테고리 펼치기" title="검색·카테고리 펼치기">
           <span class="more-cat" id="topbarMoreCat" hidden></span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5 12 15.5 18 9.5"/></svg>
@@ -2024,7 +2050,7 @@
     customOrder: [], customOrderAt: '',
     bookView: 'card',   /* 책 탭 보기 — card | shelf (2026-11-21) */
     bookZoom: 1,        /* 책꽂이 배율 — 1 | 1.6, 확대 단추 (2026-11-23) */
-    propOff: 0,         /* 책꽂이 소품 6종 숨김 — '소품' 단추 (2026-11-23 은유 님 요청) */
+    propOff: 0,         /* 책꽂이 소품 8종 숨김 — '소품' 단추 (2026-11-23 은유 님 요청) */
     q: '',
     kind: 'all',
     collapsed: {},     /* 전체 보기에서 접어 둔 섭션 (cat → 1) */
@@ -4493,7 +4519,7 @@
     return '<button class="statbtn" type="button" data-act="cap" title="지금 보이는 책꽂이를 이미지로 저장">'
       + CAM_SVG + '<span>캡처</span></button>';
   }
-  /* 2026-11-23 은유 님 요청 — 소품 6종을 한 번에 숨기고 다시 보이는 단추.
+  /* 2026-11-23 은유 님 요청 — 소품 8종을 한 번에 숨기고 다시 보이는 단추.
      누른 상태(aria-pressed=true)면 소품이 보이고, 끄면 숨는다. 폰에서는 글자를 빼고 그림만. */
   var PROP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.4" r="3.1"/><path d="M6.6 19.2v-2.6c0-2.4 2.4-4.2 5.4-4.2s5.4 1.8 5.4 4.2v2.6"/><path d="M3.6 19.4h16.8"/></svg>';
   function propBtnHTML(){
@@ -4624,29 +4650,34 @@ var MUNHAK_NOT = ["8954670474"];
     }
     return '';
   }
-  /* ──────────── 책꽂이 소품 6종 (2026-11-23 은유 님 요청) ────────────
+  /* ──────────── 책꽂이 소품 8종 (2026-11-23 은유 님 요청) ────────────
      은유 님이 보낸 피규어·인형 사진 6장의 흰 배경을 누끼(투명 PNG) 떠서 선반 위에 세운다.
      책 데이터(SEED·books.json·권수·독서 통계·'오늘 뭐 읽지?')에는 섞이지 않는 별도 목록이고,
      '내 순서'(state.customOrder)에는 책 id와 나란히 prop_... id 로 담긴다.
      at 은 아직 옮기지 않은 소품의 기본 자리(책 목록에서의 비율) — 선반 여러 단에 퍼진다. */
   var PROPS = [
     { id:'prop_moana',    title:'아기 모아나',          img:'props/prop_moana.png',    hRatio:0.91, ratio:0.6225, at:0.30 },
-    { id:'prop_twins',    title:'LG 트윈스 키링 인형',  img:'props/prop_twins.png',    hRatio:0.52, ratio:0.6475, at:0.14 },
+    { id:'prop_twins',    title:'트윈스 마루',          img:'props/prop_twins.png',    hRatio:0.52, ratio:0.6475, at:0.14 },
     { id:'prop_ralph',    title:'주먹왕 랄프',          img:'props/prop_ralph.png',    hRatio:0.33, ratio:0.8800, at:0.42 },
     { id:'prop_buzz',     title:'버즈 라이트이어',      img:'props/prop_buzz.png',     hRatio:0.93, ratio:0.9100, at:0.54 },
     { id:'prop_doraemon', title:'하와이 도라에몽',      img:'props/prop_doraemon.png', hRatio:0.54, ratio:0.7700, at:0.68 },
-    { id:'prop_potato',   title:'미스터 포테이토 헤드',  img:'props/prop_potato.png',   hRatio:0.47, ratio:0.9675, at:0.82 }
+    { id:'prop_potato',   title:'미스터 포테이토 헤드',  img:'props/prop_potato.png',   hRatio:0.47, ratio:0.9675, at:0.82 },
+    /* 2026-11-23 은유 님 사진(IMG_4961)에서 떠 온 핑구·핑가 — 랄프(0.33)의 2/3 안팎,
+       핑가가 핑구보다 낮다(0.19 < 0.24). */
+    { id:'prop_pingu',    title:'핑구',                img:'props/prop_pingu.png',    hRatio:0.24, ratio:0.6325, at:0.22 },
+    { id:'prop_pinga',    title:'핑가',                img:'props/prop_pinga.png',    hRatio:0.19, ratio:1.0975, at:0.90 }
   ];
   function propById(id){
     if (!id) return null;
     for (var i = 0; i < PROPS.length; i++) if (PROPS[i].id === id) return PROPS[i];
     return null;
   }
-  /* 검색어나 좁히는 필터(상태·소장/대여·장르)가 걸렸거나 '소품' 단추로 숨겼으면 소품은 안 보인다 —
-     책을 찾는 화면에 인형이 끼어들지 않게. 정렬은 소품 표시에 영향을 주지 않는다(2026-11-23). */
+  /* 소품은 '소품' 단추로 숨겼거나 검색어를 넣었을 때만 사라진다.
+     상태·소장/대여·장르 필터나 어떤 정렬(기본·내 순서·가나다·날짜·출판사별·장르별)에서도
+     책들 사이사이에 그대로 보인다(2026-11-23 은유 님 요청 — 서재·장르별에서 소품이 사라지던 문제). */
   function propsVisible(){
     if (state.propOff) return false;
-    return !isSearching() && state.status === 'all' && state.own === 'all' && state.genre === 'all';
+    return !isSearching();
   }
   function propGeom(p, H){
     var h = Math.max(40, Math.round(H * p.hRatio));
@@ -5231,7 +5262,7 @@ var MUNHAK_NOT = ["8954670474"];
     var sp = btn.querySelector('span');
     if (sp) sp.textContent = on ? '소품' : '소품 숨김';
   }
-  /* 소품 6종 통째로 숨기기/보이기 — 상태는 기기 저장소(propOff)에 남는다. 캡처에도 그대로 적용된다 */
+  /* 소품 8종 통째로 숨기기/보이기 — 상태는 기기 저장소(propOff)에 남는다. 캡처에도 그대로 적용된다 */
   function toggleShelfProps(){
     state.propOff = state.propOff ? 0 : 1;
     saveUIPrefs();
@@ -8302,6 +8333,29 @@ var MUNHAK_NOT = ["8954670474"];
   }
   on('brandHome', 'click', hardReload);
   on('brandSm', 'click', hardReload);
+
+  /* 2026-11-23 은유 님 요청 — PC·아이패드 사이드바 메뉴 숨기기/열기.
+     접힌 상태는 이 기기 저장소(tapo.sideHidden)에 남고, 접히면 본문이 넓어져 책꽂이 단을 다시 채운다. */
+  var SIDE_KEY = 'tapo.sideHidden';
+  function applySidebar(hidden){
+    var app = document.querySelector('.app');
+    if (app) { if (hidden) app.classList.add('nav-collapsed'); else app.classList.remove('nav-collapsed'); }
+    var b = document.getElementById('navToggleBtn');
+    if (b) { b.setAttribute('aria-expanded', hidden ? 'false' : 'true'); b.title = hidden ? '메뉴 열기' : '메뉴 숨기기'; b.setAttribute('aria-label', b.title); }
+    var o = document.getElementById('navOpenBtn');
+    if (o) { o.setAttribute('aria-expanded', hidden ? 'false' : 'true'); o.title = '메뉴 열기'; }
+  }
+  function toggleSidebar(){
+    var app = document.querySelector('.app');
+    var hidden = !(app && app.classList.contains('nav-collapsed'));
+    applySidebar(hidden);
+    writeStore(SIDE_KEY, hidden ? '1' : '0');
+    /* 본문 폭이 바뀌었으니 책꽂이를 새 폭으로 다시 채운다 */
+    if (state.cat === 'book' && state.bookView === 'shelf' && shelfPaintList.length) paintShelf(shelfPaintList);
+  }
+  on('navToggleBtn', 'click', toggleSidebar);
+  on('navOpenBtn', 'click', toggleSidebar);
+
   on('exportBtn', 'click', doExport);
   on('exportBtn2', 'click', doExport);
   on('importFile', 'change', function(){ doImport(this); });
@@ -8310,6 +8364,7 @@ var MUNHAK_NOT = ["8954670474"];
   /* ────────────────────────── 시작 ────────────────────────── */
   loadSyncCfg();
   load();
+  applySidebar(readStore(SIDE_KEY) === '1');   /* 2026-11-23 — 지난번에 접어 뒀으면 그대로 접힌 채로 연다 */
   if (!canStore) showStorageNotice();
   document.getElementById('sort').value = state.sort;
   var upListBoot = document.getElementById('upList');
