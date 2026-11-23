@@ -5058,12 +5058,19 @@ var MUNHAK_NOT = ["8954670474"];
        이미 옮겨 둔 '내 순서'가 있으면 그대로 쓰고, 없을 때만 지금 순서를 초기값으로 잡는다. */
     if (!state.customOrder.length) seedCustomOrder(shelfOrderIds.length ? shelfOrderIds.slice() : currentBookOrderIds());
     if (state.sort !== 'custom') {
+      /* 2026-11-24 — 다시 그리면 선반 높이가 잠깐 줄어 스크롤이 맨 위로 튄다.
+         그대로 두면 화면 맨 위 기준으로 자리를 계산해 소품이 엉뚱한 곳에 꽂혔다.
+         그리기 전 선반의 화면 위치를 기억해 두고 그대로 되돌린다. */
+      var keepTop = box.getBoundingClientRect().top;
       state.sort = 'custom';
       saveUIPrefs();
       render();
-      el = sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]');
       box = document.getElementById('bookShelf');     /* 2026-11-23 — 다시 그린 뒤의 선반을 잰다(끝난 선반을 재면 0이 된다) */
-      if (!el || !box) return false;
+      if (!box) return false;
+      var jump = box.getBoundingClientRect().top - keepTop;
+      if (jump) window.scrollBy(0, jump);
+      el = sectionsEl.querySelector('.sh-spine[data-id="' + id + '"]');
+      if (!el) return false;
       toast('내 순서로 바꿔 옮겨요 — 놓으면 이 순서로 저장돼요');
     }
     /* 2026-11-23 — 소품도 '내 순서'에 함께 담기게: 지금 선반에 선 소품 자리를 먼저 기록해 둔다 */
