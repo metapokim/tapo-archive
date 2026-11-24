@@ -1,11 +1,11 @@
 {
   "v": 1,
-  "date": "2026-11-24",
-  "updatedAt": "2026-11-24T23:56:12+09:00",
+  "date": "2026-11-25",
+  "updatedAt": "2026-11-25T05:27:41+09:00",
   "counts": {
     "cases": 100,
     "casesUnread": 100,
-    "eng": 1,
+    "eng": 2,
     "articles": 5
   },
   "cases": [
@@ -1012,6 +1012,16 @@
   ],
   "eng": [
     {
+      "id": "n20261125_en1",
+      "title": "What the ICJ's Judgment Means for Rohingya Women",
+      "publisher": "Verfassungsblog",
+      "date": "2026-11-25",
+      "sub": "영어 칼럼 · 젠더·국제법",
+      "summary": "[영어 독해용 · 2026.11.23 원문] ICJ의 로힝야 집단학살 인정 판결(11/19)을 성폭력 생존자 관점에서 짚으며, 조직적 성폭력의 부정(denial)이 낳는 2차 피해와 배상 과제를 다룬 칼럼.",
+      "url": "https://verfassungsblog.de/gambia-v-myanmar-violence-women/",
+      "status": "읽기 전"
+    },
+    {
       "id": "n20261124_en1",
       "title": "Militant Democracy Revisited: How to Defend Gender Equality from Enemies Within",
       "publisher": "IACL-AIDC Blog",
@@ -1023,6 +1033,36 @@
     }
   ],
   "articles": [
+    {
+      "id": "n20261125_3",
+      "title": "[속보] 서울지하철 노사 협상 타결…오늘 총파업 철회",
+      "publisher": "KBS",
+      "date": "2026-11-25",
+      "sub": "속보 · 교통",
+      "summary": "밤샘 교섭 끝에 임금·단체협약이 타결돼 오늘(25일) 총파업이 철회되면서 출근길 서울지하철이 정상 운행한다.",
+      "url": "https://news.kbs.co.kr/news/pc/view/view.do?ncd=8721693",
+      "status": "읽기 전"
+    },
+    {
+      "id": "n20261125_1",
+      "title": "\"우리 데이트 비용 아깝잖아\"…비혼 커플들 결국 '파격 선택'",
+      "publisher": "한국경제",
+      "date": "2026-11-24",
+      "sub": "가족다양성 · 통계",
+      "summary": "국가데이터처 '2025 인구주택총조사 표본조사'에서 비혼동거가구 17만4,000가구(전체 일반가구의 0.8%)가 처음 집계됐고, 30대 미혼율도 남성 61.1%·여성 44.3%로 높아졌다.",
+      "url": "https://www.hankyung.com/article/202611246388i",
+      "status": "읽기 전"
+    },
+    {
+      "id": "n20261125_2",
+      "title": "靑 \"'가정폭력 범죄에 반의사불벌죄 적용 배제' 의견 모아져\"",
+      "publisher": "연합뉴스",
+      "date": "2026-11-24",
+      "sub": "가족폭력 · 입법",
+      "summary": "국무회의에서 성평등가족부의 '가정폭력범죄 반의사불벌죄 적용 배제 검토'가 논의되며, 경찰 인력·예산 보강과 보호시설 확충·사건처리 가이드라인 필요에 공감이 모였다.",
+      "url": "https://www.yna.co.kr/view/AKR20261124144400001",
+      "status": "읽기 전"
+    },
     {
       "id": "n20261121_5",
       "title": "'로힝야족 집단 학살' 첫 인정...\"역사적 판결\" 속 이스라엘 촉각",
@@ -1041,36 +1081,6 @@
       "sub": "가족다양성·아동",
       "summary": "인지청구 승소 전엔 국적·건강보험 적용이 막히는 미혼모·외국인 부모 아동 등 '제도 밖' 아동이 올해 3,369명으로 집계됐다.",
       "url": "https://news.sbs.co.kr/news/endPage.do?news_id=N1008856390",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261121_2",
-      "title": "15년 묵은 최저주거기준 손질하나…1인가구 21㎡ 제시",
-      "publisher": "뉴시스",
-      "date": "2026-11-20",
-      "sub": "가족다양성·주거",
-      "summary": "국토부 주거복지정책 토론회에서 기존 '표준가구' 전제를 넘어 한부모·조부모 등 가족 구성 다양성을 반영한 최저주거기준 개편이 논의됐다.",
-      "url": "https://www.newsis.com/view/NISX20261120_0003876847",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261121_3",
-      "title": "인권위, 이민사회국 폐지 경기도에 \"이주민보호 대책 마련해야\"",
-      "publisher": "연합뉴스",
-      "date": "2026-11-20",
-      "sub": "다양성·이주",
-      "summary": "인권위가 경기도 이민사회국 폐지 조직개편과 관련해 부서 간 연계·전문성 및 이주민 보호 조례 이행 총괄 책임을 명확히 하라고 의견을 냈다.",
-      "url": "https://www.yna.co.kr/view/AKR20261120090700004",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261121_4",
-      "title": "[단독] 징역 3년 확정 임성근, 대법 판결 불복해 헌재에 재판소원",
-      "publisher": "문화일보",
-      "date": "2026-11-20",
-      "sub": "헌법·재판소원",
-      "summary": "징역 3년 확정 22일 만인 11월 18일 헌재에 재판소원을 접수해 헌법재판소법 §68① 예외 해당 여부가 쟁점이 됐다.",
-      "url": "https://www.munhwa.com/article/11632764",
       "status": "읽기 전"
     }
   ]
