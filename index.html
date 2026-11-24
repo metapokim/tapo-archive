@@ -728,7 +728,7 @@
   .bstat-top .bcard-x{margin-left:auto}
   /* ── 🎲 랜덤 판례 팝업 (2026-11-24) ──
      기사·뉴스레터 섹션 헤더에서 뽑은 판례 한 건을 읽기 전용으로 보여 준다.
-     날짜·사건명·재판부·요지·주제 태그를 카드와 같은 결로, 아래에 '다시 뽑기'·'열기'. */
+     날짜·사건명·재판부·요지·주제 태그를 카드와 같은 결로, 아래에 '열기'·'다시 뽑기'(2026-11-24 순서 교체). */
   .modal .sheet--case{max-width:452px;padding:12px 14px 14px;border-radius:24px;animation:bcardIn .17s ease-out}
   .case-in{padding:0 2px}
   .case-top{display:flex;align-items:center;gap:8px}
@@ -1534,11 +1534,11 @@
     <div class="bcard-top"><button class="bcard-x" type="button" id="caseX" aria-label="닫기" title="닫기">&#10005;</button></div>
     <div id="caseHost"></div>
     <div class="case-actions">
+      <a class="case-open-btn" id="caseOpen" href="#" target="_blank" rel="noopener noreferrer" hidden>열기</a>
       <button class="bcard-dice-btn" type="button" id="caseDiceBtn" title="다른 판례 뽑기">
         <svg class="dice-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.6"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/></svg>
         <span>다시 뽑기</span>
       </button>
-      <a class="case-open-btn" id="caseOpen" href="#" target="_blank" rel="noopener noreferrer" hidden>열기</a>
     </div>
     <p class="case-note" id="caseNote"></p>
   </div>
@@ -4203,14 +4203,17 @@
       var shown = shelfView ? list : list.slice(0, lim);
       /* 접기는 전체 보기에서만. 카테고리를 골랐을 때는 늘 카드가 보인다 */
       var foldable = (state.cat === 'all');
+      /* 2026-11-24 은유 님 요청 — '🎲 랜덤 판례' 단추는 기사·뉴스레터의 구분 필터가 '판례'일 때만.
+         (전체·기사·뉴스레터에서는 단추도 .has-case 클래스도 두지 않는다) */
+      var caseOnly = (cat === 'news' && state.cat === 'news' && state.kind === '판례');
       /* 검색 중에는 매칭 카드가 있는 섹션을 자동으로 펼친다 (저장해 둔 접힘 상태는 건드리지 않는다) */
       var collapsed = foldable && (isSearching() ? !!searchFold[cat] : !!state.collapsed[cat]);
       html += '<section class="sec' + (collapsed ? ' is-collapsed' : '') + '" data-cat="' + cat + '">';
-      html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + (cat === 'news' && state.cat === 'news' ? ' has-case' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
+      html += '<div class="sec-head' + (cat === 'book' ? ' has-view' : '') + (caseOnly ? ' has-case' : '') + '"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS[cat] || pad(idx)) + '</span>'
            + '<h2 class="sec-title">' + META[cat].label + '</h2>'
            + '<span class="sec-count">' + (list.length > shown.length ? shown.length + ' / ' + list.length : list.length + '건') + '</span>'
            + (cat === 'book' && state.cat === 'book' ? '<div class="sec-tools">' + diceBtnHTML() + statsBtnHTML() + (shelfView ? zoomBtnHTML() + capBtnHTML() + propBtnHTML() : '') + viewSegHTML() + '</div>' : '')
-           + (cat === 'news' && state.cat === 'news' ? caseDiceBtnHTML() : '')
+           + (caseOnly ? caseDiceBtnHTML() : '')
            + (foldable
              ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="' + cat + '" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-label="' + META[cat].label + (collapsed ? ' 펼치기' : ' 접기') + '" title="' + (collapsed ? '펼치기' : '접기') + '">'
                + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
