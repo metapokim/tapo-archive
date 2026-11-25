@@ -982,6 +982,19 @@
   @supports not selector(::-webkit-scrollbar){
     .memo-body,.card--news .line--note,.card--grad .line--note{scrollbar-width:thin;scrollbar-color:#DCDCE0 transparent}
   }
+  /* 2026-11-25 은유 님 요청 — 기사·뉴스레터 'Eng' 목록 맨 위에 고정하는 공지 카드.
+     카드 한 칸을 다 쓰고, 잘림(line-clamp)·스크롤 없이 본문 전체가 그대로 보인다.
+     누를 것이 없는 공지라 hover 들뜸도 두지 않는다 — 다른 카드의 간격·여백은 건드리지 않는다. */
+  .card--notice{
+    grid-column:1 / -1;background:#FFFDF4;border-color:#F0EBCB;
+  }
+  .card--notice:hover{transform:none;box-shadow:var(--shadow);border-color:#F0EBCB}
+  .card-title--notice{margin:0;font-size:13.5px;font-weight:800;letter-spacing:-.01em;color:#713F12;line-height:1.4}
+  .card--notice .accent{margin:0}
+  .notice-body{
+    margin:0;font-size:12.5px;line-height:1.75;color:var(--ink-2);
+    white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;
+  }
   .subtag{
     align-self:flex-start;margin-top:2px;font:inherit;font-size:10.5px;font-weight:700;
     color:var(--green-2);background:var(--green-w);border:1px solid #A7F3D0;border-radius:999px;
@@ -3892,6 +3905,29 @@
       + (m ? '<span class="mini-memo-dot" aria-hidden="true"></span>메모' : '+ 메모') + '</button>';
   }
 
+  /* ── 'Eng' 구분 맨 위 고정 공지 (2026-11-25 은유 님 요청) ──
+     실제 항목(SEED)이 아니라 화면에서만 그리는 카드다. 그래서 구분 카운트·정렬·검색·
+     news.json 어디에도 섞이지 않고, 'Eng'를 골랐을 때만 목록 첫 자리에 선다. */
+  var ENG_NOTICE_TITLE = '📌 영어 칼럼 읽기 · 정리 루틴';
+  var ENG_NOTICE_BODY = [
+    "■ 하루 1편 '한 문단씩 2번 읽기'",
+    '① 사전 없이 주어·동사·수식어 덩어리만 나누며 흐름 훑기',
+    '② 뜻이 안 잡히는 핵심 명사·동사 3~4개만 찾아 다시 읽기',
+    '',
+    '■ 다 읽고 난 뒤 3분 정리 루틴 (한 줄 메모·노트)',
+    '① 핵심 주장 한국어 1줄 요약 — "이 글이 결국 무슨 말인지" 내 말로.',
+    '② 제일 구조가 안 보이던 문장 1개만 골라 주어·동사·괄호 표시.',
+    '③ 법학 글에 반복될 핵심 동사·명사 2~3개만 기록 (예: entrench 고착화하다 · invoke 원용하다).',
+    '→ 다음 날 새 글 읽기 전에 어제 적은 3줄만 10초 훑고 넘어가기.'
+  ].join('\n');
+  function engNoticeHTML(){
+    return '<article class="card card--notice" aria-label="영어 칼럼 읽기 공지">'
+      + '<h3 class="card-title card-title--notice">' + ENG_NOTICE_TITLE + '</h3>'
+      + '<span class="accent accent--lemon" aria-hidden="true"></span>'
+      + '<p class="notice-body">' + esc(ENG_NOTICE_BODY) + '</p>'
+      + '</article>';
+  }
+
   function cardHTML(it){
     if (it.cat === 'memo') return memoCardHTML(it);
     var m = META[it.cat];
@@ -4285,6 +4321,9 @@
       /* 2026-11-24 은유 님 요청 — '🎲 랜덤 판례' 단추는 기사·뉴스레터의 구분 필터가 '판례'일 때만.
          (전체·기사·뉴스레터에서는 단추도 .has-case 클래스도 두지 않는다) */
       var caseOnly = (cat === 'news' && state.cat === 'news' && state.kind === '판례');
+      /* 2026-11-25 — 기사·뉴스레터에서 'Eng'를 골랐을 때만 맨 위 공지 카드를 붙인다.
+         (전체·기사·뉴스레터·판례에서는 붙이지 않고, 항목 수에도 넣지 않는다) */
+      var engNotice = (cat === 'news' && state.cat === 'news' && state.kind === 'Eng');
       /* 검색 중에는 매칭 카드가 있는 섹션을 자동으로 펼친다 (저장해 둔 접힘 상태는 건드리지 않는다) */
       var collapsed = foldable && (isSearching() ? !!searchFold[cat] : !!state.collapsed[cat]);
       html += '<section class="sec' + (collapsed ? ' is-collapsed' : '') + '" data-cat="' + cat + '">';
@@ -4305,6 +4344,7 @@
         shelfNeedsPaint = true;
       } else {
         html += '<div class="grid">';
+        if (engNotice) html += engNoticeHTML();
         html += shown.map(cardHTML).join('');
         if (list.length > shown.length) {
           html += '<div class="more"><button type="button" data-act="more" data-cat="' + cat + '">더 보기 · 남은 ' + (list.length - shown.length) + '건</button></div>';
