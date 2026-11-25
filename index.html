@@ -1444,7 +1444,8 @@
   .st-pick-row .st-name{color:var(--ink)}
   .st-pick-empty{padding:14px 2px;font-size:12px;color:#A1A1AA}
   @media (max-width:640px){
-    .st-state{display:none}
+    /* 2026-11-25 — 폭이 좁아도 현재 상태(읽기 전·시청 전)는 꼭 보이게 남긴다 */
+    .st-state{font-size:9.5px}
     .sec-head > .study-new{height:26px;font-size:11px;padding:0 9px}
   }
 </style>
@@ -2473,7 +2474,7 @@
       + '<span class="st-state">' + esc(it.status || '') + '</span>';
     var u = it.url || it.extraUrl || '';
     if (u) h += '<a class="mini mini--open" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">열기</a>';
-    else if (it.cat === 'memo') h += '<button class="mini" type="button" data-act="study-memo-open" data-id="' + esc(id) + '" title="메모 탭에서 이 메모를 엽니다">열기</button>';
+    else if (it.cat === 'memo') h += '<button class="mini mini--open" type="button" data-act="study-memo-open" data-id="' + esc(id) + '" title="메모 탭에서 이 메모를 엽니다">열기</button>';
     h += x + '</div>';
     return h;
   }
