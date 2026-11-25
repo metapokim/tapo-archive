@@ -441,6 +441,13 @@
   .up-head h2{margin:0;font-size:15px;font-weight:800;letter-spacing:-.025em}
   .up-head h2::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:8px;vertical-align:1px;box-shadow:0 0 0 4px rgba(16,185,129,.13)}
   .up-note{margin-left:auto;font-size:10px;letter-spacing:.06em;color:#A1A1AA;font-weight:700}
+  /* 2026-11-25 은유 님 요청 — '다가오는 일정' 제목 옆 + 로 직접 추가 */
+  .up-add{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1px solid #E4E4E7;background:#fff;color:#52525B;font-family:var(--sans);font-size:15px;font-weight:700;line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+  .up-add:hover{background:var(--lemon);border-color:var(--lemon-2);color:#18181B}
+  .up-add:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  .up-meet{flex:0 0 auto;font-size:10px;font-weight:800;color:var(--green-2);background:var(--green-w);border-radius:999px;padding:2px 6px;letter-spacing:.01em}
+  .up-x{flex:0 0 auto;width:20px;height:20px;border:0;background:transparent;color:#A1A1AA;font-family:var(--sans);font-size:12px;line-height:1;border-radius:6px;cursor:pointer;padding:0}
+  .up-x:hover{background:#F4F4F5;color:#71717A}
   /* 목록은 카드 높이를 고정하고 안에서만 스크롤 — 모닝 브리핑 카드와 높이를 --hero-h 로 똑같이 맞춘다 */
   .up-list{
     list-style:none;margin:0;padding:0 2px 0 0;min-width:0;
@@ -1192,6 +1199,8 @@
   .field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
   .field.full{grid-column:1/-1}
   .field label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#A1A1AA}
+  .field label.ce-check{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;letter-spacing:0;text-transform:none;color:#3F3F46;cursor:pointer}
+  .field label.ce-check input{width:16px;height:16px;min-height:0;margin:0;padding:0;flex:0 0 auto;accent-color:#18181B;border:0;background:none}
   .field input,.field select,.field textarea{
     font:inherit;font-size:14px;color:var(--ink);background:#F7F7F8;
     border:1px solid transparent;border-radius:12px;padding:10px 12px;
@@ -1605,6 +1614,7 @@
         <div class="up-box">
           <div class="up-head">
             <h2 id="upTitle">다가오는 일정</h2>
+            <button class="up-add" type="button" id="upAdd" aria-label="일정 직접 추가" title="일정 직접 추가">+</button>
             <span class="up-note" id="upNote"></span>
           </div>
           <ol class="up-list" id="upList"></ol>
@@ -2043,6 +2053,37 @@
   </form>
 </div>
 
+<!-- 다가오는 일정 — 직접 추가·고치기 (2026-11-25 은유 님 요청) -->
+<div class="modal" id="calevModal" hidden>
+  <form class="sheet" id="calevForm" novalidate>
+    <h2 id="calevFormTitle">일정 추가</h2>
+    <p class="hint">날짜와 제목만 있으면 돼요. 회의는 체크해 두면 당일 브리핑 맨 윗줄에도 함께 떠요.</p>
+    <div class="field full">
+      <label for="ceDate">날짜</label>
+      <input id="ceDate" type="date" required>
+    </div>
+    <div class="field full">
+      <label for="ceTitle">제목</label>
+      <input id="ceTitle" type="text" placeholder="예: 불광2구역 창립총회" required>
+    </div>
+    <div class="field full">
+      <label for="ceTime">시간 (선택)</label>
+      <input id="ceTime" type="text" placeholder="예: 15:00 또는 19:00~21:00">
+    </div>
+    <div class="field full">
+      <label for="cePlace">장소 (선택)</label>
+      <input id="cePlace" type="text" placeholder="예: 연서로34길 35, 2층">
+    </div>
+    <div class="field full">
+      <label class="ce-check" for="ceMeet"><input id="ceMeet" type="checkbox"> 회의 일정</label>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn--ghost" type="button" id="ceCancel">취소</button>
+      <button class="btn btn--dark" type="submit">저장</button>
+    </div>
+  </form>
+</div>
+
 <!-- 공부 탭 — 기존 아카이브 항목을 검색해 바로 연결하는 가벼운 패널 (2026-11-25) -->
 <div class="modal" id="studyLinkModal" hidden>
   <div class="sheet" id="studyLinkSheet" role="dialog" aria-modal="true" aria-labelledby="stlTitle">
@@ -2363,6 +2404,9 @@
     /* 2026-11-25 — 공부 탭의 주제 카드 배열. SEED·state.items 와 완전히 따로 둔다
        (그래서 '전체 1241'·다른 탭 건수·검색·정렬 어디에도 섞이지 않는다). */
     study: [],
+    /* 2026-11-25 — '다가오는 일정'의 + 로 직접 추가한 일정. 코드에 박힌 CALENDAR_EVENTS 와
+       따로 두고 화면에서는 둘을 합쳐 보여 준다(지운 일정은 state.deleted 에 id 로 남는다). */
+    calev: [],
     /* 아침 브리핑에서 체크한 항목 — '날짜|문구' 키에 시각(ms)을 값으로 둔다.
        양수 = 완료, 음수 = 되돌림(기기 간 병합은 절댓값이 큰 쪽을 남긴다) */
     brief: {},
@@ -2794,6 +2838,15 @@
     for (j = 0; j < STUDY_SEED.length; j++) {
       if (state.deleted.indexOf(STUDY_SEED[j].id) >= 0) continue;
       if (!studyById(STUDY_SEED[j].id)) { state.study.push(studyNorm(STUDY_SEED[j])); loadChanged = true; }
+    }
+
+    /* 2026-11-25 — '다가오는 일정'에 + 로 직접 추가한 일정. 저장본(Gist·이 기기)에서 그대로 되살린다. */
+    state.calev = [];
+    if (saved && Array.isArray(saved.calev)) {
+      for (j = 0; j < saved.calev.length; j++) {
+        var ce0 = calevNorm(saved.calev[j]);
+        if (ce0 && !calevById(ce0.id) && state.deleted.indexOf(ce0.id) < 0) state.calev.push(ce0);
+      }
     }
 
     /* 북적북적 반영: 이 기기에 남아 있던 상태를 완독으로 한 번만 맞춘다 (메모는 그대로) */
@@ -3666,7 +3719,8 @@
       lemon: state.lemon,
       customOrder: state.customOrder,      /* 2026-11-23 — '내 순서' 책꽂이 순서 */
       customOrderAt: state.customOrderAt,
-      study: state.study                   /* 2026-11-25 — 공부 탭 주제 카드(공부 메모 포함) */
+      study: state.study,                  /* 2026-11-25 — 공부 탭 주제 카드(공부 메모 포함) */
+      calev: state.calev                   /* 2026-11-25 — '다가오는 일정'에 직접 추가한 일정 */
     };
     var ok = writeStore(STORE, JSON.stringify(payload));
     if (ok) stampSaved();
@@ -4888,6 +4942,27 @@
     }
     return false;
   }
+  /* 2026-11-25 은유 님 요청 — '다가오는 일정'의 + 로 직접 추가한 일정의 저장 모양.
+     날짜(YYYY-MM-DD)와 제목이 비면 저장하지 않는다(달력 일정과 같은 {date,title,time,place} 로 쓴다). */
+  function calevNorm(o){
+    if (!o || typeof o !== 'object') return null;
+    var t = {
+      id: String(o.id || ('ce' + Math.random().toString(36).slice(2, 9))),
+      date: String(o.date == null ? '' : o.date).slice(0, 10),
+      title: String(o.title == null ? '' : o.title).replace(/\s+/g, ' ').trim(),
+      time: String(o.time == null ? '' : o.time).replace(/\s+/g, ' ').trim(),
+      place: String(o.place == null ? '' : o.place).replace(/\s+/g, ' ').trim(),
+      meet: o.meet ? 1 : 0,
+      created: String(o.created == null ? '' : o.created),
+      updated: String(o.updated == null ? '' : o.updated)
+    };
+    if (!t.title || !/^\d{4}-\d{2}-\d{2}$/.test(t.date)) return null;
+    return t;
+  }
+  function calevById(id){
+    for (var k = 0; k < state.calev.length; k++) { if (state.calev[k].id === id) return state.calev[k]; }
+    return null;
+  }
   function calendarUpcoming(){
     var out = [], k, ev, d;
     for (k = 0; k < CALENDAR_EVENTS.length; k++) {
@@ -4897,6 +4972,16 @@
       if (hiddenInUpcoming(ev.title)) continue;      /* 덕소2는 브리핑 상단에만 */
       if (inArchive(ev)) continue;
       out.push({ date: ev.date, title: ev.title, time: ev.time || '', place: ev.place || '', d: d, cal: true });
+    }
+    /* 2026-11-25 은유 님 요청 — + 로 직접 추가한 일정도 같은 '달력 일정' 줄로 보여 준다.
+       지운 일정은 state.deleted 에 id 가 남아 있어 다시 뜨지 않는다. */
+    for (k = 0; k < state.calev.length; k++) {
+      ev = state.calev[k];
+      if (!ev || state.deleted.indexOf(ev.id) >= 0) continue;
+      d = dayDiff(ev.date);
+      if (d === null || d < 0 || d > 60) continue;
+      out.push({ date: ev.date, title: ev.title, time: ev.time || '', place: ev.place || '', d: d,
+        cal: true, evId: ev.id, meet: !!ev.meet });
     }
     return out;
   }
@@ -4940,11 +5025,17 @@
         var when = [];
         if (r.time) when.push(esc(r.time));
         if (r.place) when.push(esc(r.place));
-        return '<li class="up-item up-item--cal up-item--cal-only" role="button" tabindex="0" data-cal="1" aria-label="' + esc(r.title) + ' — 네이버 캘린더 전용 일정">' + dateCell
+        /* 2026-11-25 — 직접 추가한 일정은 줄을 누르면 고치기, 끝의 × 로 지우기(되돌리기 가능). */
+        return '<li class="up-item up-item--cal up-item--cal-only" role="button" tabindex="0" data-cal="1"'
+          + (r.evId ? ' data-ev="' + esc(r.evId) + '"' : '')
+          + ' aria-label="' + esc(r.title) + (r.evId ? ' — 직접 추가한 일정 · 눌러서 고치기' : ' — 네이버 캘린더 전용 일정') + '">' + dateCell
           + '<span class="up-body"><span class="up-cal-title">' + esc(r.title) + '</span>'
           + '<span class="up-cal-meta">'
+          + (r.meet ? '<span class="up-meet">회의</span>' : '')
           + (when.length ? '<span class="up-cal-when">' + when.join(' · ') + '</span>' : '')
-          + '</span></span>' + dday + '</li>';
+          + '</span></span>' + dday
+          + (r.evId ? '<button class="up-x" type="button" data-act="calev-del" data-ev="' + esc(r.evId) + '" aria-label="' + esc(r.title) + ' 일정 지우기" title="이 일정 지우기">&#10005;</button>' : '')
+          + '</li>';
       }
       var it = r.item, deadTxt = '';
       if (it.deadline && !applied(it)) {
@@ -6452,8 +6543,13 @@ var MUNHAK_NOT = ["8954670474"];
     upListEl.addEventListener('click', function(e){
       var li = e.target.closest ? e.target.closest('.up-item') : null;
       if (!li) return;
+      /* 직접 추가한 일정의 × — 줄 클릭(고치기)보다 먼저 받는다 */
+      var del = e.target.closest ? e.target.closest('[data-act="calev-del"]') : null;
+      if (del) { removeCalev(del.getAttribute('data-ev')); return; }
       var id = li.getAttribute('data-id');
       if (id) { goToCard(id); return; }
+      var evId = li.getAttribute('data-ev');
+      if (evId) { openCalevForm(evId); return; }
       if (li.getAttribute('data-cal')) toast('네이버 캘린더 전용 일정이에요');
     });
     upListEl.addEventListener('keydown', function(e){
@@ -9080,14 +9176,16 @@ var MUNHAK_NOT = ["8954670474"];
          소품(prop_...) 자리도 같이 가도록 책 id만 추리지 않고 그대로 보낸다. */
       customOrder: state.customOrder.slice(), customOrderAt: state.customOrderAt || '',
       /* 2026-11-25 — 공부 탭 주제(연결한 자료 id·공부 메모)도 기기 간에 함께 간다 */
-      study: state.study };
+      study: state.study,
+      /* 2026-11-25 — '다가오는 일정'에 직접 추가한 일정도 기기 간에 함께 간다 */
+      calev: state.calev };
   }
 
   /* Gist 내용을 이 기기에 병합 — 항목은 updatedAt 이 큰 쪽, 삭제 목록은 합집합 */
   function applySyncPayload(remote){
     if (!remote || remote.app !== APP_ID) return false;
     if (!remote.items && !remote.ov && !remote.deleted && !remote.brief && !remote.lemon
-        && !remote.customOrder && !remote.study) return false;
+        && !remote.customOrder && !remote.study && !remote.calev) return false;
     var changed = false, k, idx, f, id, local, r, stamp;
     var del = remote.deleted || [];
     /* 2026-11-22 현대문학 네 권 복구 — 다른 기기에 남은 옛 '지움' 기록이 되살린 카드를 다시 지우지 못하게 한다.
@@ -9119,6 +9217,23 @@ var MUNHAK_NOT = ["8954670474"];
       if (String(rst.updated || '') > String(lst.updated || '')) {
         lst.title = rst.title; lst.sub = rst.sub; lst.memo = rst.memo;
         lst.linkedIds = rst.linkedIds; lst.updated = rst.updated;
+        changed = true;
+      }
+    }
+    /* 2026-11-25 — '다가오는 일정'에 직접 추가한 일정도 같은 방식으로: 지운 id 는 걷어 내고,
+       남은 일정은 마지막으로 고친(updated) 쪽을 따른다. */
+    for (k = state.calev.length - 1; k >= 0; k--) {
+      if (state.deleted.indexOf(state.calev[k].id) >= 0) { state.calev.splice(k, 1); changed = true; }
+    }
+    var rce = Array.isArray(remote.calev) ? remote.calev : [], rcv, lcv;
+    for (k = 0; k < rce.length; k++) {
+      rcv = calevNorm(rce[k]);
+      if (!rcv || state.deleted.indexOf(rcv.id) >= 0) continue;
+      lcv = calevById(rcv.id);
+      if (!lcv) { state.calev.push(rcv); changed = true; continue; }
+      if (String(rcv.updated || '') > String(lcv.updated || '')) {
+        lcv.date = rcv.date; lcv.title = rcv.title; lcv.time = rcv.time;
+        lcv.place = rcv.place; lcv.meet = rcv.meet; lcv.updated = rcv.updated;
         changed = true;
       }
     }
@@ -9472,7 +9587,8 @@ var MUNHAK_NOT = ["8954670474"];
       lemon: state.lemon,
       customOrder: state.customOrder,      /* 2026-11-23 — '내 순서' 책꽂이 순서 */
       customOrderAt: state.customOrderAt,
-      study: state.study                   /* 2026-11-25 — 공부 탭 주제 카드 */
+      study: state.study,                  /* 2026-11-25 — 공부 탭 주제 카드 */
+      calev: state.calev                   /* 2026-11-25 — '다가오는 일정'에 직접 추가한 일정 */
     };
     var text = JSON.stringify(payload, null, 1);
     var blob = new Blob([text], { type: 'application/json' });
@@ -9520,6 +9636,14 @@ var MUNHAK_NOT = ["8954670474"];
             }
             for (var sj = 0; sj < STUDY_SEED.length; sj++) {
               if (state.deleted.indexOf(STUDY_SEED[sj].id) < 0 && !studyById(STUDY_SEED[sj].id)) state.study.push(studyNorm(STUDY_SEED[sj]));
+            }
+          }
+          /* 2026-11-25 — 직접 추가한 일정도 백업과 함께 복원한다(없는 옛 백업이면 지금 것을 그대로 둔다) */
+          if (parsed && Array.isArray(parsed.calev)) {
+            state.calev = [];
+            for (var ci = 0; ci < parsed.calev.length; ci++) {
+              var cn = calevNorm(parsed.calev[ci]);
+              if (cn && !calevById(cn.id) && state.deleted.indexOf(cn.id) < 0) state.calev.push(cn);
             }
           }
           normBrief();
@@ -9742,9 +9866,74 @@ var MUNHAK_NOT = ["8954670474"];
   if (sectionsEl) sectionsEl.addEventListener('change', function(e){
     if (e.target && e.target.classList && e.target.classList.contains('st-memo')) persist();
   });
+  /* ────────────────────────── 다가오는 일정 직접 추가 (2026-11-25 은유 님 요청) ────────────────────────── */
+  var calevEl = document.getElementById('calevModal');
+  var calevFormEl = document.getElementById('calevForm');
+  var calevEditing = '';
+  function openCalevForm(id){
+    var ev = id ? calevById(id) : null;
+    calevEditing = ev ? ev.id : '';
+    document.getElementById('calevFormTitle').textContent = ev ? '일정 고치기' : '일정 추가';
+    document.getElementById('ceDate').value = ev ? ev.date : ymdLocal(new Date());
+    document.getElementById('ceTitle').value = ev ? ev.title : '';
+    document.getElementById('ceTime').value = ev ? (ev.time || '') : '';
+    document.getElementById('cePlace').value = ev ? (ev.place || '') : '';
+    document.getElementById('ceMeet').checked = !!(ev && ev.meet);
+    if (calevEl) calevEl.hidden = false;
+    setTimeout(function(){ var el = document.getElementById('ceTitle'); if (el) el.focus(); }, 30);
+  }
+  function closeCalevForm(){ if (calevEl) calevEl.hidden = true; calevEditing = ''; }
+  function removeCalev(id){
+    var idx = -1, ev = null, k;
+    for (k = 0; k < state.calev.length; k++) { if (state.calev[k].id === id) { idx = k; ev = state.calev[k]; } }
+    if (idx < 0 || !ev) return;
+    state.calev.splice(idx, 1);
+    if (state.deleted.indexOf(id) < 0) state.deleted.push(id);
+    persist();
+    render();
+    var gone = ev.title.length > 18 ? ev.title.slice(0, 18) + '…' : ev.title;
+    toast('‘' + gone + '’ 일정 지움', '되돌리기', function(){
+      state.calev.splice(Math.min(idx, state.calev.length), 0, ev);
+      var di = state.deleted.indexOf(id);
+      if (di >= 0) state.deleted.splice(di, 1);
+      persist();
+      render();
+    });
+  }
+  on('upAdd', 'click', function(){ openCalevForm(''); });
+  if (calevEl) calevEl.addEventListener('click', function(e){ if (e.target === calevEl) closeCalevForm(); });
+  on('ceCancel', 'click', closeCalevForm);
+  if (calevFormEl) calevFormEl.addEventListener('submit', function(e){
+    e.preventDefault();
+    function ceTrim(v){ return String(v == null ? '' : v).replace(/\s+/g, ' ').trim(); }
+    var dateEl = document.getElementById('ceDate');
+    var titleEl = document.getElementById('ceTitle');
+    var date = String(dateEl.value || '').trim();
+    var title = ceTrim(titleEl.value);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { toast('날짜를 골라 주세요'); dateEl.focus(); return; }
+    if (!title) { toast('일정 제목을 적어 주세요'); titleEl.focus(); return; }
+    var time = ceTrim(document.getElementById('ceTime').value);
+    var place = ceTrim(document.getElementById('cePlace').value);
+    var meet = document.getElementById('ceMeet').checked ? 1 : 0;
+    var now = new Date().toISOString();
+    if (calevEditing) {
+      var ev = calevById(calevEditing);
+      if (ev) { ev.date = date; ev.title = title; ev.time = time; ev.place = place; ev.meet = meet; ev.updated = now; }
+      toast('일정을 고쳤습니다 · ' + title);
+    } else {
+      state.calev.push({ id: 'ce' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4),
+        date: date, title: title, time: time, place: place, meet: meet, created: now, updated: now });
+      toast('일정을 추가했습니다 · ' + title);
+    }
+    closeCalevForm();
+    persist();
+    render();
+  });
+
   document.addEventListener('keydown', function(e){
     if (e.key !== 'Escape') return;
-    if (stlEl && !stlEl.hidden) closeStudyLink();
+    if (calevEl && !calevEl.hidden) closeCalevForm();
+    else if (stlEl && !stlEl.hidden) closeStudyLink();
     else if (studyModalEl && !studyModalEl.hidden) closeStudyForm();
   });
 
