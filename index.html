@@ -1406,6 +1406,47 @@
     .thumb{flex-basis:62px;width:62px}
     .brief{background:#fff;color:#000;box-shadow:none;border:1px solid #ccc}
   }
+  /* ───────────── 공부 탭 (2026-11-25 은유 님 요청) ─────────────
+     주제(예: 로힝야)별로 아카이브 자료를 묶어 읽고 메모하는 탭.
+     기존 카드·여백·글씨 크기 규칙은 건드리지 않고, 이 탭에서만 쓰는 클래스만 더한다. */
+  .tag--study{background:var(--green-w);color:var(--green-2)}
+  .sec-head > .study-new{margin-left:auto;height:30px;font-size:12px;padding:0 13px}
+  .grid--study{grid-template-columns:repeat(auto-fill,minmax(min(420px,100%),1fr))}
+  .card--study{gap:9px}
+  .card--study .card-title{margin:0;font-size:17px}
+  .study-when{font-size:11.5px;font-weight:600;color:#71717A;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+  .st-list{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:1px}
+  .st-row{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--line);min-width:0}
+  .st-row > .tag{flex:0 0 auto}
+  .st-name{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:600;line-height:1.45;color:var(--ink-2);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .st-state{flex:0 0 auto;font-size:10.5px;font-weight:700;color:#A1A1AA;white-space:nowrap}
+  .st-row .mini{flex:0 0 auto}
+  .st-x{flex:0 0 auto;width:22px;height:22px;padding:0;border:0;border-radius:999px;background:none;
+    color:#A1A1AA;font:inherit;font-size:12px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .st-x:hover{background:#FFF1F2;color:#BE123C}
+  .st-empty{margin:0;padding:10px 0;font-size:11.5px;color:#A1A1AA}
+  .st-add{align-self:flex-start;font:inherit;font-size:11.5px;font-weight:700;color:var(--green-2);
+    background:var(--green-w);border:1px solid #A7F3D0;border-radius:999px;padding:5px 11px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .st-add:hover{background:#D1FAE5;border-color:#6EE7B7}
+  .st-memo-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#A1A1AA;margin-top:2px}
+  .st-memo{width:100%;min-height:92px;font:inherit;font-size:12.5px;line-height:1.62;color:var(--ink);
+    background:#F7F7F8;border:1px solid transparent;border-radius:12px;padding:10px 12px;resize:vertical}
+  .st-memo::placeholder{color:#A1A1AA}
+  .st-memo:focus{outline:none;background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
+  .st-count{font-size:11px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
+  .st-pick{display:flex;flex-direction:column;max-height:44vh;overflow-y:auto;border-top:1px solid var(--line)}
+  .st-pick-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;
+    border-bottom:1px solid var(--line);padding:9px 2px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .st-pick-row:hover{background:#FAFAFA}
+  .st-pick-row > .tag{flex:0 0 auto}
+  .st-pick-row .st-name{color:var(--ink)}
+  .st-pick-empty{padding:14px 2px;font-size:12px;color:#A1A1AA}
+  @media (max-width:640px){
+    .st-state{display:none}
+    .sec-head > .study-new{height:26px;font-size:11px;padding:0 9px}
+  }
 </style>
 </head>
 <body>
@@ -1839,6 +1880,41 @@
   </form>
 </div>
 
+<!-- 공부 탭 — 새 주제 만들기 · 주제 고치기 (2026-11-25) -->
+<div class="modal" id="studyModal" hidden>
+  <form class="sheet" id="studyForm" novalidate>
+    <h2 id="studyFormTitle">새 공부 주제</h2>
+    <p class="hint">주제 이름을 적고, 카드에서 아카이브 자료를 골라 붙이면 됩니다.</p>
+    <div class="field full">
+      <label for="stTitleIn">주제</label>
+      <input id="stTitleIn" type="text" placeholder="예: 로힝야" required>
+    </div>
+    <div class="field full">
+      <label for="stSubIn">한 줄 설명 (선택)</label>
+      <input id="stSubIn" type="text" placeholder="예: ICJ 집단학살 판결 · 성폭력 보고서 · 미얀마 배경">
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn--ghost" type="button" id="stCancel">취소</button>
+      <button class="btn btn--dark" type="submit">저장</button>
+    </div>
+  </form>
+</div>
+
+<!-- 공부 탭 — 기존 아카이브 항목을 검색해 바로 연결하는 가벼운 패널 (2026-11-25) -->
+<div class="modal" id="studyLinkModal" hidden>
+  <div class="sheet" id="studyLinkSheet" role="dialog" aria-modal="true" aria-labelledby="stlTitle">
+    <h2 id="stlTitle">자료 연결</h2>
+    <p class="hint">제목·키워드로 찾아 누르면 바로 연결됩니다. 여러 개를 이어서 고를 수 있어요.</p>
+    <div class="field full">
+      <input id="stlQ" type="search" placeholder="제목 · 저자 · 키워드로 찾기" autocomplete="off" aria-label="연결할 자료 찾기">
+    </div>
+    <div class="st-pick" id="stlList"></div>
+    <div class="sheet-foot">
+      <button class="btn btn--ghost" type="button" id="stlClose">닫기</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 (function(){
@@ -1884,7 +1960,10 @@
     video: { num:'04', label:'영상·기타자료', statuses:['시청 전','시청 중','시청 완료'] },
     show:  { num:'05', label:'공연·전시·영화', statuses:['관심','예매 완료','관람 완료'] },
     book:  { num:'06', label:'책',       statuses:['관심','읽는 중','미독','완독'] },
-    memo:  { num:'07', label:'메모',     statuses:['메모'] }
+    memo:  { num:'07', label:'메모',     statuses:['메모'] },
+    /* 2026-11-25 — 공부 탭. 아카이브 항목(SEED)과 섞이지 않는 '주제 카드' 목록이라
+       상태 필터는 쓰지 않는다(빈 배열). */
+    study: { num:'08', label:'공부',     statuses:[] }
   };
   /* 메뉴 순서(2026-11-18): 전체 · 학회·포럼 · 대학원·논문 · 기사·뉴스레터 · 영상·기타자료 · 공연·전시 · 책 · 메모 */
   var CAT_ORDER = ['forum','grad','news','video','show','book','memo'];
@@ -2136,6 +2215,9 @@
   }
   var state = {
     items: [],    deleted: [],
+    /* 2026-11-25 — 공부 탭의 주제 카드 배열. SEED·state.items 와 완전히 따로 둔다
+       (그래서 '전체 1241'·다른 탭 건수·검색·정렬 어디에도 섞이지 않는다). */
+    study: [],
     /* 아침 브리핑에서 체크한 항목 — '날짜|문구' 키에 시각(ms)을 값으로 둔다.
        양수 = 완료, 음수 = 되돌림(기기 간 병합은 절댓값이 큰 쪽을 남긴다) */
     brief: {},
@@ -2318,6 +2400,128 @@
     it.updatedAt = stamp;
   }
 
+  /* ────────────────────────── 공부 탭 (2026-11-25 은유 님 요청) ──────────────────────────
+     아카이브 항목(SEED + 직접 담은 것)을 주제별로 묶어 읽고, 카드마다 공부 메모를 적는 탭.
+     주제는 state.study 에 따로 두어 기존 SEED(1241건)의 건수·검색·정렬에 섞이지 않는다.
+     주제를 지우면 state.deleted 에 id 를 남겨 기기 간 동기화·재배포에도 되살아나지 않게 한다. */
+  var STUDY_SEED = [{
+    id: 'st20261125_1',
+    title: '로힝야',
+    sub: 'ICJ 집단학살 판결 · 성폭력 보고서 · 미얀마 배경',
+    /* 아카이브의 로힝야·미얀마 자료 — 영어 칼럼 · ICJ 정리 메모 · 성폭력 보고서(PDF) ·
+       미얀마 강연 영상 · ICJ 판결 기사 */
+    linkedIds: ['n20261125_en1', 'm20261121_1', 'v20261125_1', 'v20261118_10', 'n20261121_5'],
+    memo: '',
+    created: '2026-11-25T03:00:00.000Z',
+    updated: '2026-11-25T03:00:00.000Z'
+  }];
+
+  function studyNorm(o){
+    if (!o || typeof o !== 'object') return null;
+    var t = {
+      id: String(o.id || ('st' + Math.random().toString(36).slice(2, 9))),
+      title: String(o.title == null ? '' : o.title),
+      sub: String(o.sub == null ? '' : o.sub),
+      memo: String(o.memo == null ? '' : o.memo),
+      linkedIds: [],
+      created: String(o.created == null ? '' : o.created),
+      updated: String(o.updated == null ? '' : o.updated)
+    };
+    if (!t.title.trim()) return null;
+    var a = Array.isArray(o.linkedIds) ? o.linkedIds : [], i, v;
+    for (i = 0; i < a.length; i++) {
+      v = String(a[i] == null ? '' : a[i]);
+      if (v && t.linkedIds.indexOf(v) < 0) t.linkedIds.push(v);
+    }
+    return t;
+  }
+  function studyById(id){
+    for (var k = 0; k < state.study.length; k++) { if (state.study[k].id === id) return state.study[k]; }
+    return null;
+  }
+  /* 연결된 id 로 지금 아카이브 항목을 찾는다 — 직접 담은 항목의 상태가 먼저, 없으면 기본 데이터 */
+  function studyItemOf(id){
+    if (state.deleted.indexOf(id) >= 0) return null;
+    return byId(id) || SEED_MAP[id] || null;
+  }
+  function studyDate(s){
+    var d = s ? new Date(s) : null;
+    if (!d || isNaN(d.getTime())) return '';
+    return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate());
+  }
+  /* 카드에 붙는 배지 — 다른 탭 카드와 같은 배지 규칙을 그대로 쓴다 */
+  function studyBadge(it){
+    var label = (META[it.cat] && META[it.cat].label) || '자료', cls = 'tag--' + it.cat, k;
+    if (it.cat === 'grad') { k = kindOf(it); label = k; cls = (k === '대학원') ? 'tag--grad' : 'tag--paper'; }
+    else if (it.cat === 'show') { k = kindOf(it); label = k; cls = (k === '전시') ? 'tag--exhibit' : 'tag--show'; }
+    else if (it.cat === 'video') { k = kindOf(it); label = k; cls = (k === '기타자료') ? 'tag--doc' : 'tag--video'; }
+    else if (it.cat === 'news') { k = kindOf(it); label = k; cls = (k === '뉴스레터') ? 'tag--letter' : ((k === '판례') ? 'tag--case' : 'tag--news'); }
+    else if (it.cat === 'memo') { label = '메모'; cls = 'tag--memo'; }
+    else if (it.cat === 'book') { label = '책'; cls = 'tag--book'; }
+    return '<span class="tag ' + cls + '">' + esc(label) + '</span>';
+  }
+  /* 연결된 자료 한 줄 — 배지 · 제목 · 현재 상태 · 열기 · 연결 해제(×) */
+  function studyRowHTML(id){
+    var it = studyItemOf(id);
+    var x = '<button class="st-x" type="button" data-act="study-unlink" data-id="' + esc(id) + '" aria-label="연결 해제" title="연결 해제">&#10005;</button>';
+    if (!it) {
+      return '<div class="st-row" data-id="' + esc(id) + '"><span class="tag">자료</span>'
+        + '<span class="st-name">지운 자료 (' + esc(id) + ')</span>' + x + '</div>';
+    }
+    var h = '<div class="st-row" data-id="' + esc(id) + '">' + studyBadge(it)
+      + '<span class="st-name" title="' + esc(it.title) + '">' + esc(it.title) + '</span>'
+      + '<span class="st-state">' + esc(it.status || '') + '</span>';
+    var u = it.url || it.extraUrl || '';
+    if (u) h += '<a class="mini mini--open" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">열기</a>';
+    else if (it.cat === 'memo') h += '<button class="mini" type="button" data-act="study-memo-open" data-id="' + esc(id) + '" title="메모 탭에서 이 메모를 엽니다">열기</button>';
+    h += x + '</div>';
+    return h;
+  }
+  function studyCardHTML(t){
+    var made = studyDate(t.created), upd = studyDate(t.updated);
+    var when = made ? ('만든 날 ' + made + (upd && upd !== made ? ' · 고침 ' + upd : '')) : '';
+    var h = '<article class="card card--study" data-study="' + esc(t.id) + '">';
+    h += '<div class="card-top"><span class="tag tag--study">공부</span>';
+    if (when) h += '<span class="study-when">' + when + '</span>';
+    h += '</div>';
+    h += '<h3 class="card-title">' + esc(t.title) + '</h3>';
+    h += '<span class="accent accent--' + (t.linkedIds.length ? 'lemon' : 'soft') + '" aria-hidden="true"></span>';
+    if (t.sub) h += '<p class="line line--dim">' + esc(t.sub) + '</p>';
+    h += '<div class="st-list">';
+    h += t.linkedIds.length ? t.linkedIds.map(studyRowHTML).join('')
+      : '<p class="st-empty">연결된 자료가 없습니다. 아래 ‘+ 자료 연결’로 아카이브 자료를 붙여 보세요.</p>';
+    h += '</div>';
+    h += '<button class="st-add" type="button" data-act="study-link">+ 자료 연결</button>';
+    h += '<label class="st-memo-label" for="stm-' + esc(t.id) + '">공부 메모</label>';
+    h += '<textarea class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '" rows="5"'
+      + ' placeholder="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">' + esc(t.memo) + '</textarea>';
+    h += '<div class="card-foot"><span class="st-count">자료 ' + t.linkedIds.length + '건</span><span class="sp"></span>'
+      + '<button class="mini" type="button" data-act="study-edit">편집</button>'
+      + '<button class="mini mini--del" type="button" data-act="study-del">지우기</button></div>';
+    h += '</article>';
+    return h;
+  }
+  function studySectionHTML(){
+    var h = '<section class="sec" data-cat="study">';
+    h += '<div class="sec-head"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS.study || '08') + '</span>'
+      + '<h2 class="sec-title">' + META.study.label + '</h2>'
+      + '<span class="sec-count">' + state.study.length + '개 주제</span>'
+      + '<button class="btn btn--dark study-new" type="button" data-act="study-new">+ 새 주제</button>'
+      + '</div>';
+    if (!state.study.length) {
+      h += '<div class="empty"><b>아직 공부 주제가 없습니다</b>위의 <b>+ 새 주제</b>로 주제를 만들고 아카이브 자료를 붙여 보세요.</div>';
+      return h + '</section>';
+    }
+    h += '<div class="grid grid--study">' + state.study.map(studyCardHTML).join('') + '</div>';
+    return h + '</section>';
+  }
+  /* 자료 연결 패널의 한 줄 — 누르면 바로 연결 */
+  function studyPickHTML(it){
+    return '<button class="st-pick-row" type="button" data-pick="' + esc(it.id) + '">' + studyBadge(it)
+      + '<span class="st-name">' + esc(it.title) + '</span>'
+      + '<span class="st-state">' + esc(it.status || '') + '</span></button>';
+  }
+
   function load(){
     var saved = null;
     var raw = readStore(STORE);
@@ -2419,6 +2623,20 @@
       }
     } else {
       state.items = SEED.map(function(s){ return norm(clone(s)); }).filter(function(x){ return !isNotWanted(x); });
+    }
+
+    /* 2026-11-25 — 공부 탭 주제. 저장본(Gist·이 기기)이 있으면 그것을, 없으면 기본 주제(로힝야)를.
+       지운 주제는 state.deleted 에 id 가 남아 있어 다시 생기지 않는다. */
+    state.study = [];
+    if (saved && Array.isArray(saved.study)) {
+      for (j = 0; j < saved.study.length; j++) {
+        var st0 = studyNorm(saved.study[j]);
+        if (st0 && !studyById(st0.id)) state.study.push(st0);
+      }
+    }
+    for (j = 0; j < STUDY_SEED.length; j++) {
+      if (state.deleted.indexOf(STUDY_SEED[j].id) >= 0) continue;
+      if (!studyById(STUDY_SEED[j].id)) { state.study.push(studyNorm(STUDY_SEED[j])); loadChanged = true; }
     }
 
     /* 북적북적 반영: 이 기기에 남아 있던 상태를 완독으로 한 번만 맞춘다 (메모는 그대로) */
@@ -3290,7 +3508,8 @@
       brief: state.brief,
       lemon: state.lemon,
       customOrder: state.customOrder,      /* 2026-11-23 — '내 순서' 책꽂이 순서 */
-      customOrderAt: state.customOrderAt
+      customOrderAt: state.customOrderAt,
+      study: state.study                   /* 2026-11-25 — 공부 탭 주제 카드(공부 메모 포함) */
     };
     var ok = writeStore(STORE, JSON.stringify(payload));
     if (ok) stampSaved();
@@ -4125,7 +4344,9 @@
     book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3Z"/></svg>',
     news: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h15a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-9a2 2 0 0 0-2 2v14a2 2 0 0 1-2 2Z"/><path d="M4 22a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h2"/><path d="M18 14h-7"/><path d="M15 18h-4"/><path d="M11 8h5v3h-5z"/></svg>',
     grad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12.2V17c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.8"/><path d="M22 10v5"/></svg>',
-    memo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H16l4 4v13.5A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5Z"/><path d="M8 9h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>'
+    memo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H16l4 4v13.5A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5Z"/><path d="M8 9h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>',
+    /* 2026-11-25 공부 탭 — 연필(직접 공부한 것을 적는 탭) */
+    study: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'
   };
 
   function navBtn(cat, label, n){
@@ -4146,6 +4367,11 @@
         + META[c].label + ' <span class="n">' + totals[c] + '</span></button>';
       nav += navBtn(c, META[c].label, totals[c]);
     });
+    /* 2026-11-25 — 공부 탭은 아카이브 항목이 아니라 주제 카드라 건수를 따로 센다.
+       사이드바 '메모' 아래 · 모바일 탭 줄 맨 끝에 붙는다. */
+    html += '<button class="tab" type="button" data-cat="study" aria-pressed="' + (state.cat === 'study') + '">'
+      + META.study.label + ' <span class="n">' + state.study.length + '</span></button>';
+    nav += navBtn('study', META.study.label, state.study.length);
     var tabsEl = document.getElementById('tabs');
     tabsEl.innerHTML = html;
     /* 폭이 좁은 화면에서 고른 탭(영상·기타자료 등)이 잘려 보이지 않게 가로로만 따라간다 */
@@ -4170,7 +4396,7 @@
 
   function renderStatusChips(){
     var wrapEarly = document.getElementById('statusChips');
-    if (state.cat === 'memo') { wrapEarly.innerHTML = ''; return; }   /* 메모는 상태가 하나뿐 */
+    if (state.cat === 'memo' || state.cat === 'study') { wrapEarly.innerHTML = ''; return; }   /* 메모·공부는 상태 필터를 쓰지 않는다 */
     var list = [];
     if (state.cat === 'all') {
       CAT_ORDER.forEach(function(c){
@@ -4294,7 +4520,7 @@
   function placeSels(){
     if (!selsBox) return;
     var head = null;
-    if (state.cat !== 'all' && sectionsEl) {
+    if (state.cat !== 'all' && state.cat !== 'study' && sectionsEl) {
       var sec = sectionsEl.querySelector('.sec[data-cat="' + state.cat + '"]');
       if (sec) head = sec.querySelector('.sec-head');
     }
@@ -4306,6 +4532,8 @@
   }
 
   function renderSections(res){
+    /* 2026-11-25 — 공부 탭은 아카이브 카드 목록이 아니라 주제 카드만 그린다 */
+    if (state.cat === 'study') { sectionsEl.innerHTML = studySectionHTML(); return; }
     var order = state.cat === 'all' ? CAT_ORDER : [state.cat];
     var html = '', idx = 0;
     order.forEach(function(cat){
@@ -7017,7 +7245,7 @@ var MUNHAK_NOT = ["8954670474"];
     syncSortSel();   /* 책 탭에서만 출판사별·장르별 선택지 */
     /* 상태·서가·정렬 줄은 카테고리를 골랐을 때만 — 전체/메모에서는 접어 둔다 */
     var filtersEl = document.getElementById('filters');
-    if (filtersEl) filtersEl.hidden = (state.cat === 'all' || state.cat === 'memo');
+    if (filtersEl) filtersEl.hidden = (state.cat === 'all' || state.cat === 'memo' || state.cat === 'study');
     /* 브리핑·다가오는 일정(.hero)은 '전체'에서만 펼친다 — 카테고리를 고르면 바로 그 목록만.
        모바일에서 검색 중일 때도 숨긴다(applyHero). */
     if (!isSearching()) searchFold = {};   /* 검색 중 임시 접힘은 검색어를 지우면 사라진다 */
@@ -7033,14 +7261,17 @@ var MUNHAK_NOT = ["8954670474"];
     upFade();   /* 브리핑 목록이 다시 그려진 뒤에야 스크롤 여부(아래 흐림)를 알 수 있다 */
     var totalShown = 0, c;
     for (c = 0; c < CAT_ORDER.length; c++) totalShown += res[CAT_ORDER[c]].length;
-    if (totalShown === 0 && state.cat === 'memo') {
+    /* 2026-11-25 — 공부 탭은 주제 카드만 그리므로 '스크랩 없음' 안내를 띄우지 않는다 */
+    if (state.cat === 'study') {
+      emptyEl.hidden = true;
+    } else if (totalShown === 0 && state.cat === 'memo') {
       emptyEl.innerHTML = '<b>아직 메모가 없습니다</b>오른쪽 위 <b>+ 새 스크랩</b>을 누르면 제목·본문을 적어 바로 저장할 수 있습니다.';
     } else if (totalShown === 0 && state.cat === 'video') {
       emptyEl.innerHTML = '<b>아직 영상이 없습니다</b>오른쪽 위 <b>+ 새 스크랩</b>에서 <b>영상·기타자료</b>를 고르고 유튜브 링크를 넣으면 썸네일까지 자동으로 붙습니다.';
     } else {
       emptyEl.innerHTML = '<b>조건에 맞는 스크랩이 없습니다</b>검색어나 필터를 지우면 다시 보입니다.';
     }
-    emptyEl.hidden = totalShown > 0;
+    if (state.cat !== 'study') emptyEl.hidden = totalShown > 0;
     syncBCard();   /* 카드 팝업이 떠 있으면 지금 상태로 다시 그린다 */
   }
 
@@ -8295,14 +8526,16 @@ var MUNHAK_NOT = ["8954670474"];
       lemon: state.lemon,
       /* 2026-11-23 — 책꽂이 '내 순서'도 기기 간에 함께 간다(마지막으로 옮긴 기기가 이긴다).
          소품(prop_...) 자리도 같이 가도록 책 id만 추리지 않고 그대로 보낸다. */
-      customOrder: state.customOrder.slice(), customOrderAt: state.customOrderAt || '' };
+      customOrder: state.customOrder.slice(), customOrderAt: state.customOrderAt || '',
+      /* 2026-11-25 — 공부 탭 주제(연결한 자료 id·공부 메모)도 기기 간에 함께 간다 */
+      study: state.study };
   }
 
   /* Gist 내용을 이 기기에 병합 — 항목은 updatedAt 이 큰 쪽, 삭제 목록은 합집합 */
   function applySyncPayload(remote){
     if (!remote || remote.app !== APP_ID) return false;
     if (!remote.items && !remote.ov && !remote.deleted && !remote.brief && !remote.lemon
-        && !remote.customOrder) return false;
+        && !remote.customOrder && !remote.study) return false;
     var changed = false, k, idx, f, id, local, r, stamp;
     var del = remote.deleted || [];
     /* 2026-11-22 현대문학 네 권 복구 — 다른 기기에 남은 옛 '지움' 기록이 되살린 카드를 다시 지우지 못하게 한다.
@@ -8319,6 +8552,23 @@ var MUNHAK_NOT = ["8954670474"];
     }
     for (k = state.items.length - 1; k >= 0; k--) {
       if (state.deleted.indexOf(state.items[k].id) >= 0) { state.items.splice(k, 1); changed = true; }
+    }
+    /* 2026-11-25 — 공부 탭 주제도 지운 것으로 표시된 id 는 걷어 내고, 남은 주제는
+       마지막으로 고친(updated) 쪽을 따른다(공부 메모·연결한 자료 포함). */
+    for (k = state.study.length - 1; k >= 0; k--) {
+      if (state.deleted.indexOf(state.study[k].id) >= 0) { state.study.splice(k, 1); changed = true; }
+    }
+    var rstudy = Array.isArray(remote.study) ? remote.study : [], rst, lst;
+    for (k = 0; k < rstudy.length; k++) {
+      rst = studyNorm(rstudy[k]);
+      if (!rst || state.deleted.indexOf(rst.id) >= 0) continue;
+      lst = studyById(rst.id);
+      if (!lst) { state.study.push(rst); changed = true; continue; }
+      if (String(rst.updated || '') > String(lst.updated || '')) {
+        lst.title = rst.title; lst.sub = rst.sub; lst.memo = rst.memo;
+        lst.linkedIds = rst.linkedIds; lst.updated = rst.updated;
+        changed = true;
+      }
     }
     var ritems = remote.items || [];
     for (k = 0; k < ritems.length; k++) {
@@ -8669,7 +8919,8 @@ var MUNHAK_NOT = ["8954670474"];
       brief: state.brief,
       lemon: state.lemon,
       customOrder: state.customOrder,      /* 2026-11-23 — '내 순서' 책꽂이 순서 */
-      customOrderAt: state.customOrderAt
+      customOrderAt: state.customOrderAt,
+      study: state.study                   /* 2026-11-25 — 공부 탭 주제 카드 */
     };
     var text = JSON.stringify(payload, null, 1);
     var blob = new Blob([text], { type: 'application/json' });
@@ -8708,6 +8959,17 @@ var MUNHAK_NOT = ["8954670474"];
           state.customOrder = (parsed && Array.isArray(parsed.customOrder))
             ? parsed.customOrder.filter(function(x){ return typeof x === 'string' && x; }) : [];
           state.customOrderAt = String((parsed && parsed.customOrderAt) || '');
+          /* 2026-11-25 — 공부 탭 주제도 백업과 함께 복원한다(없는 옛 백업이면 지금 것을 그대로 둔다) */
+          if (parsed && Array.isArray(parsed.study)) {
+            state.study = [];
+            for (var si = 0; si < parsed.study.length; si++) {
+              var sn = studyNorm(parsed.study[si]);
+              if (sn && !studyById(sn.id)) state.study.push(sn);
+            }
+            for (var sj = 0; sj < STUDY_SEED.length; sj++) {
+              if (state.deleted.indexOf(STUDY_SEED[sj].id) < 0 && !studyById(STUDY_SEED[sj].id)) state.study.push(studyNorm(STUDY_SEED[sj]));
+            }
+          }
           normBrief();
           persist();
           render();
@@ -8759,6 +9021,166 @@ var MUNHAK_NOT = ["8954670474"];
   on('exportBtn2', 'click', doExport);
   on('importFile', 'change', function(){ doImport(this); });
   on('importFile2', 'change', function(){ doImport(this); });
+
+  /* ────────────────────────── 공부 탭 조작 (2026-11-25 은유 님 요청) ────────────────────────── */
+  var studyModalEl = document.getElementById('studyModal');
+  var studyFormEl = document.getElementById('studyForm');
+  var stlEl = document.getElementById('studyLinkModal');
+  var studyEditing = '';
+  var stlTopic = '';
+
+  function openStudyForm(id){
+    var t = id ? studyById(id) : null;
+    studyEditing = t ? t.id : '';
+    document.getElementById('studyFormTitle').textContent = t ? '주제 고치기' : '새 공부 주제';
+    document.getElementById('stTitleIn').value = t ? t.title : '';
+    document.getElementById('stSubIn').value = t ? (t.sub || '') : '';
+    if (studyModalEl) studyModalEl.hidden = false;
+    setTimeout(function(){ var el = document.getElementById('stTitleIn'); if (el) el.focus(); }, 30);
+  }
+  function closeStudyForm(){
+    if (studyModalEl) studyModalEl.hidden = true;
+    studyEditing = '';
+  }
+  if (studyModalEl) studyModalEl.addEventListener('click', function(e){ if (e.target === studyModalEl) closeStudyForm(); });
+  on('stCancel', 'click', closeStudyForm);
+  if (studyFormEl) studyFormEl.addEventListener('submit', function(e){
+    e.preventDefault();
+    var titleEl = document.getElementById('stTitleIn');
+    var title = String(titleEl.value || '').replace(/\s+/g, ' ').trim();
+    var sub = String(document.getElementById('stSubIn').value || '').replace(/\s+/g, ' ').trim();
+    if (!title) { titleEl.focus(); return; }
+    var now = new Date().toISOString();
+    if (studyEditing) {
+      var t = studyById(studyEditing);
+      if (t) { t.title = title; t.sub = sub; t.updated = now; }
+      toast('주제를 고쳤습니다');
+    } else {
+      state.study.push({ id: 'st' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4),
+        title: title, sub: sub, linkedIds: [], memo: '', created: now, updated: now });
+      toast('새 주제 「' + title + '」를 만들었습니다');
+    }
+    closeStudyForm();
+    persist();
+    render();
+  });
+
+  /* 자료 연결 패널 — 아카이브 항목을 제목·키워드로 찾아 누르면 바로 붙는다 */
+  function fillStudyLinkList(){
+    var box = document.getElementById('stlList');
+    if (!box) return;
+    var t = studyById(stlTopic);
+    if (!t) { box.innerHTML = ''; return; }
+    var qEl = document.getElementById('stlQ');
+    var q = String(qEl ? qEl.value : '').trim();
+    var out = [], k, it;
+    for (k = 0; k < state.items.length && out.length < 60; k++) {
+      it = state.items[k];
+      if (!it || t.linkedIds.indexOf(it.id) >= 0) continue;
+      if (q && !matchQuery(it, q)) continue;
+      out.push(it);
+    }
+    document.getElementById('stlTitle').textContent = '자료 연결 · ' + t.title;
+    box.innerHTML = out.length
+      ? out.map(studyPickHTML).join('')
+      : '<p class="st-pick-empty">' + (q ? '찾는 자료가 없습니다.' : '연결할 자료가 더 없습니다. 새 스크랩으로 담은 뒤 다시 열어 주세요.') + '</p>';
+  }
+  function openStudyLink(id){
+    var t = studyById(id);
+    if (!t) return;
+    stlTopic = t.id;
+    var qEl = document.getElementById('stlQ');
+    if (qEl) qEl.value = '';
+    fillStudyLinkList();
+    if (stlEl) stlEl.hidden = false;
+    setTimeout(function(){ if (qEl) qEl.focus(); }, 30);
+  }
+  function closeStudyLink(){ if (stlEl) stlEl.hidden = true; stlTopic = ''; }
+  on('stlClose', 'click', closeStudyLink);
+  on('stlQ', 'input', fillStudyLinkList);
+  if (stlEl) stlEl.addEventListener('click', function(e){ if (e.target === stlEl) closeStudyLink(); });
+  on('stlList', 'click', function(e){
+    var b = (e.target && e.target.closest) ? e.target.closest('[data-pick]') : null;
+    if (b) studyLink(stlTopic, b.getAttribute('data-pick'));
+  });
+
+  function studyLink(sid, iid){
+    var t = studyById(sid);
+    if (!t || !iid || t.linkedIds.indexOf(iid) >= 0) return;
+    t.linkedIds.push(iid);
+    t.updated = new Date().toISOString();
+    persist();
+    render();
+    fillStudyLinkList();   /* 방금 붙인 자료는 목록에서 뺴다 */
+    var it = studyItemOf(iid);
+    var nm = it ? String(it.title || '') : '자료';
+    toast((nm.length > 26 ? nm.slice(0, 26) + '…' : nm) + ' 연결');
+  }
+  function studyUnlink(sid, iid){
+    var t = studyById(sid);
+    if (!t) return;
+    t.linkedIds = t.linkedIds.filter(function(x){ return x !== iid; });
+    t.updated = new Date().toISOString();
+    persist();
+    render();
+    toast('연결을 풀었습니다');
+  }
+  function removeStudy(id){
+    var t = studyById(id);
+    if (!t) return;
+    if (!window.confirm('「' + t.title + '」 주제와 적어 둔 공부 메모를 지울까요?\n연결만 풀린 아카이브 자료 자체는 그대로 남습니다.')) return;
+    state.study = state.study.filter(function(x){ return x.id !== id; });
+    if (state.deleted.indexOf(id) < 0) state.deleted.push(id);
+    persist();
+    render();
+    toast('주제를 지웠습니다');
+  }
+  /* 메모 자료의 '열기' — 메모 탭으로 가서 그 메모 카드를 보여 준다 */
+  function studyOpenMemo(id){
+    if (!byId(id)) return;
+    state.q = '';
+    var qEl = document.getElementById('q');
+    if (qEl) qEl.value = '';
+    pickCat('memo');
+    revealCard(id);
+  }
+
+  /* 공부 카드 안의 단추·메모 입력 — 섬션 헤더 안의 '+ 새 주제'까지 여기서 먼저 받는다 */
+  if (sectionsEl) sectionsEl.addEventListener('click', function(e){
+    var tg = e.target;
+    if (!tg || !tg.closest) return;
+    var actEl = tg.closest('[data-act]');
+    if (!actEl) return;
+    var act = String(actEl.getAttribute('data-act') || '');
+    if (act.indexOf('study') !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (act === 'study-new') { openStudyForm(''); return; }
+    var card = actEl.closest('.card--study');
+    var sid = (card && card.getAttribute('data-study')) || '';
+    if (act === 'study-edit') { openStudyForm(sid); return; }
+    if (act === 'study-del') { removeStudy(sid); return; }
+    if (act === 'study-link') { openStudyLink(sid); return; }
+    if (act === 'study-unlink') { studyUnlink(sid, actEl.getAttribute('data-id')); return; }
+    if (act === 'study-memo-open') { studyOpenMemo(actEl.getAttribute('data-id')); return; }
+  });
+  if (sectionsEl) sectionsEl.addEventListener('input', function(e){
+    var tg = e.target;
+    if (!tg || !tg.classList || !tg.classList.contains('st-memo')) return;
+    var t = studyById(tg.getAttribute('data-study-memo'));
+    if (!t) return;
+    t.memo = tg.value;
+    t.updated = new Date().toISOString();
+    persistSoon();
+  });
+  if (sectionsEl) sectionsEl.addEventListener('change', function(e){
+    if (e.target && e.target.classList && e.target.classList.contains('st-memo')) persist();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape') return;
+    if (stlEl && !stlEl.hidden) closeStudyLink();
+    else if (studyModalEl && !studyModalEl.hidden) closeStudyForm();
+  });
 
   /* ────────────────────────── 시작 ────────────────────────── */
   loadSyncCfg();
