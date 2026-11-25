@@ -1,11 +1,11 @@
 {
   "v": 1,
-  "date": "2026-11-25",
-  "updatedAt": "2026-11-25T12:18:33+09:00",
+  "date": "2026-11-26",
+  "updatedAt": "2026-11-26T05:27:39+09:00",
   "counts": {
     "cases": 100,
     "casesUnread": 100,
-    "eng": 2,
+    "eng": 3,
     "articles": 5
   },
   "cases": [
@@ -1030,9 +1030,49 @@
       "summary": "[영어 독해용 · 2026.10.01 원문] 권위주의 정치가 가족·젠더 질서까지 헌법화하며 성평등을 공격하는 현상과, 방어적 민주주의 이론이 어떻게 성평등과 다원주의를 함께 수호할 수 있는지 다룬 국제헌법학회(IACL) 블로그 칼럼.",
       "url": "https://blog-iacl-aidc.org/2026-posts/2026/10/1/militant-democracy-revisited-how-to-defend-gender-equality-from-enemies-within",
       "status": "읽기 전"
+    },
+    {
+      "id": "n20261126_en1",
+      "title": "Varieties of Female Judicial Leadership in the Brazilian Supreme Court",
+      "publisher": "IACL-AIDC Blog",
+      "date": "2026-11-17",
+      "sub": "영어 칼럼",
+      "summary": "브라질 연방대법원 여성 대법관 3인의 리더십 유형과 젠더·사법개혁 역할을 비교 분석한 칼럼.",
+      "url": "https://blog-iacl-aidc.org/2026-posts/2026/11/17/varieties-of-female-judicial-leadership-in-the-brazilian-supreme-court",
+      "status": "읽기 전"
     }
   ],
   "articles": [
+    {
+      "id": "n20261126_1",
+      "title": "[단독] 동성부부 마일리지 합산 거부한 대한항공…인권위 \"차별행위\"",
+      "publisher": "중앙일보",
+      "date": "2026-11-25",
+      "sub": "가족구성권 · 헌법11조",
+      "summary": "인권위가 국내 거주 동성부부의 가족 마일리지 합산 등록을 거부한 대한항공에 헌법 제11조 평등권 침해를 근거로 제도 개선을 권고함.",
+      "url": "https://www.joongang.co.kr/article/25481777",
+      "status": "읽기 전"
+    },
+    {
+      "id": "n20261126_2",
+      "title": "성별정정부터 동성혼까지…법원, 4대 성소수자 재판 기준 세운다",
+      "publisher": "법률미디어",
+      "date": "2026-11-25",
+      "sub": "성소수자 · 사법정책연구원",
+      "summary": "사법정책연구원이 성별정정, 트랜스젠더 병역, 동성 파트너십·혼인 인정 등 4대 성소수자 재판 쟁점을 다룬 비교법 연구총서(2026-16)를 발간함.",
+      "url": "https://lawmedia.kr/news/2564",
+      "status": "읽기 전"
+    },
+    {
+      "id": "h20261126_1",
+      "title": "코스피 6.16% 급락, 4,700선 붕괴…삼성전자·SK하이닉스 10%대 하락",
+      "publisher": "연합인포맥스",
+      "date": "2026-11-25",
+      "sub": "경제 · 증시 속보",
+      "summary": "미 반도체 급락과 관세 불확실성 여파로 코스피가 4,697.51(-6.16%)로 마감하며 외국인 1조8,994억 원 순매도.",
+      "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4446507",
+      "status": "읽기 전"
+    },
     {
       "id": "n20261125_1",
       "title": "\"우리 데이트 비용 아깝잖아\"…비혼 커플들 결국 '파격 선택'",
@@ -1051,36 +1091,6 @@
       "sub": "가족폭력 · 입법",
       "summary": "국무회의에서 성평등가족부의 '가정폭력범죄 반의사불벌죄 적용 배제 검토'가 논의되며, 경찰 인력·예산 보강과 보호시설 확충·사건처리 가이드라인 필요에 공감이 모였다.",
       "url": "https://www.yna.co.kr/view/AKR20261124144400001",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261121_5",
-      "title": "'로힝야족 집단 학살' 첫 인정...\"역사적 판결\" 속 이스라엘 촉각",
-      "publisher": "YTN",
-      "date": "2026-11-21",
-      "sub": "국제법 · 집단학살",
-      "summary": "국제사법재판소(ICJ)가 2017년 미얀마 군부의 로힝야족 탄압을 특정 국가에 대한 사상 첫 집단학살(제노사이드)로 인정했다. ICJ가 '대테러 소탕' 주장을 배척하고 말살 의도를 인정하면서 이스라엘 가자지구 집단학살 재판에도 영향이 예상된다.",
-      "url": "https://naver.me/5fd8DN2y",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261121_1",
-      "title": "서류상 '없는 아이'?…'제도 밖' 국적 없는 아이들",
-      "publisher": "SBS",
-      "date": "2026-11-20",
-      "sub": "가족다양성·아동",
-      "summary": "인지청구 승소 전엔 국적·건강보험 적용이 막히는 미혼모·외국인 부모 아동 등 '제도 밖' 아동이 올해 3,369명으로 집계됐다.",
-      "url": "https://news.sbs.co.kr/news/endPage.do?news_id=N1008856390",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261121_2",
-      "title": "15년 묵은 최저주거기준 손질하나…1인가구 21㎡ 제시",
-      "publisher": "뉴시스",
-      "date": "2026-11-20",
-      "sub": "가족다양성·주거",
-      "summary": "국토부 주거복지정책 토론회에서 기존 '표준가구' 전제를 넘어 한부모·조부모 등 가족 구성 다양성을 반영한 최저주거기준 개편이 논의됐다.",
-      "url": "https://www.newsis.com/view/NISX20261120_0003876847",
       "status": "읽기 전"
     }
   ]
