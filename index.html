@@ -9058,7 +9058,7 @@ var MUNHAK_NOT = ["8954670474"];
     } else {
       state.study.push({ id: 'st' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4),
         title: title, sub: sub, linkedIds: [], memo: '', created: now, updated: now });
-      toast('새 주제 「' + title + '」를 만들었습니다');
+      toast('새 주제를 만들었습니다 · ' + title);
     }
     closeStudyForm();
     persist();
