@@ -13,6 +13,11 @@ status·deleted 를 함께 읽어, 이미 '읽음'으로 바꾼 판례는 다시
     python3 scripts/build_news.py
 를 실행하면 news.json 이 같은 내용으로 다시 만들어진다.
 
+2026-11-25 — 아카이브(SEED)는 공부·기록용으로 두고, 초초이슈·화제 속보는
+`hot_issues.json`(배열)에만 적는다. 이 파일이 있으면 그 항목들을 '기사'로
+합쳐(날짜 최신순, ARTICLES_MAX 안에서) news.json 에만 싣는다 — 웹 탭에는
+안 보이고 아이폰 'TAPO 읽기' 위젯에만 뜬다.
+
 사용: python3 scripts/build_news.py [--check]
   --check : 파일을 쓰지 않고 만들어질 JSON 을 화면에만 보여 준다.
 """
@@ -26,6 +31,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = ROOT / "index.html"
 OUT = ROOT / "news.json"
+HOT = ROOT / "hot_issues.json"   # 웹 아카이브에 넣지 않는 화제·속보 (위젯 전용)
 
 KST = timezone(timedelta(hours=9))
 
@@ -75,6 +81,23 @@ def row(it: dict) -> dict:
     }
 
 
+def load_hot() -> list:
+    """hot_issues.json — 아직 SEED 에 넣지 않는 화제·속보를 읽는다 (없거나 깨졌으면 빈 목록).
+
+    형식: [{"id", "title", "publisher", "date", "sub", "summary", "url", "status"}]
+    """
+    if not HOT.exists():
+        return []
+    try:
+        data = json.loads(HOT.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"hot_issues.json 을 읽지 못했습니다: {e}", file=sys.stderr)
+        return []
+    if not isinstance(data, list):
+        return []
+    return [it for it in data if isinstance(it, dict) and str(it.get("id") or "").strip() and str(it.get("title") or "").strip()]
+
+
 def sort_recent(items: list) -> list:
     """날짜가 늦은 것이 앞. 같은 날짜는 SEED 에 넣은 차례 그대로 (sorted 는 안정 정렬)."""
     def key(it):
@@ -91,9 +114,17 @@ def main() -> int:
     cases = [row(it) for it in news if it.get("kind") == KIND_CASE]
     eng = [row(it) for it in news if it.get("kind") == KIND_ENG]
     articles = [row(it) for it in news if it.get("kind") == KIND_ARTICLE]
+    hot = [row(it) for it in load_hot()]   # 화제·속보 — 위젯에만
 
     eng = sort_recent(eng)[:ENG_MAX]
-    articles = sort_recent(articles)[:ARTICLES_MAX]
+    # 2026-11-25 — SEED 기사 + hot_issues.json 을 합친다(같은 id 는 SEED 쪽 하나만).
+    merged, seen = [], set()
+    for a in articles + hot:
+        if a["id"] and a["id"] in seen:
+            continue
+        seen.add(a["id"])
+        merged.append(a)
+    articles = sort_recent(merged)[:ARTICLES_MAX]
 
     now = datetime.now(KST)
     data = {
