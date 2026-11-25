@@ -1029,6 +1029,11 @@
   }
   .mini:hover{color:var(--ink);background:#F4F4F5}
   .mini--del:hover{color:#BE123C;background:#FFF1F2}
+  /* 2026-11-25 — 연결된 메모·공부 주제로 가는 🔗 단추(연결이 없으면 그리지 않는다) */
+  .mini--link{font-size:13px;line-height:1;padding:4px 7px;color:var(--ink-2)}
+  .mini--link:hover{background:#F4F4F5}
+  .menu--links{min-width:190px;max-width:min(320px,calc(100vw - 20px))}
+  .menu--links button{white-space:normal;line-height:1.45}
   /* 열기 — 편집·지우기와 구분되는 알약 버튼 */
   .mini--open{
     display:inline-flex;align-items:center;gap:3px;white-space:nowrap;
@@ -1436,6 +1441,17 @@
   .st-memo::placeholder{color:#A1A1AA}
   .st-memo:focus{outline:none;background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
   .st-count{font-size:11px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
+  /* 2026-11-25 은유 님 요청 — 메모 칸 아래 '자료 n건 ▾' 단추와 접히는 자료 목록.
+     목록은 기본으로 접혀 있고, 단추를 누를 때만 아래로 펼쳐진다. */
+  .st-toggle{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font:inherit;
+    font-size:11.5px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid transparent;
+    border-radius:999px;padding:5px 11px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:background .15s,border-color .15s}
+  .st-toggle:hover{background:#EDEDEF;border-color:var(--line-2)}
+  .st-toggle:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  .st-toggle .tri{font-size:9px;line-height:1;color:#A1A1AA}
+  .st-fold{display:flex;flex-direction:column;gap:9px}
+  .st-fold[hidden]{display:none}
   .st-pick{display:flex;flex-direction:column;max-height:44vh;overflow-y:auto;border-top:1px solid var(--line)}
   .st-pick-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;
     border-bottom:1px solid var(--line);padding:9px 2px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -2480,25 +2496,35 @@
     h += x + '</div>';
     return h;
   }
+  /* 2026-11-25 은유 님 요청 — 공부 메모를 자료 목록 위(부제 바로 아래)로 올리고, 자료 목록과
+     '+ 자료 연결'은 기본으로 접어 둔다. 접힌 카드에는 '자료 n건 ▾' 단추만 남는다.
+     펼침 상태는 이 화면을 보는 동안만(studyFoldOpen) 기억하고 저장하지 않는다. */
+  var studyFoldOpen = {};
   function studyCardHTML(t){
     var made = studyDate(t.created), upd = studyDate(t.updated);
     var when = made ? ('만든 날 ' + made + (upd && upd !== made ? ' · 고침 ' + upd : '')) : '';
+    var n = t.linkedIds.length, open = !!studyFoldOpen[t.id], boxId = 'stb-' + t.id;
     var h = '<article class="card card--study" data-study="' + esc(t.id) + '">';
     h += '<div class="card-top"><span class="tag tag--study">공부</span>';
     if (when) h += '<span class="study-when">' + when + '</span>';
     h += '</div>';
     h += '<h3 class="card-title">' + esc(t.title) + '</h3>';
-    h += '<span class="accent accent--' + (t.linkedIds.length ? 'lemon' : 'soft') + '" aria-hidden="true"></span>';
+    h += '<span class="accent accent--' + (n ? 'lemon' : 'soft') + '" aria-hidden="true"></span>';
     if (t.sub) h += '<p class="line line--dim">' + esc(t.sub) + '</p>';
-    h += '<div class="st-list">';
-    h += t.linkedIds.length ? t.linkedIds.map(studyRowHTML).join('')
-      : '<p class="st-empty">연결된 자료가 없습니다. 아래 ‘+ 자료 연결’로 아카이브 자료를 붙여 보세요.</p>';
-    h += '</div>';
-    h += '<button class="st-add" type="button" data-act="study-link">+ 자료 연결</button>';
     h += '<label class="st-memo-label" for="stm-' + esc(t.id) + '">공부 메모</label>';
     h += '<textarea class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '" rows="5"'
       + ' placeholder="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">' + esc(t.memo) + '</textarea>';
-    h += '<div class="card-foot"><span class="st-count">자료 ' + t.linkedIds.length + '건</span><span class="sp"></span>'
+    h += '<button class="st-toggle" type="button" data-act="study-fold" aria-expanded="' + (open ? 'true' : 'false')
+      + '" aria-controls="' + esc(boxId) + '" title="' + (open ? '자료 목록 접기' : '자료 목록 펼치기') + '">'
+      + '자료 ' + n + '건 <span class="tri" aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>';
+    h += '<div class="st-fold" id="' + esc(boxId) + '"' + (open ? '' : ' hidden') + '>';
+    h += '<div class="st-list">';
+    h += n ? t.linkedIds.map(studyRowHTML).join('')
+      : '<p class="st-empty">연결된 자료가 없습니다. 아래 ‘+ 자료 연결’로 아카이브 자료를 붙여 보세요.</p>';
+    h += '</div>';
+    h += '<button class="st-add" type="button" data-act="study-link">+ 자료 연결</button>';
+    h += '</div>';
+    h += '<div class="card-foot"><span class="sp"></span>'
       + '<button class="mini" type="button" data-act="study-edit">편집</button>'
       + '<button class="mini mini--del" type="button" data-act="study-del">지우기</button></div>';
     h += '</article>';
@@ -4127,6 +4153,106 @@
       + (m ? '<span class="mini-memo-dot" aria-hidden="true"></span>메모' : '+ 메모') + '</button>';
   }
 
+  /* ── 카드 하단 🔗 연결 단추 (2026-11-25 은유 님 요청) ──
+     아카이브 카드에 붙은 메모 카드(memoId)와, 이 카드를 담고 있는 공부 탭 주제(state.study 의 linkedIds)를
+     모아 하단 버튼줄에는 🔗 하나만 둔다. 하나면 바로 그 카드로, 둘 이상이면 작은 목록을 띄워 고르게 한다.
+     둘 다 없는 카드에는 단추를 그리지 않는다. */
+  function studyTopicsOf(id){
+    var out = [], k;
+    for (k = 0; k < state.study.length; k++) {
+      if (state.study[k].linkedIds.indexOf(id) >= 0) out.push(state.study[k]);
+    }
+    return out;
+  }
+  function linkTargetsOf(it){
+    var out = [], m = linkedMemo(it), ks = studyTopicsOf(it.id), k, nm;
+    if (m) {
+      nm = String(m.title || '').trim();
+      out.push({ tab: 'memo', id: m.id, icon: '📝', label: '메모', name: nm || '메모' });
+    }
+    for (k = 0; k < ks.length; k++) {
+      nm = String(ks[k].title || '').trim();
+      out.push({ tab: 'study', id: ks[k].id, icon: '✏️', label: '공부', name: nm || '공부' });
+    }
+    return out;
+  }
+  function linkJumpHTML(it){
+    var ts = linkTargetsOf(it);
+    if (!ts.length) return '';
+    var names = ts.map(function(t){ return t.label + ' · ' + t.name; });
+    var title = (ts.length === 1 ? '연결된 카드로 이동 · ' : '연결된 곳 ' + ts.length + ' · ') + names.join('  /  ');
+    return '<button class="mini mini--link" type="button" data-act="linkjump" aria-haspopup="' + (ts.length > 1 ? 'menu' : 'false') + '"'
+      + ' aria-label="' + esc(title) + '" title="' + esc(title) + '">🔗</button>';
+  }
+  /* 연결된 곳 한 곳으로 이동 — 메모는 메모 탭, 공부 주제는 공부 탭으로 가서 그 카드를 반짝인다 */
+  function goToLinkedTarget(t){
+    if (!t) return;
+    closeBCard();
+    if (t.tab === 'study') {
+      if (!studyById(t.id)) return;
+      pickCat('study');
+      setTimeout(function(){
+        var el = sectionsEl.querySelector('.card--study[data-study="' + t.id + '"]');
+        if (!el) return;
+        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        catch (e) { try { el.scrollIntoView(); } catch (e2) {} }
+        el.classList.remove('card--flash');
+        void el.offsetWidth;
+        el.classList.add('card--flash');
+        setTimeout(function(){ el.classList.remove('card--flash'); }, 1600);
+      }, 60);
+      return;
+    }
+    if (byId(t.id)) studyOpenMemo(t.id);
+  }
+  /* 연결된 곳이 둘 이상일 때 — 🔗 바로 아래에 작은 목록을 띄운다 */
+  var linkMenuEl = null, linkMenuAnchor = null;
+  function closeLinkMenu(){
+    if (linkMenuEl && linkMenuEl.parentNode) linkMenuEl.parentNode.removeChild(linkMenuEl);
+    linkMenuEl = null;
+    if (linkMenuAnchor) { linkMenuAnchor.setAttribute('aria-expanded', 'false'); linkMenuAnchor = null; }
+  }
+  function openLinkMenu(anchor, ts){
+    if (linkMenuAnchor === anchor && linkMenuEl) { closeLinkMenu(); return; }   /* 같은 단추를 한 번 더 누르면 닫기 */
+    closeLinkMenu();
+    closeMenu();
+    var m = document.createElement('div');
+    m.className = 'menu menu--links';
+    m.setAttribute('role', 'menu');
+    m.style.visibility = 'hidden';
+    ts.forEach(function(t){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'menuitem');
+      b.textContent = t.icon + ' ' + t.label + ' · ' + t.name;
+      b.addEventListener('click', function(){ closeLinkMenu(); goToLinkedTarget(t); });
+      m.appendChild(b);
+    });
+    document.body.appendChild(m);
+    linkMenuEl = m;
+    linkMenuAnchor = anchor;
+    anchor.setAttribute('aria-expanded', 'true');
+    var r = anchor.getBoundingClientRect();
+    var mw = m.offsetWidth, mh = m.offsetHeight;
+    var left = Math.min(Math.max(10, r.left), window.innerWidth - mw - 10);
+    var top = r.bottom + 6;
+    if (top + mh > window.innerHeight - 10) top = Math.max(10, r.top - mh - 6);
+    m.style.left = left + 'px';
+    m.style.top = top + 'px';
+    m.style.visibility = 'visible';
+    var first = m.querySelector('button');
+    if (first) first.focus();
+  }
+  document.addEventListener('click', function(e){
+    if (!linkMenuEl) return;
+    if (linkMenuEl.contains(e.target)) return;
+    if (linkMenuAnchor && linkMenuAnchor === e.target) return;
+    closeLinkMenu();
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && linkMenuEl) closeLinkMenu();
+  });
+
   /* ── 'Eng' 구분 맨 위 고정 공지 (2026-11-25 은유 님 요청) ──
      실제 항목(SEED)이 아니라 화면에서만 그리는 카드다. 그래서 구분 카운트·정렬·검색·
      news.json 어디에도 섞이지 않고, 'Eng'를 골랐을 때만 목록 첫 자리에 선다. */
@@ -4271,7 +4397,10 @@
     h += '<div class="card-foot">';
     h += '<button class="state ' + (ST_CLASS[it.status] || 'st--watch') + '" type="button" data-act="state" aria-haspopup="true" aria-expanded="false">'
        + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
-    h += memoPillHTML(it);
+    /* 2026-11-25 — 연결된 메모·공부 주제가 있으면 하단줄에는 🔗 하나로 모으고,
+       연결이 없는 카드는 예전처럼 '+ 메모'/'메모' 알약을 그대로 둔다 */
+    var ljump = linkJumpHTML(it);
+    h += ljump || memoPillHTML(it);
     h += '<span class="sp"></span>';
     /* 책 카드에는 '열기' 버튼을 두지 않는다 — 데이터(url)는 그대로 두고 화면에서만 숨긴다 */
     if (it.url && it.cat !== 'book') h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
@@ -7814,6 +7943,12 @@ var MUNHAK_NOT = ["8954670474"];
     }
     else if (act === 'send') { sendMemo(it); }
     else if (act === 'linkcards') { openLinkCards(id); }
+    else if (act === 'linkjump') {
+      var lt = linkTargetsOf(it);
+      if (!lt.length) return;
+      if (lt.length === 1) goToLinkedTarget(lt[0]);
+      else openLinkMenu(actEl, lt);
+    }
     else if (act === 'edit') { if (it.cat === 'memo') openMemoForm(id); else openForm(id); }
     else if (act === 'del') { removeItem(id); }
   }
@@ -9161,6 +9296,20 @@ var MUNHAK_NOT = ["8954670474"];
     if (act === 'study-new') { openStudyForm(''); return; }
     var card = actEl.closest('.card--study');
     var sid = (card && card.getAttribute('data-study')) || '';
+    /* 2026-11-25 — '자료 n건 ▾' 단추: 자료 목록과 '+ 자료 연결'을 접고 편다 */
+    if (act === 'study-fold') {
+      if (!card) return;
+      var fold = card.querySelector('.st-fold');
+      if (!fold) return;
+      var willOpen = !!fold.hasAttribute('hidden');
+      if (willOpen) fold.removeAttribute('hidden'); else fold.setAttribute('hidden', '');
+      studyFoldOpen[sid] = willOpen;
+      actEl.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      actEl.title = willOpen ? '자료 목록 접기' : '자료 목록 펼치기';
+      var tri = actEl.querySelector('.tri');
+      if (tri) tri.textContent = willOpen ? '▴' : '▾';
+      return;
+    }
     if (act === 'study-edit') { openStudyForm(sid); return; }
     if (act === 'study-del') { removeStudy(sid); return; }
     if (act === 'study-link') { openStudyLink(sid); return; }
