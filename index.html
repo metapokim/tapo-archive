@@ -1029,11 +1029,12 @@
   }
   .mini:hover{color:var(--ink);background:#F4F4F5}
   .mini--del:hover{color:#BE123C;background:#FFF1F2}
-  /* 2026-11-25 — 연결된 메모·공부 주제로 가는 🔗 단추(연결이 없으면 그리지 않는다) */
-  .mini--link{font-size:13px;line-height:1;padding:4px 7px;color:var(--ink-2)}
+  /* 2026-11-25 — 카드 하단의 🔗 하나로 연결·메모를 모은다. 연결이 있으면 옆에 작은 초록 점. */
+  .mini--link{display:inline-flex;align-items:center;gap:3px;font-size:13px;line-height:1;padding:4px 7px;color:var(--ink-2)}
   .mini--link:hover{background:#F4F4F5}
-  .menu--links{min-width:190px;max-width:min(320px,calc(100vw - 20px))}
-  .menu--links button{white-space:normal;line-height:1.45}
+  .mini--link.is-on{color:var(--green-ink);background:var(--green-w)}
+  .mini--link.is-on:hover{background:#D1FAE5}
+  .mini--link .link-dot{display:block;width:5px;height:5px;border-radius:999px;background:var(--green);flex:0 0 auto}
   /* 열기 — 편집·지우기와 구분되는 알약 버튼 */
   .mini--open{
     display:inline-flex;align-items:center;gap:3px;white-space:nowrap;
@@ -1459,6 +1460,45 @@
   .st-pick-row > .tag{flex:0 0 auto}
   .st-pick-row .st-name{color:var(--ink)}
   .st-pick-empty{padding:14px 2px;font-size:12px;color:#A1A1AA}
+  /* ── 🔗 연결·메모 패널 (2026-11-25) — 카드 하단 🔗 로 연다 ── */
+  .lk-sec{margin:0 0 15px}
+  .lk-sec:last-of-type{margin-bottom:4px}
+  .lk-sec-head{display:flex;align-items:center;gap:7px;margin:0 0 7px;
+    font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#A1A1AA}
+  .lk-count{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0;
+    color:var(--green-ink);background:var(--green-w);border-radius:999px;padding:1px 7px}
+  .lk-count.is-empty{display:none}
+  .lk-list{display:flex;flex-direction:column;gap:6px}
+  .lk-row{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:14px;
+    padding:4px 6px 4px 9px;background:#fff}
+  .lk-row:hover{border-color:var(--line-2)}
+  .lk-go{display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0;
+    background:none;border:0;padding:6px 2px;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .lk-go > .tag{flex:0 0 auto}
+  .lk-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.42;letter-spacing:-.01em;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all;overflow-wrap:anywhere}
+  .lk-go:hover .lk-name{color:var(--green-ink)}
+  .lk-x{flex:0 0 auto;width:26px;height:26px;padding:0;border-radius:999px;border:1px solid var(--line);
+    background:#fff;color:#A1A1AA;font-size:11px;line-height:1;cursor:pointer}
+  .lk-x:hover{color:#BE123C;background:#FFF1F2;border-color:#FECDD3}
+  .lk-empty{margin:0;font-size:12px;color:#A1A1AA;line-height:1.5}
+  .lk-btns{display:flex;gap:7px;flex-wrap:wrap}
+  .lk-btn{font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);background:#fff;
+    border:1px solid var(--line-2);border-radius:999px;padding:8px 14px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .lk-btn:hover{border-color:var(--ink)}
+  .lk-btn--main{background:var(--ink);border-color:var(--ink);color:#fff}
+  .lk-btn--main:hover{background:#27272A;border-color:#27272A}
+  .lk-topics{display:flex;flex-direction:column;gap:6px}
+  .lk-topic{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font:inherit;font-size:13px;
+    font-weight:600;color:var(--ink-2);background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:9px 11px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .lk-topic:hover{border-color:var(--line-2)}
+  .lk-topic .chk{width:16px;height:16px;flex:0 0 16px;border-radius:5px;border:1.5px solid var(--line-2);
+    background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;color:transparent}
+  .lk-topic[aria-pressed="true"]{color:var(--green-ink);border-color:#A7F3D0;background:var(--green-w)}
+  .lk-topic[aria-pressed="true"] .chk{background:var(--green);border-color:var(--green);color:#fff}
+  .lk-tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   @media (max-width:640px){
     /* 2026-11-25 — 폭이 좁아도 현재 상태(읽기 전·시청 전)는 꼭 보이게 남긴다 */
     .st-state{font-size:9.5px}
@@ -1864,6 +1904,53 @@
     <div class="lc-list" id="lcList"></div>
     <div class="sheet-foot">
       <button class="btn btn--ghost" type="button" id="lcClose">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 카드 하단 🔗 — 연결·메모를 한 자리에서 (2026-11-25) -->
+<div class="modal" id="linkModal" hidden>
+  <div class="sheet" id="linkSheet" role="dialog" aria-modal="true" aria-labelledby="lkTitle">
+    <div id="lkMain">
+      <h2 id="lkTitle">연결 · 메모</h2>
+      <p class="hint" id="lkHint"></p>
+
+      <div class="lk-sec">
+        <div class="lk-sec-head">연결된 항목 <span class="lk-count is-empty" id="lkCount">0</span></div>
+        <div class="lk-list" id="lkList"></div>
+        <p class="lk-empty" id="lkEmpty">아직 이어진 것이 없습니다. 아래에서 메모를 쓰거나 카드·공부 주제를 붙여 보세요.</p>
+      </div>
+
+      <div class="lk-sec" id="lkMemoSec">
+        <div class="lk-sec-head">메모</div>
+        <div class="lk-btns" id="lkMemoBtns"></div>
+      </div>
+
+      <div class="lk-sec">
+        <div class="lk-sec-head">카드</div>
+        <div class="lk-btns"><button class="lk-btn" type="button" id="lkPickBtn">+ 다른 카드 연결</button></div>
+      </div>
+
+      <div class="lk-sec">
+        <div class="lk-sec-head">공부 주제</div>
+        <div class="lk-topics" id="lkTopics"></div>
+      </div>
+
+      <div class="sheet-foot">
+        <button class="btn btn--ghost" type="button" id="lkClose">닫기</button>
+      </div>
+    </div>
+
+    <div id="lkPick" hidden>
+      <h2 id="lkPickTitle">카드 연결</h2>
+      <p class="hint" id="lkPickHint"></p>
+      <div class="field full">
+        <input id="lkQ" type="search" placeholder="제목 · 저자 · 키워드로 찾기" autocomplete="off" aria-label="연결할 카드 찾기">
+      </div>
+      <div class="st-pick" id="lkPickList"></div>
+      <div class="sheet-foot">
+        <button class="btn btn--ghost" type="button" id="lkBack">뒤로</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4089,15 +4176,7 @@
   function linkedCardsOfMemo(id){
     return state.items.filter(function(x){ return x && x.id !== id && x.memoId === id; });
   }
-  /* 메모 카드 하단의 초록 동그라미 — 연결된 카드가 한 장이라도 있을 때만 그린다 */
-  function memoLinkDot(it){
-    var cards = linkedCardsOfMemo(it.id);
-    if (!cards.length) return '';
-    var names = cards.map(function(c){ return String(c.title || '').trim() || META[c.cat] && META[c.cat].label || '카드'; });
-    var label = '연결된 카드 ' + cards.length + '장 보기 · ' + names.join(', ');
-    return '<button class="memo-link-dot" type="button" data-act="linkcards" aria-haspopup="dialog"'
-      + ' aria-label="' + esc(label) + '" title="' + esc(label) + '"></button>';
-  }
+
   function memoCardHTML(it){
     var title = String(it.title || '').trim();
     var body = String(it.body || '');
@@ -4115,9 +4194,8 @@
     h += '</div></div>';
     h += '<div class="card-foot">';
     h += '<button class="mini mini--send" type="button" data-act="send" title="아이폰 공유 시트로 메모 앱에 보냅니다">공유</button>';
-    /* 이 메모를 memoId 로 가리키는 카드(학회·포럼 / 공연·전시·영화 / 책 / 기사·뉴스레터)가 있으면
-       '메모 앱으로 보내기' 바로 오른쪽에 12px 초록 동그라미를 둔다 — 누르면 그 카드가 팝업으로 열린다. */
-    h += memoLinkDot(it);
+    /* 이 메모에 이어진 카드·공부 주제는 '공유' 바로 오른쪽 🔗 하나로 모은다(2026-11-25) */
+    h += linkOpenHTML(it);
     h += '<span class="sp"></span>';
     h += '<button class="mini" type="button" data-act="edit">편집</button>';
     h += '<button class="mini mini--del" type="button" data-act="del">지우기</button>';
@@ -4128,7 +4206,8 @@
   /* ── 카드에 붙는 메모 (2026-11-21) ──
      학회·포럼 / 공연·전시·영화 / 책 / 기사·뉴스레터 카드의 memoId 가 메모 탭(cat:'memo') 카드 id 를 가리킨다.
      붙은 메모가 지워졌으면 없는 것으로 보고 '+ 메모'로 돌아간다. */
-  var MEMO_CATS = { forum:1, show:1, book:1, news:1 };
+  /* 2026-11-25 — 🔗 패널이 모든 카드에서 같은 일을 하도록 메모를 붙일 수 있는 탭을 넓혔다(대학원·논문·영상) */
+  var MEMO_CATS = { forum:1, show:1, book:1, news:1, grad:1, video:1 };
   function linkedMemo(it){
     if (!it || !MEMO_CATS[it.cat] || !it.memoId) return null;
     var m = byId(it.memoId);
@@ -4145,18 +4224,10 @@
     h += '</span>';
     return h;
   }
-  function memoPillHTML(it){
-    if (!MEMO_CATS[it.cat]) return '';
-    var m = linkedMemo(it);
-    return '<button class="mini-memo' + (m ? ' is-on' : '') + '" type="button" data-act="memo"'
-      + ' aria-haspopup="dialog" title="' + (m ? '붙은 메모 보기 · 고치기' : '이 카드에 메모 붙이기') + '">'
-      + (m ? '<span class="mini-memo-dot" aria-hidden="true"></span>메모' : '+ 메모') + '</button>';
-  }
-
-  /* ── 카드 하단 🔗 연결 단추 (2026-11-25 은유 님 요청) ──
-     아카이브 카드에 붙은 메모 카드(memoId)와, 이 카드를 담고 있는 공부 탭 주제(state.study 의 linkedIds)를
-     모아 하단 버튼줄에는 🔗 하나만 둔다. 하나면 바로 그 카드로, 둘 이상이면 작은 목록을 띄워 고르게 한다.
-     둘 다 없는 카드에는 단추를 그리지 않는다. */
+  /* ── 카드 하단 🔗 연결·메모 단추 (2026-11-25 은유 님 요청) ──
+     아카이브 카드에도 메모 카드에도 하단 버튼줄에는 🔗 하나만 둔다. 누르면 이 카드에 이어진 것 —
+     붙은 메모 / 이 메모에 붙은 카드 / 함께 묶은 카드 / 공부 탭 주제 — 을 한 패널에서 보여 주고,
+     새 메모·다른 카드·공부 주제를 그 자리에서 잇거나 뗀다. 연결이 하나라도 있으면 🔗 옆에 작은 초록 점. */
   function studyTopicsOf(id){
     var out = [], k;
     for (k = 0; k < state.study.length; k++) {
@@ -4164,31 +4235,55 @@
     }
     return out;
   }
-  function linkTargetsOf(it){
-    var out = [], m = linkedMemo(it), ks = studyTopicsOf(it.id), k, nm;
-    if (m) {
-      nm = String(m.title || '').trim();
-      out.push({ tab: 'memo', id: m.id, icon: '📝', label: '메모', name: nm || '메모' });
-    }
-    for (k = 0; k < ks.length; k++) {
-      nm = String(ks[k].title || '').trim();
-      out.push({ tab: 'study', id: ks[k].id, icon: '✏️', label: '공부', name: nm || '공부' });
+  /* 함께 묶은 카드(it.links) — 지운 카드와 메모 카드는 빼고 지금 있는 것만 */
+  function cardLinksOf(it){
+    var a = (it && Object.prototype.toString.call(it.links) === '[object Array]') ? it.links : [];
+    var out = [], k, x;
+    for (k = 0; k < a.length; k++) {
+      x = byId(a[k]);
+      if (x && x.id !== it.id && x.cat !== 'memo') out.push(x);
     }
     return out;
   }
-  function linkJumpHTML(it){
-    var ts = linkTargetsOf(it);
-    if (!ts.length) return '';
-    var names = ts.map(function(t){ return t.label + ' · ' + t.name; });
-    var title = (ts.length === 1 ? '연결된 카드로 이동 · ' : '연결된 곳 ' + ts.length + ' · ') + names.join('  /  ');
-    return '<button class="mini mini--link" type="button" data-act="linkjump" aria-haspopup="' + (ts.length > 1 ? 'menu' : 'false') + '"'
-      + ' aria-label="' + esc(title) + '" title="' + esc(title) + '">🔗</button>';
+  /* 🔗 패널에 그릴 연결 목록 — 배지·이름·이동 종류(kind) */
+  function linkListOf(it){
+    var out = [], k, x, nm;
+    if (!it) return out;
+    if (it.cat === 'memo') {
+      var cs = linkedCardsOfMemo(it.id);
+      for (k = 0; k < cs.length; k++) {
+        x = cs[k];
+        out.push({ kind: 'mcard', id: x.id, name: String(x.title || '').trim() || '카드', badge: studyBadge(x) });
+      }
+    } else {
+      var m = linkedMemo(it);
+      if (m) out.push({ kind: 'memo', id: m.id, name: String(m.title || '').trim() || '제목 없는 메모',
+        badge: '<span class="tag tag--memo">메모</span>' });
+      var ls = cardLinksOf(it);
+      for (k = 0; k < ls.length; k++) {
+        x = ls[k];
+        out.push({ kind: 'card', id: x.id, name: String(x.title || '').trim() || '카드', badge: studyBadge(x) });
+      }
+    }
+    var ts = studyTopicsOf(it.id);
+    for (k = 0; k < ts.length; k++) {
+      nm = String(ts[k].title || '').trim();
+      out.push({ kind: 'study', id: ts[k].id, name: nm || '공부 주제', badge: '<span class="tag tag--study">공부</span>' });
+    }
+    return out;
   }
-  /* 연결된 곳 한 곳으로 이동 — 메모는 메모 탭, 공부 주제는 공부 탭으로 가서 그 카드를 반짝인다 */
+  function linkOpenHTML(it){
+    var n = linkListOf(it).length;
+    var label = n ? '연결·메모 ' + n + '개 열기' : '연결·메모 열기';
+    return '<button class="mini mini--link' + (n ? ' is-on' : '') + '" type="button" data-act="linkopen"'
+      + ' aria-haspopup="dialog" aria-label="' + esc(label) + '" title="' + esc(label) + '">🔗'
+      + (n ? '<span class="link-dot" aria-hidden="true"></span>' : '') + '</button>';
+  }
+  /* 연결된 곳으로 이동 — 메모는 메모 탭, 공부 주제는 공부 탭, 카드는 그 카드의 탭으로 가서 반짝인다 */
   function goToLinkedTarget(t){
     if (!t) return;
     closeBCard();
-    if (t.tab === 'study') {
+    if (t.kind === 'study') {
       if (!studyById(t.id)) return;
       pickCat('study');
       setTimeout(function(){
@@ -4203,55 +4298,9 @@
       }, 60);
       return;
     }
-    if (byId(t.id)) studyOpenMemo(t.id);
+    if (t.kind === 'memo') { studyOpenMemo(t.id); return; }
+    gotoLinkedCard(t.id);
   }
-  /* 연결된 곳이 둘 이상일 때 — 🔗 바로 아래에 작은 목록을 띄운다 */
-  var linkMenuEl = null, linkMenuAnchor = null;
-  function closeLinkMenu(){
-    if (linkMenuEl && linkMenuEl.parentNode) linkMenuEl.parentNode.removeChild(linkMenuEl);
-    linkMenuEl = null;
-    if (linkMenuAnchor) { linkMenuAnchor.setAttribute('aria-expanded', 'false'); linkMenuAnchor = null; }
-  }
-  function openLinkMenu(anchor, ts){
-    if (linkMenuAnchor === anchor && linkMenuEl) { closeLinkMenu(); return; }   /* 같은 단추를 한 번 더 누르면 닫기 */
-    closeLinkMenu();
-    closeMenu();
-    var m = document.createElement('div');
-    m.className = 'menu menu--links';
-    m.setAttribute('role', 'menu');
-    m.style.visibility = 'hidden';
-    ts.forEach(function(t){
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.setAttribute('role', 'menuitem');
-      b.textContent = t.icon + ' ' + t.label + ' · ' + t.name;
-      b.addEventListener('click', function(){ closeLinkMenu(); goToLinkedTarget(t); });
-      m.appendChild(b);
-    });
-    document.body.appendChild(m);
-    linkMenuEl = m;
-    linkMenuAnchor = anchor;
-    anchor.setAttribute('aria-expanded', 'true');
-    var r = anchor.getBoundingClientRect();
-    var mw = m.offsetWidth, mh = m.offsetHeight;
-    var left = Math.min(Math.max(10, r.left), window.innerWidth - mw - 10);
-    var top = r.bottom + 6;
-    if (top + mh > window.innerHeight - 10) top = Math.max(10, r.top - mh - 6);
-    m.style.left = left + 'px';
-    m.style.top = top + 'px';
-    m.style.visibility = 'visible';
-    var first = m.querySelector('button');
-    if (first) first.focus();
-  }
-  document.addEventListener('click', function(e){
-    if (!linkMenuEl) return;
-    if (linkMenuEl.contains(e.target)) return;
-    if (linkMenuAnchor && linkMenuAnchor === e.target) return;
-    closeLinkMenu();
-  }, true);
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && linkMenuEl) closeLinkMenu();
-  });
 
   /* ── 'Eng' 구분 맨 위 고정 공지 (2026-11-25 은유 님 요청) ──
      실제 항목(SEED)이 아니라 화면에서만 그리는 카드다. 그래서 구분 카운트·정렬·검색·
@@ -4397,10 +4446,8 @@
     h += '<div class="card-foot">';
     h += '<button class="state ' + (ST_CLASS[it.status] || 'st--watch') + '" type="button" data-act="state" aria-haspopup="true" aria-expanded="false">'
        + esc(it.status) + '<span class="caret" aria-hidden="true">▼</span></button>';
-    /* 2026-11-25 — 연결된 메모·공부 주제가 있으면 하단줄에는 🔗 하나로 모으고,
-       연결이 없는 카드는 예전처럼 '+ 메모'/'메모' 알약을 그대로 둔다 */
-    var ljump = linkJumpHTML(it);
-    h += ljump || memoPillHTML(it);
+    /* 2026-11-25 — 메모·연결 카드·공부 주제를 하단줄의 🔗 하나로 모은다(연결이 없어도 🔗 는 늘 둔다) */
+    h += linkOpenHTML(it);
     h += '<span class="sp"></span>';
     /* 책 카드에는 '열기' 버튼을 두지 않는다 — 데이터(url)는 그대로 두고 화면에서만 숨긴다 */
     if (it.url && it.cat !== 'book') h += '<a class="mini mini--open" href="' + esc(it.url) + '" target="_blank" rel="noopener noreferrer">열기</a>';
@@ -7943,12 +7990,7 @@ var MUNHAK_NOT = ["8954670474"];
     }
     else if (act === 'send') { sendMemo(it); }
     else if (act === 'linkcards') { openLinkCards(id); }
-    else if (act === 'linkjump') {
-      var lt = linkTargetsOf(it);
-      if (!lt.length) return;
-      if (lt.length === 1) goToLinkedTarget(lt[0]);
-      else openLinkMenu(actEl, lt);
-    }
+    else if (act === 'linkopen') { openLinkPanel(id); }
     else if (act === 'edit') { if (it.cat === 'memo') openMemoForm(id); else openForm(id); }
     else if (act === 'del') { removeItem(id); }
   }
@@ -8468,6 +8510,237 @@ var MUNHAK_NOT = ["8954670474"];
     });
   }
 
+  /* ────────────────────── 🔗 연결·메모 패널 (2026-11-25 은유 님 요청) ──────────────────────
+     카드 하단 🔗 하나로 모은 연결을 한 패널에서 본다. 위에서부터 연결된 항목 → 메모 → 카드 → 공부 주제.
+     '다른 카드 연결'은 패널 안에서 화면만 바꿔(검색 목록) 고르게 하고, 모달을 겹쳐 띄우지 않는다. */
+  var lkEl = document.getElementById('linkModal');
+  var lkCardId = '';
+  var lkReturnFocus = null;
+
+  function lkParse(s){
+    var v = String(s || ''), i = v.indexOf(':');
+    return i < 0 ? null : { kind: v.slice(0, i), id: v.slice(i + 1) };
+  }
+  function lkName(it){
+    var n = String((it && it.title) || '').trim();
+    return n || '카드';
+  }
+  function lkRowHTML(t){
+    return '<div class="lk-row">'
+      + '<button class="lk-go" type="button" data-jump="' + esc(t.kind + ':' + t.id) + '" title="이 카드로 이동">'
+      + t.badge + '<span class="lk-name">' + esc(t.name) + '</span></button>'
+      + '<button class="lk-x" type="button" data-unlink="' + esc(t.kind + ':' + t.id) + '"'
+      + ' aria-label="' + esc(t.name + ' 연결 해제') + '" title="연결 해제">✕</button></div>';
+  }
+
+  function fillLinkPanel(){
+    var it = byId(lkCardId);
+    if (!it || !lkEl) return;
+    var list = linkListOf(it), isMemo = it.cat === 'memo';
+    document.getElementById('lkHint').textContent = '‘' + lkName(it)
+      + '’에 이어진 메모·카드·공부 주제입니다. 항목을 누르면 그 카드로 가고, ✕ 는 연결만 뗍니다.';
+    var cnt = document.getElementById('lkCount');
+    cnt.textContent = String(list.length);
+    cnt.className = 'lk-count' + (list.length ? '' : ' is-empty');
+    document.getElementById('lkList').innerHTML = list.map(lkRowHTML).join('');
+    document.getElementById('lkEmpty').hidden = !!list.length;
+
+    /* 메모 — 메모 카드 자신에게는 메모를 또 붙이지 않는다 */
+    document.getElementById('lkMemoSec').hidden = isMemo;
+    if (!isMemo) {
+      var m = linkedMemo(it);
+      document.getElementById('lkMemoBtns').innerHTML = m
+        ? '<button class="lk-btn" type="button" data-lk="memoedit">메모 고치기</button>'
+        : '<button class="lk-btn lk-btn--main" type="button" data-lk="memonew">+ 새 메모 쓰기</button>'
+          + '<button class="lk-btn" type="button" data-lk="memopick">기존 메모 붙이기</button>';
+    }
+
+    /* 공부 주제 — 체크해서 바로 붙이고 뗀다 */
+    var tb = document.getElementById('lkTopics');
+    if (!state.study.length) {
+      tb.innerHTML = '<p class="lk-empty">공부 탭에 주제가 없습니다. 공부 탭에서 ‘+ 새 주제’로 먼저 만들어 주세요.</p>';
+    } else {
+      tb.innerHTML = state.study.map(function(t){
+        var on = t.linkedIds.indexOf(it.id) >= 0;
+        return '<button class="lk-topic" type="button" data-topic="' + esc(t.id) + '" aria-pressed="' + (on ? 'true' : 'false') + '">'
+          + '<span class="chk" aria-hidden="true">✓</span>'
+          + '<span class="lk-tn">' + esc(String(t.title || '').trim() || '공부 주제') + '</span></button>';
+      }).join('');
+    }
+  }
+
+  function lkShowView(v){
+    document.getElementById('lkMain').hidden = (v === 'pick');
+    document.getElementById('lkPick').hidden = (v !== 'pick');
+    if (v === 'pick') {
+      var q = document.getElementById('lkQ');
+      if (q) q.value = '';
+      fillLinkPick();
+      setTimeout(function(){
+        if (q && q.focus) { try { q.focus({ preventScroll: true }); } catch (e) {} }
+      }, 30);
+    }
+  }
+
+  function openLinkPanel(id){
+    var it = byId(id);
+    if (!it || !lkEl) return;
+    closeBCard();          /* 카드 팝업 위에 겹쳐 띄우지 않는다 */
+    lkCardId = id;
+    lkReturnFocus = document.activeElement;
+    lkShowView('main');
+    fillLinkPanel();
+    lkEl.hidden = false;
+    var sheet = document.getElementById('linkSheet');
+    if (sheet && sheet.scrollTop) sheet.scrollTop = 0;
+  }
+  function closeLinkPanel(){
+    if (!lkEl) return;
+    var f = lkReturnFocus;
+    lkEl.hidden = true;
+    lkCardId = '';
+    lkReturnFocus = null;
+    document.getElementById('lkMain').hidden = false;
+    document.getElementById('lkPick').hidden = true;
+    if (f && f.focus && document.contains && document.contains(f)) {
+      try { f.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+
+  /* 연결 하나만 떼기 — 메모는 메모 탭에 그대로 두고, 공부 주제는 그 주제에서만 뺀다 */
+  function lkUnlink(t){
+    var it = byId(lkCardId), o, s;
+    if (!it || !t) return;
+    if (t.kind === 'memo') {
+      it.memoId = '';
+      touch(it);
+      persist(); render(); fillLinkPanel();
+      toast('메모 연결을 풀었습니다 · 메모는 메모 탭에 남아 있어요');
+      return;
+    }
+    if (t.kind === 'mcard') {
+      o = byId(t.id);
+      if (o) { o.memoId = ''; touch(o); }
+      persist(); render(); fillLinkPanel();
+      toast('연결을 풀었습니다');
+      return;
+    }
+    if (t.kind === 'card') {
+      o = byId(t.id);
+      if (Object.prototype.toString.call(it.links) === '[object Array]') {
+        it.links = it.links.filter(function(v){ return v !== t.id; });
+      }
+      if (o && Object.prototype.toString.call(o.links) === '[object Array]') {
+        o.links = o.links.filter(function(v){ return v !== it.id; });
+      }
+      touch(it);
+      if (o) touch(o);
+      persist(); render(); fillLinkPanel();
+      toast('연결을 풀었습니다');
+      return;
+    }
+    if (t.kind === 'study') {
+      s = studyById(t.id);
+      if (s) {
+        s.linkedIds = s.linkedIds.filter(function(v){ return v !== it.id; });
+        s.updated = new Date().toISOString();
+      }
+      persist(); render(); fillLinkPanel();
+      toast('공부 주제에서 뗐습니다');
+    }
+  }
+
+  function lkToggleTopic(sid){
+    var it = byId(lkCardId), s = studyById(sid), i;
+    if (!it || !s) return;
+    i = s.linkedIds.indexOf(it.id);
+    if (i >= 0) { s.linkedIds.splice(i, 1); toast('‘' + s.title + '’에서 뗐습니다'); }
+    else { s.linkedIds.push(it.id); toast('‘' + s.title + '’에 붙였습니다'); }
+    s.updated = new Date().toISOString();
+    persist(); render(); fillLinkPanel();
+  }
+
+  /* 카드 연결 — 메모 카드면 그 카드에 이 메모를 붙이고(memoId), 일반 카드면 두 카드를 서로 묶는다(links) */
+  function fillLinkPick(){
+    var it = byId(lkCardId), box = document.getElementById('lkPickList');
+    if (!it || !box) return;
+    var isMemo = it.cat === 'memo', have = {}, out = [], k, x, ls;
+    document.getElementById('lkPickTitle').textContent = '카드 연결 · ' + lkName(it);
+    document.getElementById('lkPickHint').textContent = isMemo
+      ? '제목·키워드로 찾아 누르면 그 카드에 이 메모가 붙습니다. 카드 하나에는 메모 하나만 붙습니다.'
+      : '제목·키워드로 찾아 누르면 두 카드가 서로 연결됩니다.';
+    if (isMemo) {
+      ls = linkedCardsOfMemo(it.id);
+      for (k = 0; k < ls.length; k++) have[ls[k].id] = 1;
+    } else {
+      ls = cardLinksOf(it);
+      for (k = 0; k < ls.length; k++) have[ls[k].id] = 1;
+    }
+    var qEl = document.getElementById('lkQ');
+    var q = String(qEl ? qEl.value : '').trim();
+    for (k = 0; k < state.items.length && out.length < 60; k++) {
+      x = state.items[k];
+      if (!x || x.id === it.id || x.cat === 'memo' || have[x.id]) continue;
+      if (q && !matchQuery(x, q)) continue;
+      out.push(x);
+    }
+    box.innerHTML = out.length
+      ? out.map(function(x){
+          return '<button class="st-pick-row" type="button" data-lkpick="' + esc(x.id) + '">' + studyBadge(x)
+            + '<span class="st-name">' + esc(x.title) + '</span>'
+            + '<span class="st-state">' + esc(x.status || '') + '</span></button>';
+        }).join('')
+      : '<p class="st-pick-empty">' + (q ? '찾는 카드가 없습니다.' : '연결할 카드가 더 없습니다.') + '</p>';
+  }
+
+  function lkPickCard(xid){
+    var it = byId(lkCardId), x = byId(xid);
+    if (!it || !x) return;
+    if (it.cat === 'memo') {
+      x.memoId = it.id;
+      touch(x);
+      persist(); render(); fillLinkPick();
+      toast('메모에 카드를 붙였습니다');
+      return;
+    }
+    if (Object.prototype.toString.call(it.links) !== '[object Array]') it.links = [];
+    if (Object.prototype.toString.call(x.links) !== '[object Array]') x.links = [];
+    if (it.links.indexOf(x.id) < 0) it.links.push(x.id);
+    if (x.links.indexOf(it.id) < 0) x.links.push(it.id);
+    touch(it); touch(x);
+    persist(); render(); fillLinkPick();
+    toast('두 카드를 연결했습니다');
+  }
+
+  if (lkEl) {
+    lkEl.addEventListener('click', function(e){
+      if (e.target === lkEl) { closeLinkPanel(); return; }
+      var b = e.target.closest ? e.target.closest('button') : null;
+      if (!b) return;
+      var it = byId(lkCardId);
+      if (!it) { closeLinkPanel(); return; }
+      if (b.id === 'lkClose') { closeLinkPanel(); return; }
+      if (b.id === 'lkBack') { lkShowView('main'); fillLinkPanel(); return; }
+      if (b.id === 'lkPickBtn') { lkShowView('pick'); return; }
+      var jump = b.getAttribute('data-jump');
+      if (jump) { var jt = lkParse(jump); closeLinkPanel(); goToLinkedTarget(jt); return; }
+      var un = b.getAttribute('data-unlink');
+      if (un) { lkUnlink(lkParse(un)); return; }
+      var tp = b.getAttribute('data-topic');
+      if (tp) { lkToggleTopic(tp); return; }
+      var pk = b.getAttribute('data-lkpick');
+      if (pk) { lkPickCard(pk); return; }
+      var la = b.getAttribute('data-lk');
+      if (la === 'memonew' || la === 'memoedit') { var cid = lkCardId; closeLinkPanel(); openCardMemo(cid); return; }
+      if (la === 'memopick') { var cid2 = lkCardId; closeLinkPanel(); openCardMemo(cid2); cmSetTab('pick'); return; }
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key !== 'Escape' || !lkEl || lkEl.hidden) return;
+      if (!document.getElementById('lkPick').hidden) { lkShowView('main'); fillLinkPanel(); return; }
+      closeLinkPanel();
+    });
+  }
+
   /* ────────────────────── 메모에 연결된 카드 팝업 (2026-11-21) ──────────────────────
      메모 카드 하단의 초록 동그라미를 누르면 이 팝업이 열린다.
      memoId 가 이 메모를 가리키는 카드를 실제 카드와 같은 차림으로 읽기 전용으로 보여 주고,
@@ -8627,7 +8900,7 @@ var MUNHAK_NOT = ["8954670474"];
   /* ────────────────────────── 기기 간 동기화 ────────────────────────── */
   var SYNC_FIELDS = ['status','memo','title','date','time','place','url','deadline','genre','price',
     'author','publisher','summary','image','imgpos','body','pick','shelf','own','kind','created','extra',
-    'rating','qty','form','seller','seat','sub','group','savedAt','extraUrl','extraLabel','memoId'];
+    'rating','qty','form','seller','seat','sub','group','savedAt','extraUrl','extraLabel','memoId','links'];
 
   function sameVal(a, b){ return String(a == null ? '' : a) === String(b == null ? '' : b); }
   function slim(it){ var c = clone(it); delete c._hay; return c; }
@@ -8648,6 +8921,14 @@ var MUNHAK_NOT = ["8954670474"];
           if (!Object.prototype.hasOwnProperty.call(it, 'memoId')) continue;
           if (!patch) patch = {};
           patch.memoId = String(it.memoId == null ? '' : it.memoId);
+          continue;
+        }
+        /* 2026-11-25 — 🔗 로 묶은 카드(links)도 기본 데이터에 없는 값이라, 붙인 것과
+           '연결 해제'로 빈 목록이 된 것을 모두 다른 기기에 알려야 한다. */
+        if (f === 'links') {
+          if (!Object.prototype.hasOwnProperty.call(it, 'links')) continue;
+          if (!patch) patch = {};
+          patch.links = Object.prototype.toString.call(it.links) === '[object Array]' ? it.links.slice() : [];
           continue;
         }
         if (sameVal(it[f], s[f])) continue;
