@@ -1499,6 +1499,27 @@
   .lk-topic[aria-pressed="true"]{color:var(--green-ink);border-color:#A7F3D0;background:var(--green-w)}
   .lk-topic[aria-pressed="true"] .chk{background:var(--green);border-color:var(--green);color:#fff}
   .lk-tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* 2026-11-25 — 공부 주제는 '공부 주제 n ▾' 토글로 접어 두고(기본 접힘), 메모는 본문을 패널 안에서 바로 읽는다 */
+  .lk-toggle{display:inline-flex;align-items:center;gap:7px;max-width:100%;font:inherit;
+    font-size:11.5px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid transparent;
+    border-radius:999px;padding:6px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:background .15s,border-color .15s}
+  .lk-toggle:hover{background:#EDEDEF;border-color:var(--line-2)}
+  .lk-toggle:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  .lk-toggle .lk-tg-nm{min-width:0;font-weight:600;color:#71717A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lk-toggle .tri{flex:0 0 auto;font-size:9px;line-height:1;color:#A1A1AA}
+  .lk-topics{margin-top:9px}
+  .lk-topics[hidden]{display:none}
+  .lk-memo{border:1px solid var(--line);border-radius:16px;background:#FAFAFA;padding:11px 13px 12px;margin:0 0 9px}
+  .lk-memo-title{font-size:13.5px;font-weight:800;color:var(--ink);line-height:1.42;letter-spacing:-.01em;
+    margin:0 0 3px;word-break:keep-all;overflow-wrap:anywhere}
+  .lk-memo-when{margin:0 0 8px;font-size:10.5px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
+  .lk-memo-when[hidden]{display:none}
+  .lk-memo-body{margin:0;font-size:12.5px;line-height:1.66;color:#3F3F46;white-space:pre-wrap;
+    word-break:break-word;overflow-wrap:anywhere;max-height:38vh;overflow-y:auto;overscroll-behavior:contain}
+  .lk-memo-body[hidden]{display:none}
+  .lk-btn--warn{color:#BE123C;border-color:#FECDD3}
+  .lk-btn--warn:hover{background:#FFF1F2;border-color:#FDA4AF}
   @media (max-width:640px){
     /* 2026-11-25 — 폭이 좁아도 현재 상태(읽기 전·시청 전)는 꼭 보이게 남긴다 */
     .st-state{font-size:9.5px}
@@ -1923,6 +1944,11 @@
 
       <div class="lk-sec" id="lkMemoSec">
         <div class="lk-sec-head">메모</div>
+        <div class="lk-memo" id="lkMemoView" hidden>
+          <div class="lk-memo-title" id="lkMemoTitle"></div>
+          <p class="lk-memo-when" id="lkMemoWhen"></p>
+          <p class="lk-memo-body" id="lkMemoBody"></p>
+        </div>
         <div class="lk-btns" id="lkMemoBtns"></div>
       </div>
 
@@ -1932,8 +1958,10 @@
       </div>
 
       <div class="lk-sec">
-        <div class="lk-sec-head">공부 주제</div>
-        <div class="lk-topics" id="lkTopics"></div>
+        <button class="lk-toggle" type="button" id="lkTopicTog" aria-expanded="false" aria-controls="lkTopics" title="공부 주제 펼치기">
+          <span id="lkTopicTogCount">공부 주제</span><span class="lk-tg-nm" id="lkTopicTogNames"></span><span class="tri" aria-hidden="true">▾</span>
+        </button>
+        <div class="lk-topics" id="lkTopics" hidden></div>
       </div>
 
       <div class="sheet-foot">
@@ -1950,6 +1978,17 @@
       <div class="st-pick" id="lkPickList"></div>
       <div class="sheet-foot">
         <button class="btn btn--ghost" type="button" id="lkBack">뒤로</button>
+      </div>
+    </div>
+
+    <!-- 붙은 메모를 다른 메모로 바꿔 잇기 (2026-11-25) -->
+    <div id="lkMemoPick" hidden>
+      <h2>다른 메모로 바꾸기</h2>
+      <p class="hint" id="lkMemoSwapHint"></p>
+      <ul class="cm-list" id="lkMemoPickList"></ul>
+      <p class="lk-empty" id="lkMemoSwapEmpty" hidden>메모 탭에 다른 메모가 없습니다. 메모 탭에서 먼저 적어 주세요.</p>
+      <div class="sheet-foot">
+        <button class="btn btn--ghost" type="button" id="lkMemoBack">뒤로</button>
       </div>
     </div>
   </div>
@@ -8516,6 +8555,7 @@ var MUNHAK_NOT = ["8954670474"];
   var lkEl = document.getElementById('linkModal');
   var lkCardId = '';
   var lkReturnFocus = null;
+  var lkTopicsOpen = false;   /* 공부 주제 목록은 패널을 열 때마다 접힌 채로 시작한다 */
 
   function lkParse(s){
     var v = String(s || ''), i = v.indexOf(':');
@@ -8545,18 +8585,40 @@ var MUNHAK_NOT = ["8954670474"];
     document.getElementById('lkList').innerHTML = list.map(lkRowHTML).join('');
     document.getElementById('lkEmpty').hidden = !!list.length;
 
-    /* 메모 — 메모 카드 자신에게는 메모를 또 붙이지 않는다 */
+    /* 메모 — 메모 카드 자신에게는 메모를 또 붙이지 않는다.
+       붙은 메모가 있으면 그 제목·본문을 여기서 바로 읽고, 고치기·바꾸기·해제를 아래 단추로 한다. */
     document.getElementById('lkMemoSec').hidden = isMemo;
     if (!isMemo) {
-      var m = linkedMemo(it);
+      var m = linkedMemo(it), mv = document.getElementById('lkMemoView');
+      mv.hidden = !m;
+      if (m) {
+        document.getElementById('lkMemoTitle').textContent = String(m.title || '').trim() || '제목 없는 메모';
+        var mwhen = memoWhen(m.updated || m.created);
+        var medited = !!(m.updated && m.created && String(m.updated) !== String(m.created));
+        var mw = document.getElementById('lkMemoWhen');
+        mw.textContent = mwhen ? (medited ? '고침 ' + mwhen : '작성 ' + mwhen) : '';
+        mw.hidden = !mwhen;
+        var mb = document.getElementById('lkMemoBody');
+        mb.textContent = String(m.body || '').replace(/^\s+/, '');
+        mb.hidden = !mb.textContent.trim();
+        mb.scrollTop = 0;
+      }
       document.getElementById('lkMemoBtns').innerHTML = m
         ? '<button class="lk-btn" type="button" data-lk="memoedit">메모 고치기</button>'
+          + '<button class="lk-btn" type="button" data-lk="memoswap">다른 메모로 바꾸기</button>'
+          + '<button class="lk-btn lk-btn--warn" type="button" data-lk="memodetach">연결 해제</button>'
         : '<button class="lk-btn lk-btn--main" type="button" data-lk="memonew">+ 새 메모 쓰기</button>'
           + '<button class="lk-btn" type="button" data-lk="memopick">기존 메모 붙이기</button>';
     }
 
-    /* 공부 주제 — 체크해서 바로 붙이고 뗀다 */
+    /* 공부 주제 — '공부 주제 n ▾' 토글을 누를 때만 체크 목록을 펼친다 */
     var tb = document.getElementById('lkTopics');
+    var onT = studyTopicsOf(it.id);
+    var tnm = onT.map(function(t){ return String(t.title || '').trim() || '공부 주제'; });
+    document.getElementById('lkTopicTogCount').textContent = '공부 주제' + (onT.length ? ' ' + onT.length : '');
+    document.getElementById('lkTopicTogNames').textContent = tnm.length
+      ? ' · ' + tnm.slice(0, 2).join(' · ') + (tnm.length > 2 ? ' 외 ' + (tnm.length - 2) : '')
+      : '';
     if (!state.study.length) {
       tb.innerHTML = '<p class="lk-empty">공부 탭에 주제가 없습니다. 공부 탭에서 ‘+ 새 주제’로 먼저 만들어 주세요.</p>';
     } else {
@@ -8567,11 +8629,25 @@ var MUNHAK_NOT = ["8954670474"];
           + '<span class="lk-tn">' + esc(String(t.title || '').trim() || '공부 주제') + '</span></button>';
       }).join('');
     }
+    lkFoldTopics(lkTopicsOpen);
+  }
+
+  /* '공부 주제 n ▾' 토글 — 펼침 여부는 패널을 열 때마다 접힌 상태로 돌아간다 */
+  function lkFoldTopics(open){
+    lkTopicsOpen = !!open;
+    var tog = document.getElementById('lkTopicTog'), box = document.getElementById('lkTopics');
+    if (!tog || !box) return;
+    box.hidden = !lkTopicsOpen;
+    tog.setAttribute('aria-expanded', lkTopicsOpen ? 'true' : 'false');
+    tog.title = lkTopicsOpen ? '공부 주제 접기' : '공부 주제 펼치기';
+    var tri = tog.querySelector('.tri');
+    if (tri) tri.textContent = lkTopicsOpen ? '▴' : '▾';
   }
 
   function lkShowView(v){
-    document.getElementById('lkMain').hidden = (v === 'pick');
+    document.getElementById('lkMain').hidden = (v !== 'main');
     document.getElementById('lkPick').hidden = (v !== 'pick');
+    document.getElementById('lkMemoPick').hidden = (v !== 'memopick');
     if (v === 'pick') {
       var q = document.getElementById('lkQ');
       if (q) q.value = '';
@@ -8579,6 +8655,8 @@ var MUNHAK_NOT = ["8954670474"];
       setTimeout(function(){
         if (q && q.focus) { try { q.focus({ preventScroll: true }); } catch (e) {} }
       }, 30);
+    } else if (v === 'memopick') {
+      fillMemoSwap();
     }
   }
 
@@ -8588,6 +8666,7 @@ var MUNHAK_NOT = ["8954670474"];
     closeBCard();          /* 카드 팝업 위에 겹쳐 띄우지 않는다 */
     lkCardId = id;
     lkReturnFocus = document.activeElement;
+    lkTopicsOpen = false;
     lkShowView('main');
     fillLinkPanel();
     lkEl.hidden = false;
@@ -8602,6 +8681,7 @@ var MUNHAK_NOT = ["8954670474"];
     lkReturnFocus = null;
     document.getElementById('lkMain').hidden = false;
     document.getElementById('lkPick').hidden = true;
+    document.getElementById('lkMemoPick').hidden = true;
     if (f && f.focus && document.contains && document.contains(f)) {
       try { f.focus({ preventScroll: true }); } catch (e) {}
     }
@@ -8658,6 +8738,47 @@ var MUNHAK_NOT = ["8954670474"];
     else { s.linkedIds.push(it.id); toast('‘' + s.title + '’에 붙였습니다'); }
     s.updated = new Date().toISOString();
     persist(); render(); fillLinkPanel();
+  }
+
+  /* 메모 바꾸기 — 메모 탭의 다른 메모를 골라 지금 붙은 메모 자리에 바로 잇는다.
+     바꿔 단 메모는 카드에만 붙고, 원래 메모는 메모 탭에 그대로 남는다. */
+  function fillMemoSwap(){
+    var it = byId(lkCardId), box = document.getElementById('lkMemoPickList');
+    if (!it || !box) return;
+    var cur = linkedMemo(it);
+    document.getElementById('lkMemoSwapHint').textContent = '메모 탭의 메모입니다. 하나를 누르면 ‘' + lkName(it)
+      + '’에 붙은 메모가 그 메모로 바뀝니다. 지금 붙은 메모는 메모 탭에 그대로 남습니다.';
+    var memos = state.items.filter(function(x){ return x && x.cat === 'memo'; });
+    memos.sort(function(a, b){
+      var av = Date.parse(a.updated || a.created || '') || 0;
+      var bv = Date.parse(b.updated || b.created || '') || 0;
+      return bv - av;
+    });
+    var h = '', k;
+    for (k = 0; k < memos.length && k < 80; k++) {
+      var m = memos[k], when = memoWhen(m.updated || m.created);
+      var first = String(m.body || '').replace(/\s+/g, ' ').trim();
+      var on = !!(cur && cur.id === m.id);
+      h += '<li><button class="cm-item" type="button" data-memoswap="' + esc(m.id) + '" aria-pressed="' + (on ? 'true' : 'false') + '">'
+        + '<b>' + esc(String(m.title || '').trim() || first.slice(0, 24) || '제목 없는 메모') + '</b>'
+        + '<span>' + (first ? esc(first.slice(0, 90)) : '본문이 비어 있습니다') + '</span>'
+        + '<em>' + (on ? '지금 붙은 메모' : '') + (on && when ? ' · ' : '') + (when || '') + '</em>'
+        + '</button></li>';
+    }
+    box.innerHTML = h;
+    box.hidden = !memos.length;
+    document.getElementById('lkMemoSwapEmpty').hidden = !!memos.length;
+  }
+
+  function lkSwapMemo(mid){
+    var it = byId(lkCardId), m = byId(mid);
+    if (!it || !m || m.cat !== 'memo') return;
+    if (it.memoId === mid) { lkShowView('main'); fillLinkPanel(); return; }
+    it.memoId = mid;
+    touch(it);
+    persist(); render();
+    lkShowView('main'); fillLinkPanel();
+    toast('메모를 바꿔 붙였습니다 · 이전 메모는 메모 탭에 남아 있어요');
   }
 
   /* 카드 연결 — 메모 카드면 그 카드에 이 메모를 붙이고(memoId), 일반 카드면 두 카드를 서로 묶는다(links) */
@@ -8721,7 +8842,9 @@ var MUNHAK_NOT = ["8954670474"];
       if (!it) { closeLinkPanel(); return; }
       if (b.id === 'lkClose') { closeLinkPanel(); return; }
       if (b.id === 'lkBack') { lkShowView('main'); fillLinkPanel(); return; }
+      if (b.id === 'lkMemoBack') { lkShowView('main'); fillLinkPanel(); return; }
       if (b.id === 'lkPickBtn') { lkShowView('pick'); return; }
+      if (b.id === 'lkTopicTog') { lkFoldTopics(!lkTopicsOpen); return; }
       var jump = b.getAttribute('data-jump');
       if (jump) { var jt = lkParse(jump); closeLinkPanel(); goToLinkedTarget(jt); return; }
       var un = b.getAttribute('data-unlink');
@@ -8730,13 +8853,19 @@ var MUNHAK_NOT = ["8954670474"];
       if (tp) { lkToggleTopic(tp); return; }
       var pk = b.getAttribute('data-lkpick');
       if (pk) { lkPickCard(pk); return; }
+      var ms = b.getAttribute('data-memoswap');
+      if (ms) { lkSwapMemo(ms); return; }
       var la = b.getAttribute('data-lk');
       if (la === 'memonew' || la === 'memoedit') { var cid = lkCardId; closeLinkPanel(); openCardMemo(cid); return; }
       if (la === 'memopick') { var cid2 = lkCardId; closeLinkPanel(); openCardMemo(cid2); cmSetTab('pick'); return; }
+      if (la === 'memoswap') { lkShowView('memopick'); return; }
+      if (la === 'memodetach') { lkUnlink({ kind: 'memo', id: it.memoId }); return; }
     });
     document.addEventListener('keydown', function(e){
       if (e.key !== 'Escape' || !lkEl || lkEl.hidden) return;
-      if (!document.getElementById('lkPick').hidden) { lkShowView('main'); fillLinkPanel(); return; }
+      if (!document.getElementById('lkPick').hidden || !document.getElementById('lkMemoPick').hidden) {
+        lkShowView('main'); fillLinkPanel(); return;
+      }
       closeLinkPanel();
     });
   }
