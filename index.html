@@ -1425,10 +1425,16 @@
      주제(예: 로힝야)별로 아카이브 자료를 묶어 읽고 메모하는 탭.
      기존 카드·여백·글씨 크기 규칙은 건드리지 않고, 이 탭에서만 쓰는 클래스만 더한다. */
   .tag--study{background:var(--green-w);color:var(--green-2)}
-  .sec-head > .study-new{margin-left:8px;height:30px;font-size:12px;padding:0 13px}
-  /* 2026-11-26 은유 님 요청 — 공부 탭 카드는 넓은 화면에서도 2개씩이 아니라 1열(하나씩 크게).
-     다른 탭의 .grid 배치는 그대로 둔다. */
+  .sec-head > .study-new{margin-left:auto;height:30px;font-size:12px;padding:0 13px}
+  /* 2026-11-26 은유 님 요청 — 공부 탭 카드를 1개씩 / 2개씩 골라 보기.
+     버튼은 넓은 화면에서만 두고(폰은 늘 1열), 고른 값은 이 기기에 남긴다. */
+  .sec-head > .study-cols{margin-left:6px}
   .grid--study{grid-template-columns:1fr}
+  .grid--study.is-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media (max-width:900px){
+    .study-cols{display:none}
+    .grid--study,.grid--study.is-2{grid-template-columns:1fr}
+  }
   .card--study{gap:9px}
   .card--study .card-title{margin:0;font-size:17px}
   .study-when{font-size:11.5px;font-weight:600;color:#71717A;font-variant-numeric:tabular-nums;letter-spacing:.01em}
@@ -2434,6 +2440,7 @@
        customOrderAt 은 기기 간 동기화에서 마지막으로 옮긴 쪽을 가리기 위한 시각. */
     customOrder: [], customOrderAt: '',
     bookView: 'card',   /* 책 탭 보기 — card | shelf (2026-11-21) */
+    studyCols: 1,       /* 공부 탭 카드 보기 — 1개 보기(1) | 2개 보기(2), 2026-11-26 */
     bookZoom: 1,        /* 책꽂이 배율 — 1 | 1.6, 확대 단추 (2026-11-23) */
     propOff: 0,         /* 책꽂이 소품 8종 숨김 — '소품' 단추 (2026-11-23 은유 님 요청) */
     q: '',
@@ -2824,13 +2831,24 @@
       + '<h2 class="sec-title">' + META.study.label + '</h2>'
       + '<span class="sec-count">' + state.study.length + '개 주제</span>'
       + '<button class="btn btn--dark study-new" type="button" data-act="study-new">+ 새 주제</button>'
+      + studyColsHTML()
       + '</div>';
     if (!state.study.length) {
       h += '<div class="empty"><b>아직 공부 주제가 없습니다</b>위의 <b>+ 새 주제</b>로 주제를 만들고 아카이브 자료를 붙여 보세요.</div>';
       return h + '</section>';
     }
-    h += '<div class="grid grid--study">' + state.study.map(studyCardHTML).join('') + '</div>';
+    h += '<div class="grid grid--study' + (state.studyCols === 2 ? ' is-2' : '') + '">' + state.study.map(studyCardHTML).join('') + '</div>';
     return h + '</section>';
+  }
+  /* 2026-11-26 은유 님 요청 — 공부 탭 카드 1개 보기 / 2개 보기 전환 단추(책 탭 .viewseg 와 같은 모양). */
+  function studyColsHTML(){
+    var two = state.studyCols === 2;
+    return '<div class="viewseg study-cols" role="group" aria-label="공부 카드 보기 방식">'
+      + '<button type="button" data-act="study-cols" data-cols="1" aria-pressed="' + (!two) + '"'
+      + ' title="카드를 한 개씩 크게 보기">1개 보기</button>'
+      + '<button type="button" data-act="study-cols" data-cols="2" aria-pressed="' + two + '"'
+      + ' title="카드를 두 개씩 나란히 보기">2개 보기</button>'
+      + '</div>';
   }
   /* 2026-11-26 은유 님 요청 — 공부 메모 칸을 내용 길이에 맞춰 늘린다(안에서 스크롤하지 않게).
      처음 그릴 때·입력할 때·탭을 다시 열 때·창 너비가 바뀔 때 다시 잰다. */
@@ -3859,6 +3877,7 @@
          (되살리면 화면에 안 보이는 필터가 걸려 '책 584'인데 '전체 215'로 보이는 일이 생긴다) */
       if (ui.sort && ['default','date-desc','title','publisher','genre','custom'].indexOf(ui.sort) >= 0) state.sort = ui.sort;
       if (ui.bookView === 'shelf' || ui.bookView === 'card') state.bookView = ui.bookView;
+      if (ui.studyCols === 1 || ui.studyCols === 2) state.studyCols = ui.studyCols;   /* 공부 탭 1개/2개 보기 기억 */
       if (ui.bookZoom === 1 || ui.bookZoom === 1.6) state.bookZoom = ui.bookZoom;
       state.propOff = (ui.propOff === 1) ? 1 : 0;   /* 2026-11-23 — 소품 숨김 상태도 기억 */
       if (ui.collapsed) {                       /* 접어 둔 섭션은 새로고침해도 유지 */
@@ -3881,6 +3900,7 @@
     if (praw) { try { prev = JSON.parse(praw); } catch (e) { prev = null; } }
     if (!prev || typeof prev !== 'object') prev = {};
     writeStore(UIKEY, JSON.stringify({ own: state.own, genre: state.genre, sort: state.sort, bookView: state.bookView, bookZoom: state.bookZoom,
+      studyCols: state.studyCols,
       propOff: state.propOff ? 1 : 0,
       collapsed: Object.keys(state.collapsed || {}),
       notebookSync20261121: (notebookSynced || prev.notebookSync20261121) ? 1 : 0,
@@ -10052,6 +10072,24 @@ var MUNHAK_NOT = ["8954670474"];
     e.preventDefault();
     e.stopPropagation();
     if (act === 'study-new') { openStudyForm(''); return; }
+    /* 2026-11-26 은유 님 요청 — 1개 보기 / 2개 보기. 화면을 다시 그리지 않고 그 자리만 바꾼다 */
+    if (act === 'study-cols') {
+      var cols = Number(actEl.getAttribute('data-cols')) === 2 ? 2 : 1;
+      state.studyCols = cols;
+      var stGrid = sectionsEl.querySelector('.grid--study');
+      if (stGrid) stGrid.classList.toggle('is-2', cols === 2);
+      var stGrp = actEl.parentNode;
+      if (stGrp && stGrp.querySelectorAll) {
+        var stBtns = stGrp.querySelectorAll('button[data-cols]'), bi;
+        for (bi = 0; bi < stBtns.length; bi++) {
+          stBtns[bi].setAttribute('aria-pressed', String(Number(stBtns[bi].getAttribute('data-cols')) === cols));
+        }
+      }
+      /* 카드 폭이 바뀌었으니 공부 메모 높이를 다시 잰다 */
+      fitStudyMemos(sectionsEl);
+      saveUIPrefs();
+      return;
+    }
     var card = actEl.closest('.card--study');
     var sid = (card && card.getAttribute('data-study')) || '';
     /* 2026-11-25 — '자료 n건 ▾' 단추: 자료 목록과 '+ 자료 연결'을 접고 편다 */
