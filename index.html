@@ -10472,17 +10472,17 @@ var MUNHAK_NOT = ["8954670474"];
       stRteShowBar(null);
     }, 300);
   });
-  /* 2026-11-27 — 다른 곳에서 복사해 온 HTML에 섞인 속성(이벤트·외부 요청)이 그대로 들어오지 않게,
-     공부 메모에는 글자만 붙여넣는다. 서식은 위 서식 바로만 바꾼다. */
+  /* 2026-11-27 — 다른 곳에서 복사해 온 HTML이 그대로 남지 않게, 붙여넣은 직후에
+     허용한 태그·속성만 남긴다(이벤트·외부 요청 속성 제거). 붙여넣기 자체는 막지 않는다. */
   if (sectionsEl) sectionsEl.addEventListener('paste', function(e){
     var ed = stRteRoot(e.target);
     if (!ed) return;
-    var cd = e.clipboardData || window.clipboardData;
-    var txt = cd ? String(cd.getData('text/plain') || '') : '';
-    e.preventDefault();
-    try { document.execCommand('insertText', false, txt); } catch (err) {}
-    stRteAfter(ed);
-    fitStudyMemo(ed);
+    setTimeout(function(){
+      if (!ed.parentNode) return;
+      stRteCleanNode(ed);
+      stRteAfter(ed);
+      fitStudyMemo(ed);
+    }, 0);
   });
   /* ────────────────────────── 다가오는 일정 직접 추가 (2026-11-25 은유 님 요청) ────────────────────────── */
   var calevEl = document.getElementById('calevModal');
