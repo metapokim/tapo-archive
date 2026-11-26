@@ -8616,12 +8616,29 @@ var MUNHAK_NOT = ["8954670474"];
     }
   });
 
+  /* 2026-11-27 은유 님 신고 — 카드를 화면 '가운데'로 데려오면 화면보다 긴 메모 카드는 제목이 위로
+     잘려 중간부터 보였다. 위에 붙은 헤더(.topbar) 높이만큼만 띄워 카드 위쪽에 맞춘다.
+     (문서 끝에 가까운 카드는 더 내려갈 수 없으니 최대 스크롤에서 멈춘다) */
+  function scrollCardIntoView(el){
+    if (!el) return;
+    var bar = document.querySelector('.topbar');
+    var off = (bar && window.getComputedStyle(bar).position === 'sticky')
+      ? bar.getBoundingClientRect().height + 10 : 10;
+    var y = el.getBoundingClientRect().top + (window.pageYOffset || 0) - off;
+    var doc = document.documentElement;
+    var maxY = Math.max(0, (doc ? doc.scrollHeight : 0) - window.innerHeight);
+    if (y > maxY) y = maxY;
+    if (y < 0) y = 0;
+    try { window.scrollTo({ top: y, behavior: 'smooth' }); }
+    catch (e) { try { window.scrollTo(0, y); } catch (e2) {} }
+  }
+
   function revealCard(id){
     setTimeout(function(){
       var el = sectionsEl.querySelector('.card[data-id="' + id + '"]');
       if (!el) return;
       el.className += ' is-new';
-      if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      scrollCardIntoView(el);
       setTimeout(function(){ el.className = el.className.replace(' is-new', ''); }, 2200);
     }, 60);
   }
@@ -10372,6 +10389,15 @@ var MUNHAK_NOT = ["8954670474"];
     var qEl = document.getElementById('q');
     if (qEl) qEl.value = '';
     pickCat('memo');
+    /* 2026-11-27 은유 님 신고 — 폰에서는 메모 카드를 5장만 그려서, 그 뒤에 있는 메모(11/05·10/29 등)의
+       '열기'는 갈 카드가 없어 메모 탭 맨 위로만 갔다. 대상 카드가 아직 없으면 그 카드까지만 늘려
+       다시 그리고(gotoLinkedCard 와 같은 방식) 그 카드로 간다. */
+    if (!cardEl(id)) {
+      var list = sortList(filtered().memo || [], 'memo'), k;
+      for (k = 0; k < list.length; k++) {
+        if (list[k].id === id) { state.limits.memo = Math.max(state.limits.memo || 0, k + 1); render(); break; }
+      }
+    }
     revealCard(id);
   }
 
