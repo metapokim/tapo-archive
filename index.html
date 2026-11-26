@@ -1429,6 +1429,8 @@
   /* 2026-11-26 은유 님 요청 — 공부 탭 카드를 1개씩 / 2개씩 골라 보기.
      버튼은 넓은 화면에서만 두고(폰은 늘 1열), 고른 값은 이 기기에 남긴다. */
   .sec-head > .study-cols{margin-left:6px}
+  /* '전체' 보기에는 '+ 새 주제'가 없으니 1개/2개 보기 단추가 오른쪽 끝에서 시작한다 */
+  .sec-head > .study-cols.is-lead{margin-left:auto}
   .grid--study{grid-template-columns:1fr}
   .grid--study.is-2{grid-template-columns:repeat(2,minmax(0,1fr))}
   @media (max-width:900px){
@@ -1454,20 +1456,51 @@
     -webkit-tap-highlight-color:transparent}
   .st-add:hover{background:#D1FAE5;border-color:#6EE7B7}
   .st-memo-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#A1A1AA;margin-top:2px}
+  /* 2026-11-27 은유 님 요청 — '공부 메모' 라벨 바로 옆 작은 세모로 펼침/접기.
+     메모가 접힘 높이(약 5줄)보다 길 때만 보인다(hidden). */
+  .st-memo-head{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px}
+  .st-memo-head .st-memo-label{margin-top:0}
+  .st-memo-tri{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;
+    width:17px;height:17px;padding:0;border:0;border-radius:5px;background:none;color:#A1A1AA;
+    font:inherit;font-size:9px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .st-memo-tri:hover{background:#F4F4F5;color:var(--ink)}
+  .st-memo-tri:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  .st-memo-tri[hidden]{display:none}
   /* 2026-11-26 은유 님 요청 — 공부 메모는 기본으로 5줄쯤만 보이고, 내용이 그보다 길면
-     아래 '더보기 ▾' 단추로 전체 높이까지 펼친다. 높이·단추는 스크립트(fitStudyMemo)가 맞춘다. */
+     라벨 옆 세모로 전체 높이까지 펼친다. 높이·세모는 스크립트(fitStudyMemo)가 맞춘다.
+     2026-11-27 — 평문 textarea 대신 contenteditable 리치 텍스트(부분 서식)로 바꾼다. */
   .st-memo{width:100%;min-height:92px;font:inherit;font-size:12.5px;line-height:1.62;color:var(--ink);
     background:#F7F7F8;border:1px solid transparent;border-radius:12px;padding:10px 12px;
-    resize:none;overflow:hidden}
-  .st-memo.is-clamped{overflow-y:auto}
-  .st-memo-more{align-self:flex-start;font:inherit;font-size:11.5px;font-weight:700;color:#71717A;
-    background:#F4F4F5;border:1px solid transparent;border-radius:999px;padding:4px 11px;cursor:pointer;
-    -webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s}
-  .st-memo-more:hover{background:#EDEDEF;border-color:var(--line-2)}
-  .st-memo-more:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
-  .st-memo-more[hidden]{display:none}
-  .st-memo::placeholder{color:#A1A1AA}
-  .st-memo:focus{outline:none;background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
+    white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;overflow:hidden;
+    outline:none;-webkit-user-select:text;user-select:text}
+  .st-memo.is-clamped{max-height:122px;overflow:hidden}
+  .st-memo.is-open{max-height:none}
+  .st-memo:empty::before{content:attr(data-ph);color:#A1A1AA;pointer-events:none}
+  /* execCommand('fontSize')가 남기는 <font size="n"> — 화면에 보이는 크기를 정한다 */
+  .st-memo font[size="1"]{font-size:9.5px}
+  .st-memo font[size="2"]{font-size:11px}
+  .st-memo font[size="3"]{font-size:12.5px}
+  .st-memo font[size="4"]{font-size:15px}
+  .st-memo font[size="5"]{font-size:18px}
+  .st-memo:focus{background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
+  /* 2026-11-27 — 공부 메모 서식 바(글씨 크기 · 굵게 · 색). 메모를 탭했을 때만 보인다. */
+  .st-memo-bar{display:flex;align-items:center;gap:1px;flex-wrap:wrap;padding:3px 4px;margin-left:auto;
+    border:1px solid var(--line);border-radius:10px;background:#fff;
+    -webkit-user-select:none;user-select:none}
+  .st-memo-bar[hidden]{display:none}
+  .st-rte-seg{display:inline-flex;align-items:center;gap:1px}
+  .st-rte-btn{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;
+    padding:0 5px;border:0;border-radius:6px;background:none;color:#52525B;font:inherit;font-size:12px;
+    line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .st-rte-btn:hover{background:#F4F4F5;color:var(--ink)}
+  .st-rte-btn:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  .st-rte-btn.is-on{background:var(--lemon-w);color:var(--ink)}
+  .st-rte-b{font-weight:800;font-size:12.5px}
+  .st-rte-sep{width:1px;height:13px;background:var(--line);margin:0 3px}
+  .st-rte-dot{width:15px;height:15px;padding:0;border:1px solid rgba(0,0,0,.10);border-radius:50%;
+    cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .st-rte-dot:hover{box-shadow:0 0 0 2px #F4F4F5}
+  .st-rte-dot:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
   .st-count{font-size:11px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
   /* 2026-11-25 은유 님 요청 — 메모 칸 아래 '자료 n건 ▾' 단추와 접히는 자료 목록.
      목록은 기본으로 접혀 있고, 단추를 누를 때만 아래로 펼쳐진다. */
@@ -2749,6 +2782,8 @@
       title: String(o.title == null ? '' : o.title),
       sub: String(o.sub == null ? '' : o.sub),
       memo: String(o.memo == null ? '' : o.memo),
+      /* 2026-11-27 — 부분 서식이 있는 메모의 HTML(허용 태그·속성만). 없으면 '' */
+      memoHtml: stRteSanitizeHtml(String(o.memoHtml == null ? '' : o.memoHtml)),
       linkedIds: [],
       created: String(o.created == null ? '' : o.created),
       updated: String(o.updated == null ? '' : o.updated)
@@ -2833,6 +2868,173 @@
   var studyFoldOpen = {};
   /* 2026-11-26 — 공부 메모 '더보기'로 펼침 상태. 이 화면을 보는 동안만 기억한다(저장하지 않음). */
   var studyMemoOpen = {};
+  /* ───────────── 공부 메모 서식(부분 서식) 2026-11-27 은유 님 요청 ─────────────
+     공부 카드의 메모만 contenteditable 리치 텍스트로 두고, 드래그한 부분에만
+     글씨 크기·굵게·색을 적용한다. 저장은 두 갈래 — 화면에 그대로 넣을 HTML(memoHtml)과
+     서식 없는 평문(memo). 서식이 없는 메모는 예전처럼 평문(memo)만 쓴다. */
+  var ST_RTE_TAGS = { B:1, STRONG:1, SPAN:1, FONT:1, BR:1, DIV:1, P:1 };
+  var ST_RTE_DROP = { SCRIPT:1, STYLE:1, IFRAME:1, OBJECT:1, EMBED:1, SVG:1, MATH:1, LINK:1, META:1,
+    IMG:1, VIDEO:1, AUDIO:1, SOURCE:1, FORM:1, INPUT:1, BUTTON:1, TEXTAREA:1, SELECT:1, BASE:1 };
+  var ST_RTE_COLOR = /^(#[0-9a-f]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*(?:0|1|0?\.\d+)\s*\)|[a-z]{3,20})$/i;
+  var ST_RTE_SIZE = /^(xx-small|x-small|small|medium|large|x-large|xx-large|smaller|larger|\d{1,2}(?:\.\d+)?(?:px|pt|em|rem|%))$/i;
+  var ST_RTE_WEIGHT = /^(normal|bold|bolder|lighter|[1-9]00)$/i;
+  function stRteStyleSafe(v){
+    var out = [], parts = String(v == null ? '' : v).split(';'), i, k, prop, val;
+    for (i = 0; i < parts.length; i++) {
+      k = parts[i].indexOf(':');
+      if (k < 0) continue;
+      prop = parts[i].slice(0, k).trim().toLowerCase();
+      val = parts[i].slice(k + 1).trim();
+      if (prop === 'font-size' && ST_RTE_SIZE.test(val)) out.push('font-size:' + val);
+      else if (prop === 'font-weight' && ST_RTE_WEIGHT.test(val)) out.push('font-weight:' + val);
+      else if (prop === 'color' && ST_RTE_COLOR.test(val)) out.push('color:' + val);
+    }
+    return out.join(';');
+  }
+  function stRteCleanAttr(el){
+    var tag = String(el.tagName || '').toUpperCase(), names = [], i, n, v, st;
+    for (i = 0; i < el.attributes.length; i++) names.push(el.attributes[i].name);
+    for (i = 0; i < names.length; i++) {
+      n = String(names[i]).toLowerCase();
+      v = el.getAttribute(names[i]) || '';
+      if (n === 'style') { st = stRteStyleSafe(v); if (st) el.setAttribute('style', st); else el.removeAttribute('style'); continue; }
+      if (tag === 'FONT' && n === 'color' && ST_RTE_COLOR.test(v.trim())) continue;
+      if (tag === 'FONT' && n === 'size' && /^[1-5]$/.test(v.trim())) continue;
+      el.removeAttribute(names[i]);
+    }
+  }
+  function stRteCleanNode(node){
+    var kids = [], i, c, el, tag, parent;
+    for (i = 0; i < node.childNodes.length; i++) kids.push(node.childNodes[i]);
+    for (i = 0; i < kids.length; i++) {
+      c = kids[i];
+      if (c.nodeType === 3) continue;
+      if (c.nodeType !== 1) { if (c.parentNode) c.parentNode.removeChild(c); continue; }
+      el = c;
+      tag = String(el.tagName || '').toUpperCase();
+      if (ST_RTE_DROP[tag]) { if (el.parentNode) el.parentNode.removeChild(el); continue; }
+      stRteCleanNode(el);                       /* 자식부터 정리하고 */
+      if (!ST_RTE_TAGS[tag]) {                  /* 허용하지 않은 태그는 글자만 살려 낸다 */
+        parent = el.parentNode;
+        if (parent) { while (el.firstChild) parent.insertBefore(el.firstChild, el); parent.removeChild(el); }
+        continue;
+      }
+      stRteCleanAttr(el);
+    }
+  }
+  /* 허용 태그·속성만 남긴 HTML. 서식이 전혀 없으면 빈 문자열(→ 평문 memo 를 쓴다) */
+  function stRteSanitizeHtml(html){
+    var s = String(html == null ? '' : html);
+    if (!s || s.indexOf('<') < 0) return '';
+    try {
+      var tpl = document.createElement('template');
+      tpl.innerHTML = s;
+      var box = document.createElement('div');
+      box.appendChild(tpl.content);
+      stRteCleanNode(box);
+      return box.innerHTML;
+    } catch (e) { return ''; }
+  }
+  function stRteRoot(node){
+    var n = node;
+    while (n && n !== document) {
+      if (n.nodeType === 1 && n.classList && n.classList.contains('st-memo')) return n;
+      n = n.parentNode;
+    }
+    return null;
+  }
+  var stRteEl = null, stRteRange = null, stRteHideTimer = 0;
+  document.addEventListener('selectionchange', function(){
+    var sel = window.getSelection(), r, ed;
+    if (!sel || !sel.rangeCount) return;
+    r = sel.getRangeAt(0);
+    ed = stRteRoot(r.startContainer);
+    if (!ed || !ed.contains(r.commonAncestorContainer)) return;
+    /* 단추를 누르며 초점이 빠져 풀린 선택은 저장하지 않는다 — 드래그해 둔 부분을 그대로 쓴다 */
+    if (document.activeElement !== ed
+        && !(document.activeElement === document.body && !r.collapsed)) return;
+    stRteEl = ed;
+    try { stRteRange = r.cloneRange(); } catch (e) {}
+  });
+  function stRteBarOf(ed){
+    var card = ed && ed.closest ? ed.closest('.card--study') : null;
+    return card ? card.querySelector('.st-memo-bar') : null;
+  }
+  function stRteShowBar(ed){
+    var bars = sectionsEl ? sectionsEl.querySelectorAll('.st-memo-bar') : [], i, b;
+    for (i = 0; i < bars.length; i++) {
+      b = bars[i];
+      b.hidden = !(ed && b === stRteBarOf(ed));
+    }
+  }
+  function stRtePlain(ed){
+    var v = '';
+    try { v = ed.innerText || ''; } catch (e) { v = ''; }
+    if (!v) v = ed.textContent || '';
+    return String(v).replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n+$/, '');
+  }
+  function stRteSaveEd(ed){
+    if (!ed || !ed.getAttribute) return null;
+    var t = studyById(ed.getAttribute('data-study-memo') || '');
+    if (!t) return null;
+    var html = stRteSanitizeHtml(ed.innerHTML), txt = stRtePlain(ed);
+    /* 글자가 그대로면 고침 시각도 그대로 둔다(탭하기만 해도 새 기기 저장본을 이기지 않게) */
+    if (html === String(t.memoHtml || '') && txt === String(t.memo || '')) return t;
+    t.memoHtml = html;
+    t.memo = txt;
+    t.updated = new Date().toISOString();
+    return t;
+  }
+  function stRteOver(ed){ return (ed.scrollHeight || 0) > ST_MEMO_CLAMP + 6; }
+  function stRteAfter(ed){
+    stRteSaveEd(ed);
+    persistSoon();
+  }
+  /* 드래그한 부분에만 서식 적용 — 선택이 풀렸으면 마지막 선택을 되살린다(iOS Safari) */
+  function stRteApply(ed, kind, val){
+    if (!ed) return;
+    var sel = window.getSelection(), r = null;
+    if (sel && sel.rangeCount) {
+      r = sel.getRangeAt(0);
+      if (!(ed.contains(r.startContainer) && ed.contains(r.endContainer))) r = null;
+    }
+    if (!r && stRteEl === ed && stRteRange) {
+      try { ed.focus(); sel.removeAllRanges(); sel.addRange(stRteRange); r = stRteRange; }
+      catch (e) { r = null; }
+    }
+    if (!r) return;
+    try { document.execCommand('styleWithCSS', false, false); } catch (e) {}
+    try {
+      if (kind === 'bold') document.execCommand('bold', false, null);
+      else if (kind === 'color') document.execCommand('foreColor', false, String(val || ''));
+      else if (kind === 'size') document.execCommand('fontSize', false, String(val || '3'));
+    } catch (e) {}
+    stRteAfter(ed);
+    fitStudyMemo(ed);
+    stRteShowBar(ed);
+  }
+  /* 서식 바 — 글씨 크기 4단계 · 굵게 · 색 6가지 */
+  function stRteBarHTML(id){
+    var sizes = [['2', '작게', '10px'], ['3', '보통', '12px'], ['4', '크게', '14.5px'], ['5', '아주 크게', '17px']];
+    var colors = [['#18181B', '기본(검정)'], ['#EF4444', '빨강'], ['#2563EB', '파랑'],
+      ['#059669', '초록'], ['#7C3AED', '보라'], ['#71717A', '회색']];
+    var h = '<div class="st-memo-bar" role="toolbar" aria-label="공부 메모 서식" data-bar="' + esc(id) + '" hidden>'
+      + '<span class="st-rte-seg">', i;
+    for (i = 0; i < sizes.length; i++) {
+      h += '<button class="st-rte-btn" type="button" data-act="study-fmt" data-fmt="size" data-v="' + sizes[i][0]
+        + '" title="글씨 ' + sizes[i][1] + '" aria-label="글씨 ' + sizes[i][1] + '">'
+        + '<span style="font-size:' + sizes[i][2] + '">가</span></button>';
+    }
+    h += '</span><span class="st-rte-sep" aria-hidden="true"></span>'
+      + '<button class="st-rte-btn st-rte-b" type="button" data-act="study-fmt" data-fmt="bold" title="굵게" aria-label="굵게">B</button>'
+      + '<span class="st-rte-sep" aria-hidden="true"></span><span class="st-rte-seg">';
+    for (i = 0; i < colors.length; i++) {
+      h += '<button class="st-rte-dot" type="button" data-act="study-fmt" data-fmt="color" data-v="' + colors[i][0]
+        + '" style="background:' + colors[i][0] + '" title="' + colors[i][1] + '" aria-label="글씨 ' + colors[i][1] + '"></button>';
+    }
+    h += '</span></div>';
+    return h;
+  }
   function studyCardHTML(t){
     var made = studyDate(t.created), upd = studyDate(t.updated);
     var when = made ? ('만든 날 ' + made + (upd && upd !== made ? ' · 고침 ' + upd : '')) : '';
@@ -2844,11 +3046,15 @@
     h += '<h3 class="card-title">' + esc(t.title) + '</h3>';
     h += '<span class="accent accent--' + (n ? 'lemon' : 'soft') + '" aria-hidden="true"></span>';
     if (t.sub) h += '<p class="line line--dim">' + esc(t.sub) + '</p>';
-    h += '<label class="st-memo-label" for="stm-' + esc(t.id) + '">공부 메모</label>';
-    h += '<textarea class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '" rows="1"'
-      + ' placeholder="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">' + esc(t.memo) + '</textarea>';
-    /* 2026-11-26 — 메모가 5줄보다 길 때만 보이는 '더보기 ▾ / 접기 ▴' 단추 */
-    h += '<button class="st-memo-more" type="button" data-act="study-memo-more" aria-expanded="false" hidden>더보기 ▾</button>';
+    h += '<div class="st-memo-head"><span class="st-memo-label" id="stml-' + esc(t.id) + '">공부 메모</span>'
+      + '<button class="st-memo-tri" type="button" data-act="study-memo-more" aria-expanded="false"'
+      + ' aria-label="공부 메모 펼치기" title="메모 전체 보기" hidden>&#9662;</button>'
+      /* 2026-11-27 — 메모를 탭하면 나오는 작은 서식 바(글씨 크기·굵게·색). 라벨 옆에 붙여 긴 메모에서도 바로 닿는다 */
+      + stRteBarHTML(t.id) + '</div>';
+    h += '<div class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '"'
+      + ' contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="stml-' + esc(t.id) + '"'
+      + ' spellcheck="false" data-ph="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">'
+      + (t.memoHtml ? stRteSanitizeHtml(t.memoHtml) : esc(t.memo)) + '</div>';
     h += '<button class="st-toggle" type="button" data-act="study-fold" aria-expanded="' + (open ? 'true' : 'false')
       + '" aria-controls="' + esc(boxId) + '" title="' + (open ? '자료 목록 접기' : '자료 목록 펼치기') + '">'
       + '자료 ' + n + '건 <span class="tri" aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>';
@@ -2868,28 +3074,31 @@
   function studySectionHTML(withFold){
     /* withFold — '전체' 보기에서 메모 섞션 아래에 같이 그릴 때만 접기 화살표를 단다 */
     var folded = !!withFold && !!state.collapsed.study;
+    /* 2026-11-27 은유 님 요청 — '+ 새 주제'는 공부 탭에서만. '전체' 보기에서는 두지 않는다 */
+    var inAll = !!withFold;
     var h = '<section class="sec' + (folded ? ' is-collapsed' : '') + '" data-cat="study">';
     h += '<div class="sec-head"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS.study || '08') + '</span>'
       + '<h2 class="sec-title">' + META.study.label + '</h2>'
       + '<span class="sec-count">' + state.study.length + '개 주제</span>'
-      + '<button class="btn btn--dark study-new" type="button" data-act="study-new">+ 새 주제</button>'
-      + studyColsHTML()
+      + (inAll ? '' : '<button class="btn btn--dark study-new" type="button" data-act="study-new">+ 새 주제</button>')
+      + studyColsHTML(inAll)
       + (withFold
         ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="study" aria-expanded="' + (folded ? 'false' : 'true') + '" aria-label="공부' + (folded ? ' 펼치기' : ' 접기') + '" title="' + (folded ? '펼치기' : '접기') + '">'
           + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
         : '')
       + '</div>';
     if (!state.study.length) {
-      h += '<div class="empty"><b>아직 공부 주제가 없습니다</b>위의 <b>+ 새 주제</b>로 주제를 만들고 아카이브 자료를 붙여 보세요.</div>';
+      h += '<div class="empty"><b>아직 공부 주제가 없습니다</b>'
+        + (inAll ? '공부 탭의 ' : '위의 ') + '<b>+ 새 주제</b>로 주제를 만들고 아카이브 자료를 붙여 보세요.</div>';
       return h + '</section>';
     }
     h += '<div class="grid grid--study' + (state.studyCols === 2 ? ' is-2' : '') + '">' + state.study.map(studyCardHTML).join('') + '</div>';
     return h + '</section>';
   }
   /* 2026-11-26 은유 님 요청 — 공부 탭 카드 1개 보기 / 2개 보기 전환 단추(책 탭 .viewseg 와 같은 모양). */
-  function studyColsHTML(){
+  function studyColsHTML(lead){
     var two = state.studyCols === 2;
-    return '<div class="viewseg study-cols" role="group" aria-label="공부 카드 보기 방식">'
+    return '<div class="viewseg study-cols' + (lead ? ' is-lead' : '') + '" role="group" aria-label="공부 카드 보기 방식">'
       + '<button type="button" data-act="study-cols" data-cols="1" aria-pressed="' + (!two) + '"'
       + ' title="카드를 한 개씩 크게 보기">1개 보기</button>'
       + '<button type="button" data-act="study-cols" data-cols="2" aria-pressed="' + two + '"'
@@ -2900,26 +3109,27 @@
      처음 그릴 때·입력할 때·탭을 다시 열 때·창 너비나 1/2개 보기가 바뀔 때 다시 잰다. */
   var ST_MEMO_CLAMP = 122;   /* 접었을 때 보이는 높이(약 5줄 — 20px×5 + 위아래 여백) */
   function fitStudyMemo(el){
-    if (!el || el.tagName !== 'TEXTAREA' || !el.style) return;
-    var open = !!studyMemoOpen[el.getAttribute('data-study-memo') || ''];
-    var border = (el.offsetHeight || 0) - (el.clientHeight || 0);
-    el.style.height = 'auto';
-    var full = el.scrollHeight + (border > 0 ? border : 0);
-    if (!full) return;                        /* 접힌 섹션처럼 아직 높이를 잴 수 없을 때 */
-    var over = full > ST_MEMO_CLAMP + 6;      /* 5줄보다 확실히 길어 '더보기'가 필요한 메모 */
-    el.style.height = (open || !over ? full : ST_MEMO_CLAMP) + 'px';
-    if (over && !open) el.classList.add('is-clamped'); else el.classList.remove('is-clamped');
-    var btn = el.nextElementSibling;
-    if (btn && btn.classList && btn.classList.contains('st-memo-more')) {
+    if (!el || !el.classList || !el.classList.contains('st-memo')) return;
+    var id = el.getAttribute('data-study-memo') || '';
+    var open = !!studyMemoOpen[id];
+    var full = el.scrollHeight || 0;          /* 접힌 상태에서도 넘친 내용까지 잰다 */
+    if (!full) return;                        /* 접힌 섹션(높이 0)에서는 재지 않는다 */
+    var over = full > ST_MEMO_CLAMP + 6;      /* 5줄보다 확실히 길어 세모가 필요한 메모 */
+    el.classList.toggle('is-clamped', over && !open);
+    el.classList.toggle('is-open', over && open);
+    var card = el.closest ? el.closest('.card--study') : null;
+    var btn = card ? card.querySelector('.st-memo-tri') : null;
+    if (btn) {
       btn.hidden = !over;
-      btn.textContent = open ? '접기 ▴' : '더보기 ▾';
+      btn.textContent = open ? '\u25b4' : '\u25be';
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? '공부 메모 접기' : '공부 메모 펼치기');
       btn.title = open ? '메모를 5줄로 접기' : '메모 전체 보기';
     }
   }
   function fitStudyMemos(root){
     if (!root || !root.querySelectorAll) return;
-    var box = root.querySelectorAll('textarea.st-memo'), i;
+    var box = root.querySelectorAll('.st-memo'), i;
     for (i = 0; i < box.length; i++) fitStudyMemo(box[i]);
   }
   var studyFitTimer = 0;
@@ -9555,7 +9765,7 @@ var MUNHAK_NOT = ["8954670474"];
       lst = studyById(rst.id);
       if (!lst) { state.study.push(rst); changed = true; continue; }
       if (String(rst.updated || '') > String(lst.updated || '')) {
-        lst.title = rst.title; lst.sub = rst.sub; lst.memo = rst.memo;
+        lst.title = rst.title; lst.sub = rst.sub; lst.memo = rst.memo; lst.memoHtml = rst.memoHtml;
         lst.linkedIds = rst.linkedIds; lst.updated = rst.updated;
         changed = true;
       }
@@ -10195,6 +10405,12 @@ var MUNHAK_NOT = ["8954670474"];
     }
     var card = actEl.closest('.card--study');
     var sid = (card && card.getAttribute('data-study')) || '';
+    /* 2026-11-27 — 서식 바(글씨 크기 · 굵게 · 색): 드래그한 부분에만 적용한다 */
+    if (act === 'study-fmt') {
+      var tgt = card ? card.querySelector('.st-memo') : null;
+      stRteApply(tgt, actEl.getAttribute('data-fmt'), actEl.getAttribute('data-v'));
+      return;
+    }
     /* 2026-11-26 — 공부 메모 '더보기 ▾ / 접기 ▴' */
     if (act === 'study-memo-more') {
       studyMemoOpen[sid] = !studyMemoOpen[sid];
@@ -10224,15 +10440,37 @@ var MUNHAK_NOT = ["8954670474"];
   if (sectionsEl) sectionsEl.addEventListener('input', function(e){
     var tg = e.target;
     if (!tg || !tg.classList || !tg.classList.contains('st-memo')) return;
-    var t = studyById(tg.getAttribute('data-study-memo'));
-    if (!t) return;
-    t.memo = tg.value;
-    t.updated = new Date().toISOString();
+    /* 2026-11-27 — contenteditable 메모: 서식 HTML(memoHtml)과 평문(memo)을 함께 저장한다 */
+    if (!stRteSaveEd(tg)) return;
     fitStudyMemo(tg);
     persistSoon();
   });
-  if (sectionsEl) sectionsEl.addEventListener('change', function(e){
-    if (e.target && e.target.classList && e.target.classList.contains('st-memo')) persist();
+  /* 메모를 탭하면 바로 아래 서식 바를 보여 주고, 긴 메모는 편하게 고치도록 펼쳐 둔다 */
+  if (sectionsEl) sectionsEl.addEventListener('focusin', function(e){
+    var ed = stRteRoot(e.target);
+    if (!ed) return;
+    clearTimeout(stRteHideTimer);
+    var id = ed.getAttribute('data-study-memo') || '';
+    if (!studyMemoOpen[id] && stRteOver(ed)) { studyMemoOpen[id] = true; fitStudyMemo(ed); }
+    stRteShowBar(ed);
+  });
+  if (sectionsEl) sectionsEl.addEventListener('pointerup', function(e){
+    var ed = stRteRoot(e.target);
+    if (!ed) return;
+    clearTimeout(stRteHideTimer);
+    stRteShowBar(ed);
+  });
+  if (sectionsEl) sectionsEl.addEventListener('focusout', function(e){
+    var ed = stRteRoot(e.target);
+    if (!ed) return;
+    stRteSaveEd(ed);
+    persistSoon();
+    clearTimeout(stRteHideTimer);
+    stRteHideTimer = setTimeout(function(){
+      var ae = document.activeElement;
+      if (ae && ae.classList && ae.classList.contains('st-memo')) return;
+      stRteShowBar(null);
+    }, 300);
   });
   /* ────────────────────────── 다가오는 일정 직접 추가 (2026-11-25 은유 님 요청) ────────────────────────── */
   var calevEl = document.getElementById('calevModal');
