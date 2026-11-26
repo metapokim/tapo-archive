@@ -1454,11 +1454,18 @@
     -webkit-tap-highlight-color:transparent}
   .st-add:hover{background:#D1FAE5;border-color:#6EE7B7}
   .st-memo-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#A1A1AA;margin-top:2px}
-  /* 2026-11-26 은유 님 요청 — 공부 메모는 내용 길이만큼 높이가 늘어나 스크롤 없이 다 보인다.
-     높이는 스크립트(fitStudyMemo)가 scrollHeight 로 맞춘다. */
+  /* 2026-11-26 은유 님 요청 — 공부 메모는 기본으로 5줄쯤만 보이고, 내용이 그보다 길면
+     아래 '더보기 ▾' 단추로 전체 높이까지 펼친다. 높이·단추는 스크립트(fitStudyMemo)가 맞춘다. */
   .st-memo{width:100%;min-height:92px;font:inherit;font-size:12.5px;line-height:1.62;color:var(--ink);
     background:#F7F7F8;border:1px solid transparent;border-radius:12px;padding:10px 12px;
     resize:none;overflow:hidden}
+  .st-memo.is-clamped{overflow-y:auto}
+  .st-memo-more{align-self:flex-start;font:inherit;font-size:11.5px;font-weight:700;color:#71717A;
+    background:#F4F4F5;border:1px solid transparent;border-radius:999px;padding:4px 11px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s}
+  .st-memo-more:hover{background:#EDEDEF;border-color:var(--line-2)}
+  .st-memo-more:focus-visible{outline:2px solid var(--lemon-2);outline-offset:2px}
+  .st-memo-more[hidden]{display:none}
   .st-memo::placeholder{color:#A1A1AA}
   .st-memo:focus{outline:none;background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
   .st-count{font-size:11px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
@@ -2795,6 +2802,8 @@
      '+ 자료 연결'은 기본으로 접어 둔다. 접힌 카드에는 '자료 n건 ▾' 단추만 남는다.
      펼침 상태는 이 화면을 보는 동안만(studyFoldOpen) 기억하고 저장하지 않는다. */
   var studyFoldOpen = {};
+  /* 2026-11-26 — 공부 메모 '더보기'로 펼침 상태. 이 화면을 보는 동안만 기억한다(저장하지 않음). */
+  var studyMemoOpen = {};
   function studyCardHTML(t){
     var made = studyDate(t.created), upd = studyDate(t.updated);
     var when = made ? ('만든 날 ' + made + (upd && upd !== made ? ' · 고침 ' + upd : '')) : '';
@@ -2807,8 +2816,10 @@
     h += '<span class="accent accent--' + (n ? 'lemon' : 'soft') + '" aria-hidden="true"></span>';
     if (t.sub) h += '<p class="line line--dim">' + esc(t.sub) + '</p>';
     h += '<label class="st-memo-label" for="stm-' + esc(t.id) + '">공부 메모</label>';
-    h += '<textarea class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '" rows="5"'
+    h += '<textarea class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '" rows="1"'
       + ' placeholder="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">' + esc(t.memo) + '</textarea>';
+    /* 2026-11-26 — 메모가 5줄보다 길 때만 보이는 '더보기 ▾ / 접기 ▴' 단추 */
+    h += '<button class="st-memo-more" type="button" data-act="study-memo-more" aria-expanded="false" hidden>더보기 ▾</button>';
     h += '<button class="st-toggle" type="button" data-act="study-fold" aria-expanded="' + (open ? 'true' : 'false')
       + '" aria-controls="' + esc(boxId) + '" title="' + (open ? '자료 목록 접기' : '자료 목록 펼치기') + '">'
       + '자료 ' + n + '건 <span class="tri" aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>';
@@ -2825,13 +2836,19 @@
     h += '</article>';
     return h;
   }
-  function studySectionHTML(){
-    var h = '<section class="sec" data-cat="study">';
+  function studySectionHTML(withFold){
+    /* withFold — '전체' 보기에서 메모 섞션 아래에 같이 그릴 때만 접기 화살표를 단다 */
+    var folded = !!withFold && !!state.collapsed.study;
+    var h = '<section class="sec' + (folded ? ' is-collapsed' : '') + '" data-cat="study">';
     h += '<div class="sec-head"><span class="sec-num" aria-hidden="true">' + (NAV_ICONS.study || '08') + '</span>'
       + '<h2 class="sec-title">' + META.study.label + '</h2>'
       + '<span class="sec-count">' + state.study.length + '개 주제</span>'
       + '<button class="btn btn--dark study-new" type="button" data-act="study-new">+ 새 주제</button>'
       + studyColsHTML()
+      + (withFold
+        ? '<button class="sec-toggle" type="button" data-act="fold" data-cat="study" aria-expanded="' + (folded ? 'false' : 'true') + '" aria-label="공부' + (folded ? ' 펼치기' : ' 접기') + '" title="' + (folded ? '펼치기' : '접기') + '">'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15 12 9l6 6"/></svg></button>'
+        : '')
       + '</div>';
     if (!state.study.length) {
       h += '<div class="empty"><b>아직 공부 주제가 없습니다</b>위의 <b>+ 새 주제</b>로 주제를 만들고 아카이브 자료를 붙여 보세요.</div>';
@@ -2850,14 +2867,26 @@
       + ' title="카드를 두 개씩 나란히 보기">2개 보기</button>'
       + '</div>';
   }
-  /* 2026-11-26 은유 님 요청 — 공부 메모 칸을 내용 길이에 맞춰 늘린다(안에서 스크롤하지 않게).
-     처음 그릴 때·입력할 때·탭을 다시 열 때·창 너비가 바뀔 때 다시 잰다. */
+  /* 2026-11-26 은유 님 요청 — 공부 메모를 5줄쯤으로 접어 두고, 긴 메모만 '더보기'로 펼친다.
+     처음 그릴 때·입력할 때·탭을 다시 열 때·창 너비나 1/2개 보기가 바뀔 때 다시 잰다. */
+  var ST_MEMO_CLAMP = 122;   /* 접었을 때 보이는 높이(약 5줄 — 20px×5 + 위아래 여백) */
   function fitStudyMemo(el){
     if (!el || el.tagName !== 'TEXTAREA' || !el.style) return;
+    var open = !!studyMemoOpen[el.getAttribute('data-study-memo') || ''];
     var border = (el.offsetHeight || 0) - (el.clientHeight || 0);
     el.style.height = 'auto';
-    var h = el.scrollHeight + (border > 0 ? border : 0);
-    if (h > 0) el.style.height = h + 'px';
+    var full = el.scrollHeight + (border > 0 ? border : 0);
+    if (!full) return;                        /* 접힌 섹션처럼 아직 높이를 잴 수 없을 때 */
+    var over = full > ST_MEMO_CLAMP + 6;      /* 5줄보다 확실히 길어 '더보기'가 필요한 메모 */
+    el.style.height = (open || !over ? full : ST_MEMO_CLAMP) + 'px';
+    if (over && !open) el.classList.add('is-clamped'); else el.classList.remove('is-clamped');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList && btn.classList.contains('st-memo-more')) {
+      btn.hidden = !over;
+      btn.textContent = open ? '접기 ▴' : '더보기 ▾';
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.title = open ? '메모를 5줄로 접기' : '메모 전체 보기';
+    }
   }
   function fitStudyMemos(root){
     if (!root || !root.querySelectorAll) return;
@@ -5092,6 +5121,8 @@
       }
       html += '</section>';
     });
+    /* 2026-11-26 은유 님 요청 — '전체' 보기에서도 메모 섹션 바로 아래에 공부 섹션을 같이 보여 준다 */
+    if (state.cat === 'all') html += studySectionHTML(true);
     /* 2026-11-24 — 선반을 다시 그릴 때 잠깐 높이가 줄어 페이지 스크롤이 맨 위로 튀던 것을 막는다.
        (책장이 접힌 채로 널판을 그리면 문서가 짧아져 스크롤이 0으로 돌아가고, 은유 님이 옮긴 자리를 놓쳤다) */
     var keepShelf = null;
@@ -5100,6 +5131,9 @@
       if (oldShelf) keepShelf = oldShelf.getBoundingClientRect().top;
     }
     sectionsEl.innerHTML = html;
+    /* 공부 메모 높이·더보기 단추를 지금 그린 카드에 맞춘다(다른 탭 요소는 건드리지 않는다) */
+    fitStudyMemos(sectionsEl);
+    window.requestAnimationFrame(function(){ fitStudyMemos(sectionsEl); });
     if (shelfNeedsPaint) {
       shelfNeedsPaint = false;
       paintShelf(shelfPaintList);
@@ -5135,7 +5169,7 @@
       btn.title = now ? '펼치기' : '접기';
     }
     /* 섭션을 다시 펼쳤을 때 안에 있던 카드의 잘린 설명도 누를 수 있게 — 접힌 채로는 높이를 잴 수 없다 */
-    if (!now) markClampables(el);
+    if (!now) { markClampables(el); if (cat === 'study') fitStudyMemos(el); }
     if (!isSearching()) saveUIPrefs();
   }
 
@@ -10092,6 +10126,12 @@ var MUNHAK_NOT = ["8954670474"];
     }
     var card = actEl.closest('.card--study');
     var sid = (card && card.getAttribute('data-study')) || '';
+    /* 2026-11-26 — 공부 메모 '더보기 ▾ / 접기 ▴' */
+    if (act === 'study-memo-more') {
+      studyMemoOpen[sid] = !studyMemoOpen[sid];
+      fitStudyMemos(sectionsEl);
+      return;
+    }
     /* 2026-11-25 — '자료 n건 ▾' 단추: 자료 목록과 '+ 자료 연결'을 접고 편다 */
     if (act === 'study-fold') {
       if (!card) return;
