@@ -1482,12 +1482,29 @@
   .st-memo font[size="3"]{font-size:12.5px}
   .st-memo font[size="4"]{font-size:15px}
   .st-memo font[size="5"]{font-size:18px}
+  /* 메모 카드·메모 팝업의 본문도 같은 4단계 크기를 쓴다(기본 13~14.5px에 맞춘 값) */
+  .memo-body font[size="1"],.lk-memo-body font[size="1"],.memo-rte font[size="1"],.cm-body font[size="1"]{font-size:10.5px}
+  .memo-body font[size="2"],.lk-memo-body font[size="2"],.memo-rte font[size="2"],.cm-body font[size="2"]{font-size:12px}
+  .memo-body font[size="3"],.lk-memo-body font[size="3"],.memo-rte font[size="3"],.cm-body font[size="3"]{font-size:14px}
+  .memo-body font[size="4"],.lk-memo-body font[size="4"],.memo-rte font[size="4"],.cm-body font[size="4"]{font-size:16.5px}
+  .memo-body font[size="5"],.lk-memo-body font[size="5"],.memo-rte font[size="5"],.cm-body font[size="5"]{font-size:20px}
   .st-memo:focus{background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
-  /* 2026-11-27 — 공부 메모 서식 바(글씨 크기 · 굵게 · 색). 메모를 탭했을 때만 보인다. */
-  .st-memo-bar{display:flex;align-items:center;gap:1px;flex-wrap:wrap;padding:3px 4px;margin-left:auto;
+  /* 2026-11-27 — 메모 서식 바(글씨 크기 · 굵게 · 글자색 · 형광펜).
+     공부 메모는 메모를 탭했을 때만, 메모 팝업에서는 늘 보인다. */
+  .rte-bar{display:flex;align-items:center;gap:1px;flex-wrap:wrap;padding:3px 4px;
     border:1px solid var(--line);border-radius:10px;background:#fff;
     -webkit-user-select:none;user-select:none}
-  .st-memo-bar[hidden]{display:none}
+  .rte-bar[hidden]{display:none}
+  .st-memo-bar{margin-left:auto}
+  /* 메모 팝업의 서식 바 — 편집칸 위에 한 줄로 붙는다 */
+  .rte-bar--block{width:100%;margin:0 0 7px;padding:4px 5px;background:#FAFAFA}
+  /* 메모 본문 편집칸 — 예전 textarea(.field textarea · .cm-body)와 같은 모양 */
+  .memo-rte{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;outline:none;
+    -webkit-user-select:text;user-select:text;cursor:text}
+  .memo-rte:empty::before{content:attr(data-ph);color:#A1A1AA;pointer-events:none}
+  .memo-rte--field{font:inherit;font-size:14px;line-height:1.55;color:var(--ink);background:#F7F7F8;
+    border:1px solid transparent;border-radius:12px;padding:10px 12px;min-height:136px}
+  .memo-rte--field:focus{background:#fff;border-color:var(--lemon-2);box-shadow:0 0 0 4px rgba(255,230,0,.24)}
   .st-rte-seg{display:inline-flex;align-items:center;gap:1px}
   .st-rte-btn{display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;
     padding:0 5px;border:0;border-radius:6px;background:none;color:#52525B;font:inherit;font-size:12px;
@@ -1501,6 +1518,14 @@
     cursor:pointer;-webkit-tap-highlight-color:transparent}
   .st-rte-dot:hover{box-shadow:0 0 0 2px #F4F4F5}
   .st-rte-dot:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  /* 형광펜 단추 — 글자색 동그라미와 구분되게 납작한 네모 칸 */
+  .st-rte-hl{position:relative;width:19px;height:11px;padding:0;border:1px solid rgba(0,0,0,.10);
+    border-radius:3px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .st-rte-hl:hover{box-shadow:0 0 0 2px #F4F4F5}
+  .st-rte-hl:focus-visible{outline:2px solid var(--lemon-2);outline-offset:1px}
+  .st-rte-hl--off{background:#fff;overflow:hidden}
+  .st-rte-hl--off::after{content:"";position:absolute;left:-3px;right:-3px;top:50%;height:1.5px;
+    background:#BE123C;transform:rotate(-45deg)}
   .st-count{font-size:11px;font-weight:700;color:#A1A1AA;font-variant-numeric:tabular-nums}
   /* 2026-11-25 은유 님 요청 — 메모 칸 아래 '자료 n건 ▾' 단추와 접히는 자료 목록.
      목록은 기본으로 접혀 있고, 단추를 누를 때만 아래로 펼쳐진다. */
@@ -1922,7 +1947,10 @@
     </div>
     <div class="field full">
       <label for="mBody">본문</label>
-      <textarea id="mBody" rows="8" placeholder="생각나는 대로 적어 두세요."></textarea>
+      <!-- 2026-11-27 — 드래그한 부분에만 글씨 크기·굵기·색·형광펜을 주도록 편집칸을 리치 텍스트로 -->
+      <div class="rte-bar rte-bar--block" role="toolbar" aria-label="메모 서식" data-bar-for="mBody" data-bar-always="1"></div>
+      <div id="mBody" class="memo-rte memo-rte--field" contenteditable="true" role="textbox" aria-multiline="true"
+        aria-label="메모 본문" spellcheck="false" data-ph="생각나는 대로 적어 두세요."></div>
     </div>
     <div class="sheet-foot">
       <button class="btn btn--ghost" type="button" id="memoCancel">취소</button>
@@ -1940,7 +1968,9 @@
     <div id="cmView" hidden>
       <div class="cm-meta"><span id="cmWhen"></span></div>
       <textarea id="cmTitleIn" class="cm-title-in" rows="1" aria-label="메모 제목" placeholder="제목 없이 적은 메모"></textarea>
-      <textarea id="cmBody" class="cm-body" rows="8" aria-label="메모 본문"></textarea>
+      <!-- 2026-11-27 — 메모 본문에 공부 메모와 같은 부분 서식(크기·굵기·색·형광펜) -->
+      <div class="rte-bar rte-bar--block" role="toolbar" aria-label="메모 서식" data-bar-for="cmBody" data-bar-always="1"></div>
+      <div id="cmBody" class="cm-body memo-rte" contenteditable="true" role="textbox" aria-multiline="true" aria-label="메모 본문" spellcheck="false"></div>
       <div class="sheet-foot">
         <button class="btn btn--ghost" type="button" id="cmDetach">연결 해제</button>
         <button class="btn btn--ghost" type="button" id="cmClose">닫기</button>
@@ -1961,7 +1991,9 @@
         </div>
         <div class="field full">
           <label for="cmNewBody">본문</label>
-          <textarea id="cmNewBody" rows="7" placeholder="생각나는 대로 적어 두세요. 줄바꿈은 그대로 저장됩니다."></textarea>
+          <div class="rte-bar rte-bar--block" role="toolbar" aria-label="메모 서식" data-bar-for="cmNewBody" data-bar-always="1"></div>
+          <div id="cmNewBody" class="memo-rte memo-rte--field" contenteditable="true" role="textbox" aria-multiline="true"
+            aria-label="새 메모 본문" spellcheck="false" data-ph="생각나는 대로 적어 두세요. 줄바꿈은 그대로 저장됩니다."></div>
         </div>
         <div class="sheet-foot">
           <button class="btn btn--ghost" type="button" id="cmCancel">취소</button>
@@ -2009,7 +2041,7 @@
         <div class="lk-memo" id="lkMemoView" hidden>
           <div class="lk-memo-title" id="lkMemoTitle"></div>
           <p class="lk-memo-when" id="lkMemoWhen"></p>
-          <p class="lk-memo-body" id="lkMemoBody"></p>
+          <div class="lk-memo-body" id="lkMemoBody"></div>
         </div>
         <div class="lk-btns" id="lkMemoBtns"></div>
       </div>
@@ -2544,6 +2576,8 @@
     it.summary = String(it.summary == null ? '' : it.summary);
     it.image = String(it.image == null ? '' : it.image);
     it.body = String(it.body == null ? '' : it.body);
+    /* 2026-11-27 — 메모 본문의 부분 서식(글씨 크기·굵기·색·형광펜)을 담는 HTML. 허용 태그만 남긴다 */
+    it.bodyHtml = stRteSanitizeHtml(String(it.bodyHtml == null ? '' : it.bodyHtml));
     it.created = String(it.created == null ? '' : it.created);
     it.updated = String(it.updated == null ? '' : it.updated);
     it.kind = it.kind == null ? '' : String(it.kind);
@@ -2889,6 +2923,8 @@
       if (prop === 'font-size' && ST_RTE_SIZE.test(val)) out.push('font-size:' + val);
       else if (prop === 'font-weight' && ST_RTE_WEIGHT.test(val)) out.push('font-weight:' + val);
       else if (prop === 'color' && ST_RTE_COLOR.test(val)) out.push('color:' + val);
+      /* 2026-11-27 — 형광펜(배경색)도 저장·동기화에서 살린다. 허용한 색 표기에만 */
+      else if (prop === 'background-color' && ST_RTE_COLOR.test(val)) out.push('background-color:' + val);
     }
     return out.join(';');
   }
@@ -2921,6 +2957,12 @@
         continue;
       }
       stRteCleanAttr(el);
+      /* 남은 속성이 하나도 없는 span·font 는 글자만 살리고 걷어 낸다(형광펜 지운 자리) */
+      if ((tag === 'SPAN' || tag === 'FONT') && !el.attributes.length && el.parentNode) {
+        parent = el.parentNode;
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        parent.removeChild(el);
+      }
     }
   }
   /* 허용 태그·속성만 남긴 HTML. 서식이 전혀 없으면 빈 문자열(→ 평문 memo 를 쓴다) */
@@ -2936,10 +2978,13 @@
       return box.innerHTML;
     } catch (e) { return ''; }
   }
+  /* 2026-11-27 확장 — 같은 편집기를 메모 탭/메모 팝업의 본문에도 쓴다.
+     편집칸은 .st-memo(공부 메모) 또는 .memo-rte(메모 팝업), 서식 바는 data-bar-for="편집칸 id". */
   function stRteRoot(node){
     var n = node;
     while (n && n !== document) {
-      if (n.nodeType === 1 && n.classList && n.classList.contains('st-memo')) return n;
+      if (n.nodeType === 1 && n.classList
+          && (n.classList.contains('st-memo') || n.classList.contains('memo-rte'))) return n;
       n = n.parentNode;
     }
     return null;
@@ -2951,20 +2996,24 @@
     r = sel.getRangeAt(0);
     ed = stRteRoot(r.startContainer);
     if (!ed || !ed.contains(r.commonAncestorContainer)) return;
-    /* 단추를 누르며 초점이 빠져 풀린 선택은 저장하지 않는다 — 드래그해 둔 부분을 그대로 쓴다 */
-    if (document.activeElement !== ed
-        && !(document.activeElement === document.body && !r.collapsed)) return;
+    /* 단추를 누르며 초점이 빠져 풀린(자리만 남은) 선택은 저장하지 않는다 — 드래그해 둔 부분을 그대로 쓴다 */
+    if (document.activeElement !== ed && r.collapsed) return;
     stRteEl = ed;
     try { stRteRange = r.cloneRange(); } catch (e) {}
   });
   function stRteBarOf(ed){
-    var card = ed && ed.closest ? ed.closest('.card--study') : null;
-    return card ? card.querySelector('.st-memo-bar') : null;
+    if (!ed || !ed.id) return null;
+    var bars = document.querySelectorAll('.rte-bar'), i;
+    for (i = 0; i < bars.length; i++) {
+      if (bars[i].getAttribute('data-bar-for') === ed.id) return bars[i];
+    }
+    return null;
   }
   function stRteShowBar(ed){
-    var bars = sectionsEl ? sectionsEl.querySelectorAll('.st-memo-bar') : [], i, b;
+    var bars = document.querySelectorAll('.rte-bar'), i, b;
     for (i = 0; i < bars.length; i++) {
       b = bars[i];
+      if (b.getAttribute('data-bar-always')) { b.hidden = false; continue; }
       b.hidden = !(ed && b === stRteBarOf(ed));
     }
   }
@@ -2974,11 +3023,27 @@
     if (!v) v = ed.textContent || '';
     return String(v).replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n+$/, '');
   }
+  /* 편집칸의 서식 HTML — 허용 태그·속성만 남긴 값. 서식이 없으면 빈 문자열 */
+  function stRteHTML(ed){ return ed ? stRteSanitizeHtml(ed.innerHTML) : ''; }
+  /* 편집칸에 저장본을 채운다 — 서식 HTML이 있으면 그걸, 없으면 평문을 줄바꿈만 <br> 로 살려 넣는다 */
+  function stRteSet(ed, html, txt){
+    if (!ed) return;
+    var clean = html ? stRteSanitizeHtml(html) : '';
+    if (clean) { ed.innerHTML = clean; return; }
+    var parts = String(txt == null ? '' : txt).split('\n'), i;
+    ed.innerHTML = '';
+    for (i = 0; i < parts.length; i++) {
+      if (i) ed.appendChild(document.createElement('br'));
+      if (parts[i]) ed.appendChild(document.createTextNode(parts[i]));
+    }
+  }
   function stRteSaveEd(ed){
     if (!ed || !ed.getAttribute) return null;
-    var t = studyById(ed.getAttribute('data-study-memo') || '');
+    var sid = ed.getAttribute('data-study-memo') || '';
+    if (!sid) return null;                     /* 메모 팝업은 '저장' 누를 때 한 번에 읽는다 */
+    var t = studyById(sid);
     if (!t) return null;
-    var html = stRteSanitizeHtml(ed.innerHTML), txt = stRtePlain(ed);
+    var html = stRteHTML(ed), txt = stRtePlain(ed);
     /* 글자가 그대로면 고침 시각도 그대로 둔다(탭하기만 해도 새 기기 저장본을 이기지 않게) */
     if (html === String(t.memoHtml || '') && txt === String(t.memo || '')) return t;
     t.memoHtml = html;
@@ -2988,12 +3053,10 @@
   }
   function stRteOver(ed){ return (ed.scrollHeight || 0) > ST_MEMO_CLAMP + 6; }
   function stRteAfter(ed){
-    stRteSaveEd(ed);
-    persistSoon();
+    if (stRteSaveEd(ed)) persistSoon();
   }
-  /* 드래그한 부분에만 서식 적용 — 선택이 풀렸으면 마지막 선택을 되살린다(iOS Safari) */
-  function stRteApply(ed, kind, val){
-    if (!ed) return;
+  /* 지금 선택이 편집칸 안에 있으면 그 범위를, 없으면 마지막으로 드래그해 둔 범위를 되살린다(iOS Safari) */
+  function stRteRangeGet(ed){
     var sel = window.getSelection(), r = null;
     if (sel && sel.rangeCount) {
       r = sel.getRangeAt(0);
@@ -3003,24 +3066,78 @@
       try { ed.focus(); sel.removeAllRanges(); sel.addRange(stRteRange); r = stRteRange; }
       catch (e) { r = null; }
     }
-    if (!r) return;
-    try { document.execCommand('styleWithCSS', false, false); } catch (e) {}
+    return r;
+  }
+  function stRteRangeKeep(ed, r){
+    var sel = window.getSelection();
+    stRteEl = ed;
+    try { sel.removeAllRanges(); sel.addRange(r); stRteRange = r.cloneRange(); } catch (e) {}
+  }
+  function stRteBgOf(el){
+    if (!el || el.nodeType !== 1 || !el.style) return '';
+    var v = String(el.style.backgroundColor || '');
+    return v && !/^(transparent|rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\))$/i.test(v) ? v : '';
+  }
+  /* 형광펜 — 드래그한 부분만 배경색으로 덮고, '지우기'는 그 부분의 배경색만 뺀다 */
+  function stRtePaint(ed, bg){
+    var r = stRteRangeGet(ed), sel = window.getSelection(), span, frag, nr;
+    if (!r || r.collapsed || !sel) return false;
+    if (!bg) {
+      /* 선택한 글자가 형광펜 span 하나와 정확히 같으면 그 span 의 배경색만 지운다 */
+      var n = r.commonAncestorContainer, txt = r.toString();
+      if (n.nodeType !== 1) n = n.parentNode;
+      while (n && n !== ed) {
+        if (n.nodeType === 1 && stRteBgOf(n) && String(n.textContent || '') === txt) {
+          n.style.backgroundColor = '';
+          if (!String(n.getAttribute('style') || '').trim()) n.removeAttribute('style');
+          nr = document.createRange();
+          nr.selectNodeContents(n);
+          stRteRangeKeep(ed, nr);
+          return true;
+        }
+        n = n.parentNode;
+      }
+    }
+    span = document.createElement('span');
+    span.setAttribute('style', 'background-color:' + (bg || 'transparent'));
     try {
-      if (kind === 'bold') document.execCommand('bold', false, null);
-      else if (kind === 'color') document.execCommand('foreColor', false, String(val || ''));
-      else if (kind === 'size') document.execCommand('fontSize', false, String(val || '3'));
-    } catch (e) {}
+      r.surroundContents(span);
+    } catch (e) {
+      try { frag = r.extractContents(); } catch (e2) { return false; }
+      span.appendChild(frag);
+      r.insertNode(span);
+    }
+    nr = document.createRange();
+    nr.selectNodeContents(span);
+    stRteRangeKeep(ed, nr);
+    return true;
+  }
+  /* 드래그한 부분에만 서식 적용 — 선택이 풀렸으면 마지막 선택을 되살린다(iOS Safari) */
+  function stRteApply(ed, kind, val){
+    if (!ed) return;
+    var r = stRteRangeGet(ed), sel = window.getSelection();
+    if (!r || !sel) return;
+    if (kind === 'bg' || kind === 'bgclear') {
+      if (!stRtePaint(ed, kind === 'bg' ? String(val || '') : '')) return;
+    } else {
+      try { document.execCommand('styleWithCSS', false, false); } catch (e) {}
+      try {
+        if (kind === 'bold') document.execCommand('bold', false, null);
+        else if (kind === 'color') document.execCommand('foreColor', false, String(val || ''));
+        else if (kind === 'size') document.execCommand('fontSize', false, String(val || '3'));
+      } catch (e) {}
+    }
     stRteAfter(ed);
     fitStudyMemo(ed);
     stRteShowBar(ed);
   }
-  /* 서식 바 — 글씨 크기 4단계 · 굵게 · 색 6가지 */
-  function stRteBarHTML(id){
+  /* 서식 바 — 글씨 크기 4단계 · 굵게 · 글자색 6가지 · 형광펜 4가지 + 지우기 */
+  function stRteBarInner(){
     var sizes = [['2', '작게', '10px'], ['3', '보통', '12px'], ['4', '크게', '14.5px'], ['5', '아주 크게', '17px']];
     var colors = [['#18181B', '기본(검정)'], ['#EF4444', '빨강'], ['#2563EB', '파랑'],
       ['#059669', '초록'], ['#7C3AED', '보라'], ['#71717A', '회색']];
-    var h = '<div class="st-memo-bar" role="toolbar" aria-label="공부 메모 서식" data-bar="' + esc(id) + '" hidden>'
-      + '<span class="st-rte-seg">', i;
+    var hls = [['#FEF08A', '노랑'], ['#BBF7D0', '연두'], ['#FBCFE8', '분홍'], ['#BAE6FD', '하늘']];
+    var h = '<span class="st-rte-seg">', i;
     for (i = 0; i < sizes.length; i++) {
       h += '<button class="st-rte-btn" type="button" data-act="study-fmt" data-fmt="size" data-v="' + sizes[i][0]
         + '" title="글씨 ' + sizes[i][1] + '" aria-label="글씨 ' + sizes[i][1] + '">'
@@ -3031,11 +3148,44 @@
       + '<span class="st-rte-sep" aria-hidden="true"></span><span class="st-rte-seg">';
     for (i = 0; i < colors.length; i++) {
       h += '<button class="st-rte-dot" type="button" data-act="study-fmt" data-fmt="color" data-v="' + colors[i][0]
-        + '" style="background:' + colors[i][0] + '" title="' + colors[i][1] + '" aria-label="글씨 ' + colors[i][1] + '"></button>';
+        + '" style="background:' + colors[i][0] + '" title="글씨 ' + colors[i][1] + '" aria-label="글씨 ' + colors[i][1] + '"></button>';
     }
-    h += '</span></div>';
+    h += '</span><span class="st-rte-sep" aria-hidden="true"></span><span class="st-rte-seg">';
+    for (i = 0; i < hls.length; i++) {
+      h += '<button class="st-rte-hl" type="button" data-act="study-fmt" data-fmt="bg" data-v="' + hls[i][0]
+        + '" style="background:' + hls[i][0] + '" title="형광펜 ' + hls[i][1] + '" aria-label="형광펜 ' + hls[i][1] + '"></button>';
+    }
+    h += '<button class="st-rte-hl st-rte-hl--off" type="button" data-act="study-fmt" data-fmt="bgclear"'
+      + ' title="형광펜 지우기" aria-label="형광펜 지우기"></button></span>';
     return h;
   }
+  /* 공부 메모 카드 안의 서식 바 — 메모를 탭했을 때만 보인다 */
+  function stRteBarHTML(id, block){
+    var cls = 'rte-bar' + (block ? ' rte-bar--block' : ' st-memo-bar');
+    return '<div class="' + cls + '" role="toolbar" aria-label="메모 서식" data-bar-for="' + esc(id) + '"'
+      + (block ? ' data-bar-always="1">' : ' hidden>') + stRteBarInner() + '</div>';
+  }
+  /* 메모 팝업의 빈 서식 바를 채운다 */
+  function rteFillBars(){
+    var bars = document.querySelectorAll('.rte-bar[data-bar-for]'), i;
+    for (i = 0; i < bars.length; i++) {
+      if (!bars[i].innerHTML) bars[i].innerHTML = stRteBarInner();
+    }
+  }
+  /* 단추를 누를 때 선택이 풀리지 않게(모바일 포함) 기본 동작을 막고, 서식만 적용한다 */
+  document.addEventListener('mousedown', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.rte-bar') : null;
+    if (b) e.preventDefault();
+  }, true);
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.rte-bar [data-act="study-fmt"]') : null;
+    if (!b || (sectionsEl && sectionsEl.contains(b))) return;
+    e.preventDefault();
+    var bar = b.closest ? b.closest('.rte-bar') : null;
+    var ed = bar ? document.getElementById(bar.getAttribute('data-bar-for') || '') : null;
+    if (ed) stRteApply(ed, b.getAttribute('data-fmt'), b.getAttribute('data-v'));
+  });
+  rteFillBars();
   function studyCardHTML(t){
     var made = studyDate(t.created), upd = studyDate(t.updated);
     var when = made ? ('만든 날 ' + made + (upd && upd !== made ? ' · 고침 ' + upd : '')) : '';
@@ -3050,8 +3200,8 @@
     h += '<div class="st-memo-head"><span class="st-memo-label" id="stml-' + esc(t.id) + '">공부 메모</span>'
       + '<button class="st-memo-tri" type="button" data-act="study-memo-more" aria-expanded="false"'
       + ' aria-label="공부 메모 펼치기" title="메모 전체 보기" hidden>&#9662;</button>'
-      /* 2026-11-27 — 메모를 탭하면 나오는 작은 서식 바(글씨 크기·굵게·색). 라벨 옆에 붙여 긴 메모에서도 바로 닿는다 */
-      + stRteBarHTML(t.id) + '</div>';
+      /* 2026-11-27 — 메모를 탭하면 나오는 작은 서식 바(글씨 크기·굵게·색·형광펜). 라벨 옆에 붙여 긴 메모에서도 바로 닿는다 */
+      + stRteBarHTML('stm-' + t.id) + '</div>';
     h += '<div class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '"'
       + ' contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="stml-' + esc(t.id) + '"'
       + ' spellcheck="false" data-ph="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">'
@@ -4812,6 +4962,12 @@
     return state.items.filter(function(x){ return x && x.id !== id && x.memoId === id; });
   }
 
+  /* 메모 본문 — 서식 저장본(bodyHtml)이 있으면 허용 태그만 남겨 그리고, 없으면 평문 그대로 */
+  function memoBodyHTML(it){
+    var html = it && it.bodyHtml ? stRteSanitizeHtml(it.bodyHtml) : '';
+    if (html) return html;
+    return esc(String(it && it.body || ''));
+  }
   function memoCardHTML(it){
     var title = String(it.title || '').trim();
     var body = String(it.body || '');
@@ -4825,7 +4981,7 @@
     if (title) h += '<h3 class="card-title">' + esc(title) + '</h3>';
     else if (!body.trim()) h += '<h3 class="card-title">빈 메모</h3>';
     h += '<span class="accent accent--' + (title ? 'soft' : 'lemon') + '" aria-hidden="true"></span>';
-    if (body.trim()) h += '<p class="memo-body">' + esc(body) + '</p>';
+    if (body.trim()) h += '<div class="memo-body">' + memoBodyHTML(it) + '</div>';
     h += '</div></div>';
     h += '<div class="card-foot">';
     h += '<button class="mini mini--send" type="button" data-act="send" title="아이폰 공유 시트로 메모 앱에 보냅니다">공유</button>';
@@ -8907,7 +9063,8 @@ var MUNHAK_NOT = ["8954670474"];
     var it = id ? byId(id) : null;
     document.getElementById('memoFormTitle').textContent = it ? '메모 편집' : '새 메모';
     document.getElementById('mTitle').value = it ? String(it.title || '') : '';
-    document.getElementById('mBody').value = it ? String(it.body || '') : '';
+    if (it) stRteSet(document.getElementById('mBody'), it.bodyHtml, it.body);
+    else stRteSet(document.getElementById('mBody'), '', '');
     memoModalEl.hidden = false;
     var f = document.getElementById('mTitle');
     if (f && f.focus) f.focus();
@@ -8920,7 +9077,8 @@ var MUNHAK_NOT = ["8954670474"];
     memoFormEl.addEventListener('submit', function(e){
       e.preventDefault();
       var title = document.getElementById('mTitle').value.trim();
-      var body = document.getElementById('mBody').value.replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+      var body = stRtePlain(document.getElementById('mBody')).replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+      var bodyHtml = stRteHTML(document.getElementById('mBody'));
       if (!title && !body.trim()) {
         window.alert('제목이나 본문 중 하나는 적어 주세요.');
         document.getElementById('mBody').focus();
@@ -8932,6 +9090,7 @@ var MUNHAK_NOT = ["8954670474"];
         if (it) {
           it.title = title;
           it.body = body;
+          it.bodyHtml = bodyHtml;
           it.updated = now;
           it.updatedAt = now;
           delete it._hay;
@@ -8942,7 +9101,7 @@ var MUNHAK_NOT = ["8954670474"];
         }
         return;
       }
-      var memo = norm({ id: 'm' + Date.now().toString(36), cat: 'memo', title: title, body: body,
+      var memo = norm({ id: 'm' + Date.now().toString(36), cat: 'memo', title: title, body: body, bodyHtml: bodyHtml,
         created: now, updated: now, updatedAt: now, status: '메모' });
       state.items.unshift(memo);
       persist();
@@ -9029,7 +9188,7 @@ var MUNHAK_NOT = ["8954670474"];
     if (!b || cmViewHidden()) return;
     b.style.height = 'auto';
     var cap = Math.round((window.innerHeight || 700) * 0.44);
-    b.style.height = Math.min(b.scrollHeight, cap) + 'px';
+    b.style.height = Math.min(Math.max(b.scrollHeight, 120), cap) + 'px';
   }
   function cmViewHidden(){ return !!(document.getElementById('cmView') || {}).hidden; }
 
@@ -9085,7 +9244,7 @@ var MUNHAK_NOT = ["8954670474"];
       document.getElementById('cmNone').hidden = true;
       document.getElementById('cmHint').textContent = (name ? '‘' + name + '’ 카드에 붙은 메모입니다.' : '이 카드에 붙은 메모입니다.');
       document.getElementById('cmTitleIn').value = m.title || '';
-      document.getElementById('cmBody').value = m.body || '';
+      stRteSet(document.getElementById('cmBody'), m.bodyHtml, m.body);
       var when = memoWhen(m.updated || m.created);
       var edited = !!(m.updated && m.created && String(m.updated) !== String(m.created));
       document.getElementById('cmWhen').textContent = when ? (edited ? '고침 ' + when : '작성 ' + when) : '';
@@ -9099,7 +9258,7 @@ var MUNHAK_NOT = ["8954670474"];
         : '이 카드에 붙일 메모를 새로 적거나, 메모 탭에 있는 메모를 골라 붙일 수 있어요.';
       document.getElementById('cmNewTitle').value = '';
       document.getElementById('cmNewTitle').placeholder = name ? '예: ' + name : '예: 포럼에서 들은 말';
-      document.getElementById('cmNewBody').value = '';
+      stRteSet(document.getElementById('cmNewBody'), '', '');
       cmSetTab('new');
     }
     var sheet = document.getElementById('cardMemoSheet');
@@ -9119,12 +9278,15 @@ var MUNHAK_NOT = ["8954670474"];
     var m = cmMemoId ? byId(cmMemoId) : null;
     if (!it || !m) { closeCardMemo(); return; }
     var title = document.getElementById('cmTitleIn').value.trim();
-    var body = document.getElementById('cmBody').value.replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    var body = stRtePlain(document.getElementById('cmBody')).replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    var bodyHtml = stRteHTML(document.getElementById('cmBody'));
     if (!title && !body.trim()) { toast('내용이 비어 있어 저장하지 않았습니다'); return; }
-    if (title === String(m.title || '') && body === String(m.body || '')) { closeCardMemo(); return; }
+    if (title === String(m.title || '') && body === String(m.body || '')
+        && bodyHtml === String(m.bodyHtml || '')) { closeCardMemo(); return; }
     var now = new Date().toISOString();
     m.title = title;
     m.body = body;
+    m.bodyHtml = bodyHtml;
     m.updated = now;
     m.updatedAt = now;
     delete m._hay;
@@ -9151,14 +9313,15 @@ var MUNHAK_NOT = ["8954670474"];
     var it = byId(cmCard);
     if (!it) { closeCardMemo(); return; }
     var title = document.getElementById('cmNewTitle').value.trim();
-    var body = document.getElementById('cmNewBody').value.replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    var body = stRtePlain(document.getElementById('cmNewBody')).replace(/[ \t]+\n/g, '\n').replace(/\s+$/, '');
+    var bodyHtml = stRteHTML(document.getElementById('cmNewBody'));
     if (!title && !body.trim()) {
       window.alert('제목이나 본문 중 하나는 적어 주세요.');
       document.getElementById('cmNewBody').focus();
       return;
     }
     var now = new Date().toISOString();
-    var memo = norm({ id: 'm' + Date.now().toString(36), cat: 'memo', title: title, body: body,
+    var memo = norm({ id: 'm' + Date.now().toString(36), cat: 'memo', title: title, body: body, bodyHtml: bodyHtml,
       created: now, updated: now, updatedAt: now, status: '메모' });
     state.items.unshift(memo);
     it.memoId = memo.id;
@@ -9205,6 +9368,7 @@ var MUNHAK_NOT = ["8954670474"];
     });
     document.getElementById('cmBody').addEventListener('input', cmAutoSize);
     document.getElementById('cmTitleIn').addEventListener('input', cmAutoSize);
+    document.getElementById('cmNewBody').addEventListener('input', function(){ cmAutoSize(); });
     document.getElementById('cmTitleIn').addEventListener('keydown', function(e){
       /* 제목은 한 줄 — Enter 로는 줄을 바꾸지 않고 저장으로 넘어가지도 않게 둔다 */
       if (e.key === 'Enter') { e.preventDefault(); document.getElementById('cmBody').focus(); }
@@ -9264,8 +9428,8 @@ var MUNHAK_NOT = ["8954670474"];
         var mw = document.getElementById('lkMemoWhen');
         mw.textContent = mwhen ? (medited ? '고침 ' + mwhen : '작성 ' + mwhen) : '';
         mw.hidden = !mwhen;
-        var mb = document.getElementById('lkMemoBody');
-        mb.textContent = String(m.body || '').replace(/^\s+/, '');
+        var mb = document.getElementById('lkMemoBody'), mhtml = memoBodyHTML(m).replace(/^\s+/, '');
+        if (m.bodyHtml) mb.innerHTML = mhtml; else mb.textContent = mhtml;
         mb.hidden = !mb.textContent.trim();
         mb.scrollTop = 0;
       }
@@ -9697,7 +9861,7 @@ var MUNHAK_NOT = ["8954670474"];
   /* ────────────────────────── 기기 간 동기화 ────────────────────────── */
   var SYNC_FIELDS = ['status','memo','title','date','time','place','url','deadline','genre','price',
     'author','publisher','summary','image','imgpos','body','pick','shelf','own','kind','created','extra',
-    'rating','qty','form','seller','seat','sub','group','savedAt','extraUrl','extraLabel','memoId','links'];
+    'rating','qty','form','seller','seat','sub','group','savedAt','extraUrl','extraLabel','memoId','links','bodyHtml'];
 
   function sameVal(a, b){ return String(a == null ? '' : a) === String(b == null ? '' : b); }
   function slim(it){ var c = clone(it); delete c._hay; return c; }
@@ -9718,6 +9882,14 @@ var MUNHAK_NOT = ["8954670474"];
           if (!Object.prototype.hasOwnProperty.call(it, 'memoId')) continue;
           if (!patch) patch = {};
           patch.memoId = String(it.memoId == null ? '' : it.memoId);
+          continue;
+        }
+        /* 메모 본문 서식(2026-11-27)도 기본 데이터에 없는 값이다. 서식을 모두 지운 경우('')도
+           다른 기기에 알려야 그쪽에 옛 형광펜이 남지 않으므로 메모 카드는 늘 함께 보낸다. */
+        if (f === 'bodyHtml') {
+          if (it.cat !== 'memo') continue;
+          if (!patch) patch = {};
+          patch.bodyHtml = String(it.bodyHtml == null ? '' : it.bodyHtml);
           continue;
         }
         /* 2026-11-25 — 🔗 로 묶은 카드(links)도 기본 데이터에 없는 값이라, 붙인 것과
@@ -10510,6 +10682,12 @@ var MUNHAK_NOT = ["8954670474"];
       stRteAfter(ed);
       fitStudyMemo(ed);
     }, 0);
+  });
+  /* 메모 팝업의 본문도 붙여넣은 직후 허용 태그·속성만 남긴다(공부 메모와 같은 규칙) */
+  document.addEventListener('paste', function(e){
+    var ed = stRteRoot(e.target);
+    if (!ed || !ed.classList || !ed.classList.contains('memo-rte')) return;
+    setTimeout(function(){ if (ed.parentNode) stRteCleanNode(ed); }, 0);
   });
   /* ────────────────────────── 다가오는 일정 직접 추가 (2026-11-25 은유 님 요청) ────────────────────────── */
   var calevEl = document.getElementById('calevModal');
