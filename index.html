@@ -2975,7 +2975,9 @@
       var box = document.createElement('div');
       box.appendChild(tpl.content);
       stRteCleanNode(box);
-      return box.innerHTML;
+      /* 2026-11-27 — 태그가 하나도 안 남았으면(형광펜만 지운 경우 등) 서식 없는 평문으로 본다.
+         빈 <span>만 남은 HTML을 저장하면 다시 그릴 때 sanitizer가 ''를 돌려줘 메모가 비어 보인다. */
+      return box.querySelector('*') ? box.innerHTML : '';
     } catch (e) { return ''; }
   }
   /* 2026-11-27 확장 — 같은 편집기를 메모 탭/메모 팝업의 본문에도 쓴다.
@@ -3205,7 +3207,7 @@
     h += '<div class="st-memo" id="stm-' + esc(t.id) + '" data-study-memo="' + esc(t.id) + '"'
       + ' contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="stml-' + esc(t.id) + '"'
       + ' spellcheck="false" data-ph="읽은 것 · 질문 · 다음에 볼 것을 적어 두세요. 입력하면 자동 저장됩니다.">'
-      + (t.memoHtml ? stRteSanitizeHtml(t.memoHtml) : esc(t.memo)) + '</div>';
+      + (stRteSanitizeHtml(t.memoHtml || '') || esc(t.memo)) + '</div>';
     h += '<button class="st-toggle" type="button" data-act="study-fold" aria-expanded="' + (open ? 'true' : 'false')
       + '" aria-controls="' + esc(boxId) + '" title="' + (open ? '자료 목록 접기' : '자료 목록 펼치기') + '">'
       + '자료 ' + n + '건 <span class="tri" aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>';
