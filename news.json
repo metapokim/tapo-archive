@@ -1,7 +1,7 @@
 {
   "v": 1,
-  "date": "2026-11-27",
-  "updatedAt": "2026-11-27T05:30:33+09:00",
+  "date": "2026-11-28",
+  "updatedAt": "2026-11-28T05:29:04+09:00",
   "counts": {
     "cases": 100,
     "casesUnread": 100,
@@ -1012,6 +1012,16 @@
   ],
   "eng": [
     {
+      "id": "n20261128_en1",
+      "title": "With Eyes Wide Open — Free People, Not Fairy Tales",
+      "publisher": "Verfassungsblog",
+      "date": "2026-11-27",
+      "sub": "영어 칼럼",
+      "summary": "지젤 펠리코 사건을 계기로 성폭력 법·담론이 피해자 동의와 형법적 책임을 동화적 고정관념으로 왜곡해 온 문제를 비판한 칼럼.",
+      "url": "https://verfassungsblog.de/with-eyes-wide-open/",
+      "status": "읽기 전"
+    },
+    {
       "id": "n20261127_en1",
       "title": "Removing the Scales: India’s Data Protection Statute and the Vanishing Public Interest Override",
       "publisher": "IACL-AIDC Blog",
@@ -1030,19 +1040,29 @@
       "summary": "[영어 독해용 · 2026.11.23 원문] ICJ의 로힝야 집단학살 인정 판결(11/19)을 성폭력 생존자 관점에서 짚으며, 조직적 성폭력의 부정(denial)이 낳는 2차 피해와 배상 과제를 다룬 칼럼.",
       "url": "https://verfassungsblog.de/gambia-v-myanmar-violence-women/",
       "status": "읽기 전"
-    },
-    {
-      "id": "n20261124_en1",
-      "title": "Militant Democracy Revisited: How to Defend Gender Equality from Enemies Within",
-      "publisher": "IACL-AIDC Blog",
-      "date": "2026-11-24",
-      "sub": "영어 칼럼 · 헌법·젠더",
-      "summary": "[영어 독해용 · 2026.10.01 원문] 권위주의 정치가 가족·젠더 질서까지 헌법화하며 성평등을 공격하는 현상과, 방어적 민주주의 이론이 어떻게 성평등과 다원주의를 함께 수호할 수 있는지 다룬 국제헌법학회(IACL) 블로그 칼럼.",
-      "url": "https://blog-iacl-aidc.org/2026-posts/2026/10/1/militant-democracy-revisited-how-to-defend-gender-equality-from-enemies-within",
-      "status": "읽기 전"
     }
   ],
   "articles": [
+    {
+      "id": "n20261128_1",
+      "title": "인권위 \"청라하늘대교 통행료 감면서 외국인 주민 배제는 차별\"",
+      "publisher": "연합뉴스",
+      "date": "2026-11-27",
+      "sub": "평등권·인권위",
+      "summary": "청라하늘대교 통행료 감면을 주민등록법상 주소지 기준으로 제한해 등록외국인을 제외한 것은 합리적 이유 없는 국적 차별이라며 인권위가 시정을 권고했다.",
+      "url": "https://www.yna.co.kr/view/AKR20261127125000004",
+      "status": "읽기 전"
+    },
+    {
+      "id": "h20261128_1",
+      "title": "코스피 4.34% 급등 4,915.68·코스닥 8.13% 매수 사이드카…하루 만에 반등",
+      "publisher": "연합뉴스",
+      "date": "2026-11-27",
+      "sub": "경제 · 증시 속보",
+      "summary": "전날 급락 하루 만에 외국인과 기관 순매수에 힘입어 코스피 4.34%, 코스닥 8.13% 급등하며 코스닥 매수 사이드카가 발동됐다.",
+      "url": "https://www.yna.co.kr/view/AKR20261127078351008",
+      "status": "읽기 전"
+    },
     {
       "id": "n20261127_1",
       "title": "양육비 30일 미지급 땐 감치 가능…가사소송법 개정 첫 문턱 넘어",
@@ -1064,33 +1084,13 @@
       "status": "읽기 전"
     },
     {
-      "id": "h20261127_1",
-      "title": "15% 관세 상한 방어했지만…25% 인상·호남 반도체 불씨 남아(종합)",
-      "publisher": "연합뉴스",
+      "id": "n20261128_2",
+      "title": "헌재, \"선거 180일 전 후보 지지 문서 배부·살포 금지\" 옛 공직선거법 위헌",
+      "publisher": "법률신문",
       "date": "2026-11-26",
-      "sub": "경제 · 통상 속보",
-      "summary": "미 USTR이 한국 15% 관세 상한 유지를 제안하면서도 협의 불만족 시 25% 상향 여지와 호남 반도체 클러스터를 지목.",
-      "url": "https://www.yna.co.kr/view/AKR20261126002051003",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261126_1",
-      "title": "[단독] 동성부부 마일리지 합산 거부한 대한항공…인권위 \"차별행위\"",
-      "publisher": "중앙일보",
-      "date": "2026-11-25",
-      "sub": "가족구성권 · 헌법11조",
-      "summary": "인권위가 국내 거주 동성부부의 가족 마일리지 합산 등록을 거부한 대한항공에 헌법 제11조 평등권 침해를 근거로 제도 개선을 권고함.",
-      "url": "https://www.joongang.co.kr/article/25481777",
-      "status": "읽기 전"
-    },
-    {
-      "id": "n20261126_2",
-      "title": "성별정정부터 동성혼까지…법원, 4대 성소수자 재판 기준 세운다",
-      "publisher": "법률미디어",
-      "date": "2026-11-25",
-      "sub": "성소수자 · 사법정책연구원",
-      "summary": "사법정책연구원이 성별정정, 트랜스젠더 병역, 동성 파트너십·혼인 인정 등 4대 성소수자 재판 쟁점을 다룬 비교법 연구총서(2026-16)를 발간함.",
-      "url": "https://lawmedia.kr/news/2564",
+      "sub": "헌재·표현의자유",
+      "summary": "헌재가 선거일 전 180일부터 후보자 지지·반대 문서 배부와 살포를 전면 금지한 구 공직선거법 조항에 대해 과잉금지원칙 위반이라며 재판관 전원일치로 위헌 결정했다.",
+      "url": "https://www.lawtimes.co.kr/news/articleView.html?idxno=230169",
       "status": "읽기 전"
     }
   ]
