@@ -2434,6 +2434,7 @@
   /* 2026-11-26 — '공부 > 젠더' 카드의 공부 메모에 9장 버전 최종 발표 대본을 한 번 넣는다. */
   var pdfCard26_10pSynced = false;   /* 10슬라이드 카드 표기 1회 반영 */
   var genderScript28Synced = false;  /* 5분 최종 대본·참고문헌으로 1회 교체 */
+  var genderScript28bSynced = false;  /* '젠더발표' 이름의 카드에도 5분 최종 대본 1회 반영 */
   var genderScriptSynced = false;
   var courseMemos27Synced = false;   /* 강의 메모 12장·기말 공부 주제 2개 1회 반영 */
   /* 되살린 네 권은 다른 기기에 남은 옛 '지움' 기록이 다시 지우지 못하게 지킨다.
@@ -2693,7 +2694,8 @@
     genderScript26: '2026-11-26T08:25:00.000Z' /* 공부 > 젠더 카드에 9장 버전 최종 발표 대본을 넣음(2026-11-26 17:25 KST) */,
     courseMemos27: '2026-11-26T19:30:00.000Z', /* 가족법·국문학사 강의 메모 12장과 기말 공부 주제 2개 배포(2026-11-27 04:30 KST) */
     pdfCard26_10p: '2026-11-28T02:50:00.000Z', /* 기말 발표자료를 10슬라이드(참고문헌 슬라이드)로 교체 배포(2026-11-28 11:50 KST) */
-    genderScript28: '2026-11-28T02:52:00.000Z' /* 공부 > 젠더 메모를 5분 최종 대본·참고문헌으로 교체 배포(2026-11-28 11:52 KST) */
+    genderScript28: '2026-11-28T02:52:00.000Z', /* 공부 > 젠더 메모를 5분 최종 대본·참고문헌으로 교체 배포(2026-11-28 11:52 KST) */
+    genderScript28b: '2026-11-28T08:00:00.000Z' /* 기기에서 이름이 '젠더발표'인 공부 카드에도 5분 최종 대본·참고문헌을 넣어 배포(2026-11-28 17:00 KST) */
   };
   function migTouch(it, stamp){
     if (!it) return;
@@ -4502,6 +4504,111 @@
       genderScript28Synced = true;
     }
 
+    /* 2026-11-28 — 은유 님 기기의 '공부 > 젠더발표' 카드에도 오늘 확정한 5분 최종 대본을 넣는다.
+       기기에서 주제 이름이 '젠더'가 아니라 '젠더발표'여서 앞의 두 마이그레이션(genderScript26·genderScript28)이
+       이름으로 찾을 때 이 카드를 지나쳤다. 이번에는 이름이 '젠더'·'젠더발표'인 카드와 st20261126_1 카드를
+       모두 찾아, 카드마다 옛 대본(9장 대본)이 시작되는 지점부터 GENDER_SCRIPT26 으로 바꾸고
+       10장 발표자료(v20261126_2) 연결을 더한다. 대본 앞에 은유 님이 직접 적어 둔 메모는 그대로 남긴다.
+       서식(memoHtml)이 있는 카드는 서식이 걸린 앞부분을 살리고 새 대본을 문단으로 넣는다.
+       이미 새 대본이 들어 있는 카드는 건드리지 않는다(멱등). */
+    if (!(ui && ui.genderScript28b_20261128)) {
+      var gsbNorm = function(t){ return String(t == null ? '' : t).replace(/\s+/g, ''); };
+      var gsbIsTarget = function(t){
+        if (!t) return false;
+        if (String(t.id || '') === 'st20261126_1') return true;
+        var a = gsbNorm(t.title);
+        return a === '젠더' || a.indexOf('젠더발표') >= 0;
+      };
+      /* 옛 대본이 시작되는 지점 — 이름표(🌟 최종 발표 대본)부터 옛 본문 첫 줄까지 넓게 살핀다 */
+      var gsbCut = function(s){
+        s = String(s == null ? '' : s);
+        var marks = ['🌟 최종 발표 대본', '최종 발표 대본', '[슬라이드 1', '[슬라이드',
+                     '이번 학기 기말 발표를 맡은 김은유입니다', '기업융합법학과 김은유입니다',
+                     '돌봄이 여성의 희생이 아니라', '돌봄이 한 사람의 희생이 아닌'],
+            k = -1, m, p;
+        for (m = 0; m < marks.length; m++) {
+          p = s.indexOf(marks[m]);
+          if (p >= 0 && (k < 0 || p < k)) k = p;
+        }
+        return k;
+      };
+      var gsbEsc = function(t){
+        return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      };
+      var gsbHtml = (function(){
+        var ls = GENDER_SCRIPT26.split('\n'), out = [], m;
+        for (m = 0; m < ls.length; m++) {
+          out.push(ls[m] ? '<div>' + gsbEsc(ls[m]) + '</div>' : '<div><br></div>');
+        }
+        return out.join('');
+      })();
+      var gsbI, gsbIt, gsbMemo, gsbHtm, gsbMc, gsbHc, gsbPre, gsbHPre, gsbNew;
+      var gsbChanged, gsbHasNew, gsbHasNewH;
+      for (gsbI = 0; gsbI < state.study.length; gsbI++) {
+        gsbIt = state.study[gsbI];
+        if (!gsbIsTarget(gsbIt)) continue;
+        gsbChanged = false;
+        gsbMemo = String(gsbIt.memo || '');
+        gsbHtm = String(gsbIt.memoHtml || '');
+        gsbHasNew = gsbMemo.indexOf('기침, 하나는 졸음') >= 0;
+        gsbHasNewH = gsbHtm.indexOf('기침, 하나는 졸음') >= 0;
+        gsbMc = gsbHasNew ? -1 : gsbCut(gsbMemo);
+        gsbHc = gsbHasNewH ? -1 : gsbCut(gsbHtm);
+        if (!gsbHasNew) {
+          gsbNew = '';
+          if (gsbMc >= 0) {
+            /* 대본 앞에 붙어 있던 구분선(---)은 걷어 내고 새로 하나만 둔다 */
+            gsbPre = gsbMemo.slice(0, gsbMc).replace(/\s+$/, '')
+                      .replace(/(?:\n\s*-{3,}\s*)+$/, '').replace(/\s+$/, '');
+            gsbNew = gsbPre ? (gsbPre + '\n\n---\n\n' + GENDER_SCRIPT26) : GENDER_SCRIPT26;
+          } else if (!gsbMemo.trim()) {
+            gsbNew = GENDER_SCRIPT26;
+          } else if (/슬라이드|경청해 주셔서 감사|정상가족 이데올로기|생활동반자법|의료적 돌봄/.test(gsbMemo) && gsbMemo.length >= 300) {
+            /* 이름표 없이 붙여 둔 옛 초안 — 옛 대본이 새 대본과 겹쳐 보이지 않게 통째로 새 대본으로 */
+            gsbNew = GENDER_SCRIPT26;
+          } else {
+            /* 대본과 상관없는 은유 님 메모 — 구분선을 두고 뒤에 새 대본을 붙인다 */
+            gsbNew = gsbMemo.replace(/\s+$/, '') + '\n\n---\n\n' + GENDER_SCRIPT26;
+          }
+          if (gsbNew !== gsbMemo) { gsbIt.memo = gsbNew; gsbChanged = true; }
+        }
+        if (gsbHtm && !gsbHasNewH) {
+          if (gsbHc >= 0) {
+            /* 대본 문단을 감싸고 있던 열린 <div>·구분선 문단도 함께 걷어 낸다 */
+            gsbHPre = gsbHtm.slice(0, gsbHc)
+                        .replace(/(\s|<br\s*\/?>)+$/i, '')
+                        .replace(/<[^<>]*$/i, '')
+                        .replace(/(\s|<br\s*\/?>)+$/i, '')
+                        .replace(/(<div[^>]*>)+$/i, '')
+                        .replace(/(\s|<br\s*\/?>)+$/i, '')
+                        .replace(/(<div[^>]*>\s*-{3,}\s*<\/div>\s*)+$/i, '')
+                        .replace(/(<(?:div|p)[^>]*>\s*<br\s*\/?>\s*<\/(?:div|p)>\s*)+$/i, '')
+                        .replace(/(\s|<br\s*\/?>)+$/i, '')
+                        .replace(/(<div[^>]*>)+$/i, '')
+                        .replace(/(\s|<br\s*\/?>)+$/i, '');
+            gsbIt.memoHtml = gsbHPre ? (gsbHPre + gsbHtml) : gsbHtml;
+            gsbChanged = true;
+          } else if (gsbHasNewH) {
+            /* 이미 새 대본이 든 서식 — 그대로 둔다 */
+          } else {
+            /* 서식 HTML 안에서 옛 대본 위치를 못 찾았다 — 옛 대본이 화면에 남지 않도록 서식을 비우고
+               평문(새 대본)이 그대로 보이게 한다 */
+            gsbIt.memoHtml = '';
+            gsbChanged = true;
+          }
+        }
+        if (gsbIt.linkedIds.indexOf('v20261126_2') < 0 && state.deleted.indexOf('v20261126_2') < 0) {
+          gsbIt.linkedIds.push('v20261126_2');   /* 10장 PDF 발표자료 */
+          gsbChanged = true;
+        }
+        if (gsbChanged) {
+          if (String(gsbIt.updated || '') < MIG_STAMP.genderScript28b) gsbIt.updated = MIG_STAMP.genderScript28b;
+          loadChanged = true;
+        }
+      }
+      genderScript28bSynced = true;
+    }
+
     /* 2026-11-27 — 가족법(상속) 4장·국문학사 8장 강의 메모와 '가족법 기말'·'국문학사 기말' 공부 주제를
        기기 저장본(localStorage·Gist)에도 한 번 채운다. 기본 데이터(SEED·STUDY_SEED)가 닿지 않는 기기를
        위해 여기서 더하고, 은유 님이 같은 이름의 공부 주제를 먼저 만들어 두었으면 그 카드에 자료 연결만
@@ -4560,7 +4667,7 @@
     /* 전체·메모는 필터 줄을 감추므로, 그 상태에선 서가 필터를 꺼 둔다(보이지 않는 필터 방지) */
     if (state.cat !== 'book') state.own = 'all';
 
-    if (backup2Synced || notebookCoversSynced || notebookSynced || bjSynced || forumSynced || posterSynced || booksShelfSynced || bookReworkSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || bookSync22 || pinInfoSynced || pinFixSynced || bookFix22bSynced || poemPubSynced || playGenreSynced || userBooks24Synced || engKindSynced || pdfCard26Synced || pdfCard26_9pSynced || genderScriptSynced || pdfCard26_10pSynced || genderScript28Synced || courseMemos27Synced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
+    if (backup2Synced || notebookCoversSynced || notebookSynced || bjSynced || forumSynced || posterSynced || booksShelfSynced || bookReworkSynced || libSubMemoSynced || ynaSynced || ynaSubSynced || gradAdmSynced || caseNotesSynced || hdMemoSynced || hdMemoSynced2 || mediaSplitSynced || ewhaSynced || briefMeetSynced || briefMeetMoveSynced || settopSynced || bp68SplitSynced || bookSync22 || pinInfoSynced || pinFixSynced || bookFix22bSynced || poemPubSynced || playGenreSynced || userBooks24Synced || engKindSynced || pdfCard26Synced || pdfCard26_9pSynced || genderScriptSynced || pdfCard26_10pSynced || genderScript28Synced || genderScript28bSynced || courseMemos27Synced) saveUIPrefs();   /* 동기화 완료 표시를 함께 저장 */
   }
 
   var saveTimer = null;
@@ -4591,6 +4698,7 @@
       courseMemos27_20261127: (courseMemos27Synced || prev.courseMemos27_20261127) ? 1 : 0,
       pdfCard26_10p_20261128: (pdfCard26_10pSynced || prev.pdfCard26_10p_20261128) ? 1 : 0,
       genderScript28_20261128: (genderScript28Synced || prev.genderScript28_20261128) ? 1 : 0,
+      genderScript28b_20261128: (genderScript28bSynced || prev.genderScript28b_20261128) ? 1 : 0,
       pinKeepOff20261122: (pinKeepOff || prev.pinKeepOff20261122) ? 1 : 0,
       bjSynced20261115: (bjSynced || prev.bjSynced20261115) ? 1 : 0,
       forumSynced20261116: (forumSynced || prev.forumSynced20261116) ? 1 : 0,
