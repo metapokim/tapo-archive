@@ -1679,7 +1679,7 @@
             <p class="brief-lead">오늘(토) 서울은 <b>맑음 · 4~9°C</b> (강수확률 0%, 미세먼지 오전 나쁨→낮 보통). 어제보다 부쩍 추워지고 바람도 세니 두꺼운 외투 꼭 챙겨 입으세요. 오전엔 미세먼지가 있어 마스크 챙기시면 좋아요.</p>
             <div class="brief-scroll">
               <ul class="brief-list">
-                <li><span class="brief-time">14:30~15:30</span><span class="brief-body">하람 결혼 · 아펠가모 공덕 7층 마리에홀</span></li>
+                <li><span class="brief-time">14:30</span><span class="brief-body">하람 결혼 · 아펠가모 공덕 7층 마리에홀</span></li>
                 <li><span class="brief-body">12/5(토) 학회·포럼 중 하나 고르기 (가족구성권·인권법·가족학회, 12/2 결정)</span></li>
               </ul>
             </div>
@@ -8237,6 +8237,23 @@ var MUNHAK_NOT = ["8954670474"];
      다시 그릴 때마다 data-auto 줄을 먼저 걷어 내고 지금 날짜로 새로 심는다 — 자정이 지나면
      어제 일정은 저절로 사라지고 오늘 일정이 올라온다. 아침 루틴이 이미 같은 일정을 적어 둔
      뒤(같은 제목이 목록에 있음)에는 겹쳐 넣지 않아 두 줄로 보이지 않는다. */
+  /* 2026-11-28 은유 님 요청 — 브리핑 영역(TODAY'S BRIEFING)이 보이는 시각은 '시작 시각'만.
+     '14:30~15:30' 처럼 범위로 적혀 있어도 이 자리에서는 앞의 '14:30' 만 남긴다.
+     아침 루틴이 브리핑 HTML을 범위 표기로 다시 갈아끼워도 다음 그리기에서 한 번 더 줄인다.
+     이 함수는 .brief 안의 .brief-time 만 본다 — '다가오는 일정'(.up-list)과 그 카드의
+     시각 표기는 예전 그대로 '14:30~15:30' 으로 남는다. 키·정렬이 같은 값을 쓰도록
+     줄의 완료 키를 만들기 전에 부른다. */
+  function briefTrimTimes(sec){
+    var labels = sec.querySelectorAll('.brief-time'), k, el, txt, s;
+    for (k = 0; k < labels.length; k++) {
+      el = labels[k];
+      if (el.classList.contains('is-todo')) continue;      /* '할 일' 라벨은 시각이 아니다 */
+      txt = String(el.textContent || '');
+      s = eventStart(txt);
+      if (!s) continue;
+      if (txt.replace(/\s+/g, '') !== s) el.textContent = s;
+    }
+  }
   function syncTodayEvents(list){
     var olds = list.querySelectorAll('li[data-auto]'), oi;
     for (oi = 0; oi < olds.length; oi++) if (olds[oi].parentNode) olds[oi].parentNode.removeChild(olds[oi]);
@@ -8282,6 +8299,7 @@ var MUNHAK_NOT = ["8954670474"];
     var mine = renderBriefTodos(sec);
     var list = sec.querySelector('.brief-list');
     if (!list) return;
+    briefTrimTimes(sec);     /* 브리핑 영역 시각은 시작 시각만 (2026-11-28 은유 님 요청) */
     syncTodayEvents(list);   /* 오늘 일정은 목록 맨 위에 — 루틴이 적어 둔 줄과 겹치면 넣지 않는다 */
     var date = briefStamp(), rows = list.children, k, li, key, left = 0, done = 0;
     for (k = 0; k < rows.length; k++) {
