@@ -1498,6 +1498,15 @@
   .st-memo-bar{margin-left:auto}
   /* 메모 팝업의 서식 바 — 편집칸 위에 한 줄로 붙는다 */
   .rte-bar--block{width:100%;margin:0 0 7px;padding:4px 5px;background:#FAFAFA}
+  /* 2026-11-28 은유 님 요청 — 메모에서 글자를 드래그하면 그 선택 영역 바로 아래에 뜨는 떠 있는 필기구.
+     편집칸에 붙어 있는 서식 바(.rte-bar)와 같은 단추를 쓰되 위치만 화면 기준(position:fixed)이다.
+     모달(100)보다 위, 메뉴(110)·토스트(120)보다 아래. */
+  .rte-float{position:fixed;left:0;top:0;z-index:105;display:flex;align-items:center;gap:1px;
+    flex-wrap:wrap;max-width:min(360px,calc(100vw - 16px));padding:4px 6px;
+    border:1px solid var(--line);border-radius:12px;background:#fff;
+    box-shadow:0 8px 22px rgba(24,24,27,.18);-webkit-user-select:none;user-select:none;
+    visibility:hidden;opacity:0;transition:opacity .12s ease;pointer-events:auto}
+  .rte-float.is-on{visibility:visible;opacity:1}
   /* 메모 본문 편집칸 — 예전 textarea(.field textarea · .cm-body)와 같은 모양 */
   .memo-rte{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;outline:none;
     -webkit-user-select:text;user-select:text;cursor:text}
@@ -3188,6 +3197,124 @@
     if (ed) stRteApply(ed, b.getAttribute('data-fmt'), b.getAttribute('data-v'));
   });
   rteFillBars();
+
+  /* ────── 2026-11-28 은유 님 요청 — 드래그한 글자 아래에 뜨는 플로팅 필기구 ──────
+     공부 메모·메모 본문(contenteditable)에서 글자를 선택하면 그 선택 영역 바로 아래에
+     서식 바(글씨 크기 4단계 · B · 글자색 6가지 · 형광펜 4색 + 지우기)를 띄운다.
+     · iOS 기본 메뉴(오려둔기·복사하기·붙여넣기)가 선택 영역 위에 뜨므로 기본은 아래쪽,
+       화면(·키보드) 아래로 넘칠 때만 위로 뒤집는다. 좌우는 화면 밖으로 나가지 않게 죄운다.
+     · 단추를 누를 때 touchend/mousedown 에서 기본 동작을 막아 선택·포커스가 풀리지 않게 한다.
+       (iOS 는 touchstart 를 막으면 click 이 오지 않으므로 적용은 touchend 에서 한다.)
+     · 선택이 풀리거나 편집칸 밖을 누르면 숨긴다. */
+  var rteFloatEl = null, rteFloatEd = null, rteFloatT = 0, rteFloatTouchAt = 0;
+  function rteFloatBar(){
+    if (rteFloatEl && rteFloatEl.parentNode) return rteFloatEl;
+    var d = document.createElement('div');
+    d.className = 'rte-float';
+    d.setAttribute('role', 'toolbar');
+    d.setAttribute('aria-label', '선택한 글자 서식');
+    d.innerHTML = stRteBarInner();
+    d.addEventListener('touchstart', function(e){ e.preventDefault(); }, { passive: false });
+    d.addEventListener('touchend', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('[data-act="study-fmt"]') : null;
+      if (!b) return;
+      e.preventDefault();
+      rteFloatTouchAt = new Date().getTime();
+      rteFloatRun(b);
+    }, { passive: false });
+    d.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    d.addEventListener('click', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('[data-act="study-fmt"]') : null;
+      if (!b) return;
+      e.preventDefault();
+      if (new Date().getTime() - rteFloatTouchAt < 700) return;   /* 터치에서 이미 적용했다 */
+      rteFloatRun(b);
+    });
+    document.body.appendChild(d);
+    rteFloatEl = d;
+    return d;
+  }
+  function rteFloatRun(b){
+    var ed = rteFloatEd;
+    if (!ed || !ed.parentNode) { rteFloatHide(); return; }
+    stRteApply(ed, b.getAttribute('data-fmt'), b.getAttribute('data-v'));
+    rteFloatPlace();   /* 서식이 붙어 줄이 늘거나 줄면 자리를 다시 잡는다 */
+  }
+  function rteFloatPlace(){
+    var bar = rteFloatEl, ed = rteFloatEd, sel = window.getSelection();
+    if (!bar || !ed || !ed.parentNode || !sel || !sel.rangeCount) { rteFloatHide(); return; }
+    var r = sel.getRangeAt(0);
+    if (r.collapsed || !ed.contains(r.startContainer) || !ed.contains(r.endContainer)) { rteFloatHide(); return; }
+    var rects = r.getClientRects ? r.getClientRects() : null, rect = null;
+    if (rects && rects.length) rect = rects[rects.length - 1];      /* 마지막 줄의 아래에서 띄운다 */
+    if ((!rect || (!rect.width && !rect.height)) && r.getBoundingClientRect) rect = r.getBoundingClientRect();
+    if (!rect || (!rect.width && !rect.height)) { rteFloatHide(); return; }
+    var vv = window.visualViewport;
+    var vw = vv ? vv.width : (window.innerWidth || document.documentElement.clientWidth);
+    var vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight);
+    var vx = vv ? (vv.offsetLeft || 0) : 0;
+    var vy = vv ? (vv.offsetTop || 0) : 0;
+    bar.classList.add('is-on');                                   /* 크기를 재려면 먼저 보여야 한다 */
+    var bw = bar.offsetWidth || 0, bh = bar.offsetHeight || 0, gap = 10;
+    var left = rect.left + rect.width / 2 - bw / 2, top = rect.bottom + gap;
+    left = Math.max(vx + 6, Math.min(left, vx + vw - bw - 6));
+    if (top + bh > vy + vh - 8) top = rect.top - bh - gap;        /* 아래가 가려지면 위로 뒤집는다 */
+    if (top < vy + 4) top = Math.max(vy + 4, vy + vh - bh - 8);
+    bar.style.left = Math.round(left) + 'px';
+    bar.style.top = Math.round(top) + 'px';
+  }
+  function rteFloatShow(ed){
+    if (!ed) { rteFloatHide(); return; }
+    rteFloatEd = ed;
+    rteFloatBar();
+    rteFloatPlace();
+  }
+  function rteFloatHide(){
+    rteFloatEd = null;
+    if (rteFloatEl) rteFloatEl.classList.remove('is-on');
+  }
+  function rteFloatIsOn(){ return !!(rteFloatEl && rteFloatEl.classList.contains('is-on')); }
+  /* 지금 선택이 편집칸 안의 글자를 실제로 덮고 있을 때만 띄운다 */
+  function rteFloatSync(){
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) { rteFloatHide(); return; }
+    var r = sel.getRangeAt(0);
+    if (sel.isCollapsed || r.collapsed || !String(r.toString() || '')) { rteFloatHide(); return; }
+    var ed = stRteRoot(r.startContainer);
+    if (!ed || !ed.contains(r.endContainer)) { rteFloatHide(); return; }
+    rteFloatShow(ed);
+  }
+  function rteFloatSoon(delay){
+    clearTimeout(rteFloatT);
+    rteFloatT = setTimeout(rteFloatSync, delay == null ? 90 : delay);
+  }
+  document.addEventListener('selectionchange', function(){ rteFloatSoon(90); });
+  document.addEventListener('mouseup', function(){ rteFloatSoon(0); });
+  document.addEventListener('touchend', function(e){
+    if (rteFloatEl && rteFloatEl.contains(e.target)) return;   /* 바 안의 터치는 바에서 처리 */
+    rteFloatSoon(70);
+  }, true);
+  document.addEventListener('touchstart', function(e){
+    if (!rteFloatIsOn()) return;
+    if (rteFloatEl && rteFloatEl.contains(e.target)) return;
+    var ed = stRteRoot(e.target);
+    if (ed && ed === rteFloatEd) return;    /* 같은 편집칸 안을 눌러 선택을 고치는 중 */
+    rteFloatHide();                          /* 편집칸 밖을 누르면 숨긴다 */
+  }, true);
+  document.addEventListener('mousedown', function(e){
+    if (!rteFloatIsOn()) return;
+    if (rteFloatEl && rteFloatEl.contains(e.target)) return;
+    var ed = stRteRoot(e.target);
+    if (ed && ed === rteFloatEd) return;
+    rteFloatHide();
+  }, true);
+  document.addEventListener('keydown', function(){ if (rteFloatIsOn()) rteFloatSoon(140); });
+  window.addEventListener('scroll', function(){ if (rteFloatIsOn()) rteFloatPlace(); }, true);
+  window.addEventListener('resize', function(){ if (rteFloatIsOn()) rteFloatPlace(); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', function(){ if (rteFloatIsOn()) rteFloatPlace(); });
+    window.visualViewport.addEventListener('scroll', function(){ if (rteFloatIsOn()) rteFloatPlace(); });
+  }
   function studyCardHTML(t){
     var made = studyDate(t.created), upd = studyDate(t.updated);
     var when = made ? ('만든 날 ' + made + (upd && upd !== made ? ' · 고침 ' + upd : '')) : '';
